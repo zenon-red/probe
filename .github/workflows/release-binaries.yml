@@ -27,7 +27,7 @@ jobs:
           - target: bun-windows-x64
             output: probe-windows-x64.exe
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v6
 
       - uses: oven-sh/setup-bun@v2.1.2
 
