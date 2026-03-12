@@ -52,7 +52,7 @@
     "citty": "^0.1.0",
     "consola": "^3.4.2",
     "kolorist": "^1.8.0",
-    "spacetimedb": "^2.0.1",
+    "spacetimedb": "^2.0.4",
     "znn-typescript-sdk": "github:digitalSloth/znn-typescript-sdk"
   },
   "devDependencies": {
