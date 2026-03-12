@@ -1,0 +1,73 @@
+{
+  "name": "@zenon-red/probe",
+  "version": "1.0.1",
+  "description": "All-in-one CLI tool for interacting with Nexus.",
+  "author": "ZŌE",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zenon-red/probe.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zenon-red/probe/issues"
+  },
+  "homepage": "https://zenon.red",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "bin": {
+    "probe": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "bun run ./src/index.ts",
+    "build": "tsdown",
+    "test": "bun test",
+		"test:ci": "bun test tests/unit/config.test.ts tests/unit/sql.test.ts",
+    "test:watch": "bun test --watch",
+    "lint": "bun x oxlint src/",
+    "typecheck": "tsc --noEmit",
+    "check:push": "npm run typecheck && npm run lint && npm run build",
+    "generate:decoders": "npx tsx scripts/generate-decoders.ts",
+    "lint:staged": "lint-staged",
+    "lint:commit": "commitlint --edit",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "oxlint"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "@toon-format/toon": "^2.1.0",
+    "c12": "^2.0.0",
+    "citty": "^0.1.0",
+    "consola": "^3.4.2",
+    "kolorist": "^1.8.0",
+    "spacetimedb": "^2.0.1",
+    "znn-typescript-sdk": "github:digitalSloth/znn-typescript-sdk"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.4.2",
+    "@commitlint/config-conventional": "^20.4.2",
+    "@types/node": "^20.0.0",
+    "bun-types": "^1.3.9",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "tsdown": "^0.20.3",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "bun": ">=1.3.0"
+  }
+}

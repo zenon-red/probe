@@ -1,0 +1,37 @@
+name: Publish Package
+
+on:
+  push:
+    tags:
+      - '@zenon-red/probe@*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate decoders
+        run: npx tsx scripts/generate-decoders.ts
+
+      - name: Build package
+        run: npm run build
+
+      - name: Publish to NPM
+        run: npx npm@latest publish --provenance --access public

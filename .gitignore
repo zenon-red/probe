@@ -1,0 +1,25 @@
+# generated
+node_modules/
+dist/
+src/index.js
+src/index.js.map
+src/generated/
+coverage/
+*.log
+tmp/
+temp/
+*.tmp
+
+# local env and secrets
+.env
+.env.local
+wallets/
+tokens/
+
+# misc
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
