@@ -56,7 +56,7 @@
     "znn-typescript-sdk": "github:digitalSloth/znn-typescript-sdk"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.4.2",
+    "@commitlint/cli": "^20.4.3",
     "@commitlint/config-conventional": "^20.4.2",
     "@types/node": "^20.0.0",
     "bun-types": "^1.3.9",
