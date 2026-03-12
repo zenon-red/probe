@@ -48,7 +48,7 @@
   "dependencies": {
     "@clack/prompts": "^0.7.0",
     "@toon-format/toon": "^2.1.0",
-    "c12": "^2.0.0",
+    "c12": "^3.3.3",
     "citty": "^0.1.0",
     "consola": "^3.4.2",
     "kolorist": "^1.8.0",
