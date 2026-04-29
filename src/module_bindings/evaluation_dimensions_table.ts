@@ -10,13 +10,14 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-import {
-  AgentStatus,
-} from "./types";
-
-export default {
-  get status() {
-    return AgentStatus;
-  },
-  taskId: __t.option(__t.u64()),
-};
+export default __t.row({
+  id: __t.u64().primaryKey(),
+  name: __t.string(),
+  label: __t.string(),
+  weight: __t.f64(),
+  minScore: __t.u8().name("min_score"),
+  maxScore: __t.u8().name("max_score"),
+  description: __t.string(),
+  active: __t.bool(),
+  sortOrder: __t.u16().name("sort_order"),
+});

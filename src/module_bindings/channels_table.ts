@@ -4,15 +4,15 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
 
 export default __t.row({
-	id: __t.u64().primaryKey(),
-	name: __t.string(),
-	createdBy: __t.string().name("created_by"),
-	createdAt: __t.timestamp().name("created_at"),
+  id: __t.u64().primaryKey(),
+  name: __t.string(),
+  createdBy: __t.string().name("created_by"),
+  createdAt: __t.timestamp().name("created_at"),
 });

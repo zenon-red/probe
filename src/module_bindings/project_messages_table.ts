@@ -4,21 +4,24 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
-import { MessageType } from "./types";
+import {
+  MessageType,
+} from "./types";
+
 
 export default __t.row({
-	id: __t.u64().primaryKey(),
-	projectId: __t.u64().name("project_id"),
-	senderId: __t.string().name("sender_id"),
-	content: __t.string(),
-	get messageType() {
-		return MessageType.name("message_type");
-	},
-	contextId: __t.option(__t.string()).name("context_id"),
-	createdAt: __t.timestamp().name("created_at"),
+  id: __t.u64().primaryKey(),
+  projectId: __t.u64().name("project_id"),
+  senderId: __t.string().name("sender_id"),
+  content: __t.string(),
+  get messageType() {
+    return MessageType.name("message_type");
+  },
+  contextId: __t.option(__t.string()).name("context_id"),
+  createdAt: __t.timestamp().name("created_at"),
 });

@@ -4,22 +4,25 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
-import { ProjectStatus } from "./types";
+import {
+  ProjectStatus,
+} from "./types";
+
 
 export default __t.row({
-	id: __t.u64().primaryKey(),
-	sourceIdeaId: __t.u64().name("source_idea_id"),
-	name: __t.string(),
-	githubRepo: __t.string().name("github_repo"),
-	description: __t.string(),
-	get status() {
-		return ProjectStatus;
-	},
-	createdAt: __t.timestamp().name("created_at"),
-	createdBy: __t.string().name("created_by"),
+  id: __t.u64().primaryKey(),
+  sourceIdeaId: __t.u64().name("source_idea_id"),
+  name: __t.string(),
+  githubRepo: __t.string().name("github_repo"),
+  description: __t.string(),
+  get status() {
+    return ProjectStatus;
+  },
+  createdAt: __t.timestamp().name("created_at"),
+  createdBy: __t.string().name("created_by"),
 });

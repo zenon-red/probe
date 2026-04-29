@@ -108,11 +108,14 @@ Target: channel name or project ID.
 ```bash
 probe idea list [--status <status>] [--category <cat>] [--limit <n>]
 probe idea get <id>
+probe idea dimensions
 probe idea propose --title <text> --description <text> [--category <cat>]
-probe idea vote <id> <up|down|veto>
+probe idea vote <id> --ecosystem-impact <score> --execution-clarity <score> [...]
 ```
 
 Idea statuses: `voting`, `approved_for_project`, `rejected`, `implemented`.
+
+Idea votes use dimension scores and all active dimensions are required. Run `probe idea dimensions` before voting; use repeatable `--score <name>=<value>` for custom dimensions. If a missing-dimension error names a dimension without a dedicated flag, use `--score` and consider updating Probe.
 
 ## Project
 

@@ -4,271 +4,295 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
 
 export const Agent = __t.object("Agent", {
-	id: __t.string(),
-	name: __t.string(),
-	get role() {
-		return AgentRole;
-	},
-	capabilities: __t.array(__t.string()),
-	get status() {
-		return AgentStatus;
-	},
-	zenonAddress: __t.string(),
-	identity: __t.identity(),
-	lastHeartbeat: __t.timestamp(),
-	currentTaskId: __t.option(__t.u64()),
-	createdAt: __t.timestamp(),
-	lastActiveAt: __t.timestamp(),
+  id: __t.string(),
+  name: __t.string(),
+  get role() {
+    return AgentRole;
+  },
+  capabilities: __t.array(__t.string()),
+  get status() {
+    return AgentStatus;
+  },
+  zenonAddress: __t.string(),
+  identity: __t.identity(),
+  lastHeartbeat: __t.timestamp(),
+  currentTaskId: __t.option(__t.u64()),
+  createdAt: __t.timestamp(),
+  lastActiveAt: __t.timestamp(),
 });
 export type Agent = __Infer<typeof Agent>;
 
 // The tagged union or sum type for the algebraic type `AgentRole`.
 export const AgentRole = __t.enum("AgentRole", {
-	Zoe: __t.unit(),
-	Admin: __t.unit(),
-	Zeno: __t.unit(),
+  Zoe: __t.unit(),
+  Admin: __t.unit(),
+  Zeno: __t.unit(),
 });
 export type AgentRole = __Infer<typeof AgentRole>;
 
 // The tagged union or sum type for the algebraic type `AgentStatus`.
 export const AgentStatus = __t.enum("AgentStatus", {
-	Online: __t.unit(),
-	Offline: __t.unit(),
-	Working: __t.unit(),
+  Online: __t.unit(),
+  Offline: __t.unit(),
+  Working: __t.unit(),
 });
 export type AgentStatus = __Infer<typeof AgentStatus>;
 
 export const Channel = __t.object("Channel", {
-	id: __t.u64(),
-	name: __t.string(),
-	createdBy: __t.string(),
-	createdAt: __t.timestamp(),
+  id: __t.u64(),
+  name: __t.string(),
+  createdBy: __t.string(),
+  createdAt: __t.timestamp(),
 });
 export type Channel = __Infer<typeof Channel>;
 
 export const Config = __t.object("Config", {
-	key: __t.string(),
-	value: __t.string(),
+  key: __t.string(),
+  value: __t.string(),
 });
 export type Config = __Infer<typeof Config>;
 
 // The tagged union or sum type for the algebraic type `DependencyType`.
 export const DependencyType = __t.enum("DependencyType", {
-	Blocks: __t.unit(),
-	ParentChild: __t.unit(),
+  Blocks: __t.unit(),
+  ParentChild: __t.unit(),
 });
 export type DependencyType = __Infer<typeof DependencyType>;
 
+export const DimensionScore = __t.object("DimensionScore", {
+  dimension: __t.string(),
+  score: __t.u8(),
+});
+export type DimensionScore = __Infer<typeof DimensionScore>;
+
 export const DiscoveredTask = __t.object("DiscoveredTask", {
-	id: __t.u64(),
-	discoveredBy: __t.string(),
-	currentTaskId: __t.u64(),
-	projectId: __t.u64(),
-	title: __t.string(),
-	description: __t.string(),
-	priority: __t.u8(),
-	taskType: __t.string(),
-	severity: __t.string(),
-	get status() {
-		return DiscoveredTaskStatus;
-	},
-	createdTaskId: __t.option(__t.u64()),
-	rejectionReason: __t.option(__t.string()),
-	createdAt: __t.timestamp(),
-	reviewedAt: __t.option(__t.timestamp()),
-	reviewedBy: __t.option(__t.string()),
+  id: __t.u64(),
+  discoveredBy: __t.string(),
+  currentTaskId: __t.u64(),
+  projectId: __t.u64(),
+  title: __t.string(),
+  description: __t.string(),
+  priority: __t.u8(),
+  taskType: __t.string(),
+  severity: __t.string(),
+  get status() {
+    return DiscoveredTaskStatus;
+  },
+  createdTaskId: __t.option(__t.u64()),
+  rejectionReason: __t.option(__t.string()),
+  createdAt: __t.timestamp(),
+  reviewedAt: __t.option(__t.timestamp()),
+  reviewedBy: __t.option(__t.string()),
 });
 export type DiscoveredTask = __Infer<typeof DiscoveredTask>;
 
 // The tagged union or sum type for the algebraic type `DiscoveredTaskStatus`.
 export const DiscoveredTaskStatus = __t.enum("DiscoveredTaskStatus", {
-	PendingReview: __t.unit(),
-	Approved: __t.unit(),
-	Rejected: __t.unit(),
-	EscalatedToIdea: __t.unit(),
+  PendingReview: __t.unit(),
+  Approved: __t.unit(),
+  Rejected: __t.unit(),
+  EscalatedToIdea: __t.unit(),
 });
 export type DiscoveredTaskStatus = __Infer<typeof DiscoveredTaskStatus>;
 
 // The tagged union or sum type for the algebraic type `DiscoveryDecision`.
 export const DiscoveryDecision = __t.enum("DiscoveryDecision", {
-	ApproveAsTask: __t.unit(),
-	Reject: __t.unit(),
-	EscalateToIdea: __t.unit(),
+  ApproveAsTask: __t.unit(),
+  Reject: __t.unit(),
+  EscalateToIdea: __t.unit(),
 });
 export type DiscoveryDecision = __Infer<typeof DiscoveryDecision>;
 
+export const EvaluationDimension = __t.object("EvaluationDimension", {
+  id: __t.u64(),
+  name: __t.string(),
+  label: __t.string(),
+  weight: __t.f64(),
+  minScore: __t.u8(),
+  maxScore: __t.u8(),
+  description: __t.string(),
+  active: __t.bool(),
+  sortOrder: __t.u16(),
+});
+export type EvaluationDimension = __Infer<typeof EvaluationDimension>;
+
 export const Idea = __t.object("Idea", {
-	id: __t.u64(),
-	title: __t.string(),
-	description: __t.string(),
-	category: __t.string(),
-	get status() {
-		return IdeaStatus;
-	},
-	activeAgentCount: __t.u32(),
-	quorum: __t.u16(),
-	approvalThreshold: __t.u16(),
-	vetoThreshold: __t.u16(),
-	upVotes: __t.u16(),
-	downVotes: __t.u16(),
-	vetoCount: __t.u16(),
-	totalVotes: __t.u16(),
-	createdBy: __t.string(),
-	createdAt: __t.timestamp(),
-	updatedAt: __t.timestamp(),
+  id: __t.u64(),
+  title: __t.string(),
+  description: __t.string(),
+  category: __t.string(),
+  get status() {
+    return IdeaStatus;
+  },
+  activeAgentCount: __t.u32(),
+  quorum: __t.u16(),
+  approvalThreshold: __t.u16(),
+  vetoThreshold: __t.u16(),
+  upVotes: __t.u16(),
+  downVotes: __t.u16(),
+  vetoCount: __t.u16(),
+  totalVotes: __t.u16(),
+  createdBy: __t.string(),
+  createdAt: __t.timestamp(),
+  updatedAt: __t.timestamp(),
+  computedScore: __t.f64(),
 });
 export type Idea = __Infer<typeof Idea>;
 
 // The tagged union or sum type for the algebraic type `IdeaStatus`.
 export const IdeaStatus = __t.enum("IdeaStatus", {
-	Voting: __t.unit(),
-	ApprovedForProject: __t.unit(),
-	Rejected: __t.unit(),
-	Implemented: __t.unit(),
+  Voting: __t.unit(),
+  ApprovedForProject: __t.unit(),
+  Rejected: __t.unit(),
+  Implemented: __t.unit(),
 });
 export type IdeaStatus = __Infer<typeof IdeaStatus>;
 
 export const IdentityRole = __t.object("IdentityRole", {
-	identity: __t.identity(),
-	get role() {
-		return AgentRole;
-	},
+  identity: __t.identity(),
+  get role() {
+    return AgentRole;
+  },
 });
 export type IdentityRole = __Infer<typeof IdentityRole>;
 
 export const Message = __t.object("Message", {
-	id: __t.u64(),
-	channelId: __t.u64(),
-	senderId: __t.string(),
-	content: __t.string(),
-	get messageType() {
-		return MessageType;
-	},
-	contextId: __t.option(__t.string()),
-	createdAt: __t.timestamp(),
+  id: __t.u64(),
+  channelId: __t.u64(),
+  senderId: __t.string(),
+  content: __t.string(),
+  get messageType() {
+    return MessageType;
+  },
+  contextId: __t.option(__t.string()),
+  createdAt: __t.timestamp(),
 });
 export type Message = __Infer<typeof Message>;
 
 // The tagged union or sum type for the algebraic type `MessageType`.
 export const MessageType = __t.enum("MessageType", {
-	User: __t.unit(),
-	System: __t.unit(),
-	Directive: __t.unit(),
+  User: __t.unit(),
+  System: __t.unit(),
+  Directive: __t.unit(),
 });
 export type MessageType = __Infer<typeof MessageType>;
 
 export const Project = __t.object("Project", {
-	id: __t.u64(),
-	sourceIdeaId: __t.u64(),
-	name: __t.string(),
-	githubRepo: __t.string(),
-	description: __t.string(),
-	get status() {
-		return ProjectStatus;
-	},
-	createdAt: __t.timestamp(),
-	createdBy: __t.string(),
+  id: __t.u64(),
+  sourceIdeaId: __t.u64(),
+  name: __t.string(),
+  githubRepo: __t.string(),
+  description: __t.string(),
+  get status() {
+    return ProjectStatus;
+  },
+  createdAt: __t.timestamp(),
+  createdBy: __t.string(),
 });
 export type Project = __Infer<typeof Project>;
 
 export const ProjectChannel = __t.object("ProjectChannel", {
-	projectId: __t.u64(),
-	createdAt: __t.timestamp(),
+  projectId: __t.u64(),
+  createdAt: __t.timestamp(),
 });
 export type ProjectChannel = __Infer<typeof ProjectChannel>;
 
 export const ProjectMessage = __t.object("ProjectMessage", {
-	id: __t.u64(),
-	projectId: __t.u64(),
-	senderId: __t.string(),
-	content: __t.string(),
-	get messageType() {
-		return MessageType;
-	},
-	contextId: __t.option(__t.string()),
-	createdAt: __t.timestamp(),
+  id: __t.u64(),
+  projectId: __t.u64(),
+  senderId: __t.string(),
+  content: __t.string(),
+  get messageType() {
+    return MessageType;
+  },
+  contextId: __t.option(__t.string()),
+  createdAt: __t.timestamp(),
 });
 export type ProjectMessage = __Infer<typeof ProjectMessage>;
 
 // The tagged union or sum type for the algebraic type `ProjectStatus`.
 export const ProjectStatus = __t.enum("ProjectStatus", {
-	Active: __t.unit(),
-	Paused: __t.unit(),
+  Active: __t.unit(),
+  Paused: __t.unit(),
 });
 export type ProjectStatus = __Infer<typeof ProjectStatus>;
 
 export const Task = __t.object("Task", {
-	id: __t.u64(),
-	projectId: __t.u64(),
-	title: __t.string(),
-	description: __t.string(),
-	get status() {
-		return TaskStatus;
-	},
-	assignedTo: __t.option(__t.string()),
-	claimedAt: __t.option(__t.timestamp()),
-	githubIssueUrl: __t.option(__t.string()),
-	githubPrUrl: __t.option(__t.string()),
-	priority: __t.u8(),
-	sourceIdeaId: __t.option(__t.u64()),
-	reviewCount: __t.u8(),
-	get blockedFromStatus() {
-		return __t.option(TaskStatus);
-	},
-	archivedReason: __t.option(__t.string()),
-	statusChangedBy: __t.option(__t.identity()),
-	statusChangedAt: __t.option(__t.timestamp()),
-	createdAt: __t.timestamp(),
-	updatedAt: __t.timestamp(),
-	createdBy: __t.string(),
+  id: __t.u64(),
+  projectId: __t.u64(),
+  title: __t.string(),
+  description: __t.string(),
+  get status() {
+    return TaskStatus;
+  },
+  assignedTo: __t.option(__t.string()),
+  claimedAt: __t.option(__t.timestamp()),
+  githubIssueUrl: __t.option(__t.string()),
+  githubPrUrl: __t.option(__t.string()),
+  priority: __t.u8(),
+  sourceIdeaId: __t.option(__t.u64()),
+  reviewCount: __t.u8(),
+  get blockedFromStatus() {
+    return __t.option(TaskStatus);
+  },
+  archivedReason: __t.option(__t.string()),
+  statusChangedBy: __t.option(__t.identity()),
+  statusChangedAt: __t.option(__t.timestamp()),
+  createdAt: __t.timestamp(),
+  updatedAt: __t.timestamp(),
+  createdBy: __t.string(),
 });
 export type Task = __Infer<typeof Task>;
 
 export const TaskDependency = __t.object("TaskDependency", {
-	id: __t.u64(),
-	taskId: __t.u64(),
-	dependsOnId: __t.u64(),
-	get dependencyType() {
-		return DependencyType;
-	},
-	createdAt: __t.timestamp(),
+  id: __t.u64(),
+  taskId: __t.u64(),
+  dependsOnId: __t.u64(),
+  get dependencyType() {
+    return DependencyType;
+  },
+  createdAt: __t.timestamp(),
 });
 export type TaskDependency = __Infer<typeof TaskDependency>;
 
 // The tagged union or sum type for the algebraic type `TaskStatus`.
 export const TaskStatus = __t.enum("TaskStatus", {
-	Open: __t.unit(),
-	Claimed: __t.unit(),
-	InProgress: __t.unit(),
-	Review: __t.unit(),
-	Completed: __t.unit(),
-	Blocked: __t.unit(),
-	Archived: __t.unit(),
+  Open: __t.unit(),
+  Claimed: __t.unit(),
+  InProgress: __t.unit(),
+  Review: __t.unit(),
+  Completed: __t.unit(),
+  Blocked: __t.unit(),
+  Archived: __t.unit(),
 });
 export type TaskStatus = __Infer<typeof TaskStatus>;
 
 export const Vote = __t.object("Vote", {
-	id: __t.u64(),
-	ideaId: __t.u64(),
-	agentId: __t.string(),
-	get voteType() {
-		return VoteType;
-	},
-	createdAt: __t.timestamp(),
+  id: __t.u64(),
+  ideaId: __t.u64(),
+  agentId: __t.string(),
+  get voteType() {
+    return VoteType;
+  },
+  get scores() {
+    return __t.array(DimensionScore);
+  },
+  createdAt: __t.timestamp(),
 });
 export type Vote = __Infer<typeof Vote>;
 
 // The tagged union or sum type for the algebraic type `VoteType`.
 export const VoteType = __t.enum("VoteType", {
-	Up: __t.unit(),
-	Down: __t.unit(),
-	Veto: __t.unit(),
+  Up: __t.unit(),
+  Down: __t.unit(),
+  Veto: __t.unit(),
 });
 export type VoteType = __Infer<typeof VoteType>;
+

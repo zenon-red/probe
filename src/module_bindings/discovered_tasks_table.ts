@@ -4,29 +4,32 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
-import { DiscoveredTaskStatus } from "./types";
+import {
+  DiscoveredTaskStatus,
+} from "./types";
+
 
 export default __t.row({
-	id: __t.u64().primaryKey(),
-	discoveredBy: __t.string().name("discovered_by"),
-	currentTaskId: __t.u64().name("current_task_id"),
-	projectId: __t.u64().name("project_id"),
-	title: __t.string(),
-	description: __t.string(),
-	priority: __t.u8(),
-	taskType: __t.string().name("task_type"),
-	severity: __t.string(),
-	get status() {
-		return DiscoveredTaskStatus;
-	},
-	createdTaskId: __t.option(__t.u64()).name("created_task_id"),
-	rejectionReason: __t.option(__t.string()).name("rejection_reason"),
-	createdAt: __t.timestamp().name("created_at"),
-	reviewedAt: __t.option(__t.timestamp()).name("reviewed_at"),
-	reviewedBy: __t.option(__t.string()).name("reviewed_by"),
+  id: __t.u64().primaryKey(),
+  discoveredBy: __t.string().name("discovered_by"),
+  currentTaskId: __t.u64().name("current_task_id"),
+  projectId: __t.u64().name("project_id"),
+  title: __t.string(),
+  description: __t.string(),
+  priority: __t.u8(),
+  taskType: __t.string().name("task_type"),
+  severity: __t.string(),
+  get status() {
+    return DiscoveredTaskStatus;
+  },
+  createdTaskId: __t.option(__t.u64()).name("created_task_id"),
+  rejectionReason: __t.option(__t.string()).name("rejection_reason"),
+  createdAt: __t.timestamp().name("created_at"),
+  reviewedAt: __t.option(__t.timestamp()).name("reviewed_at"),
+  reviewedBy: __t.option(__t.string()).name("reviewed_by"),
 });

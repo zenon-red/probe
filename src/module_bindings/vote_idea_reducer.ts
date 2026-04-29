@@ -4,17 +4,19 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
 
-import { VoteType } from "./types";
+import {
+  DimensionScore,
+} from "./types";
 
 export default {
-	ideaId: __t.u64(),
-	get voteType() {
-		return VoteType;
-	},
+  ideaId: __t.u64(),
+  get scores() {
+    return __t.array(DimensionScore);
+  },
 };

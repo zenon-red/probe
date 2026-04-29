@@ -4,13 +4,13 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
 
 export default __t.row({
-	key: __t.string().primaryKey(),
-	value: __t.string(),
+  key: __t.string().primaryKey(),
+  value: __t.string(),
 });

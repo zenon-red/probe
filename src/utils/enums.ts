@@ -5,7 +5,6 @@ import type {
 	MessageType as MessageTypeType,
 	ProjectStatus as ProjectStatusType,
 	TaskStatus as TaskStatusType,
-	VoteType as VoteTypeType,
 } from "~/module_bindings/types.js";
 
 export const TaskStatus = {
@@ -93,31 +92,6 @@ export const IdeaStatus = {
 	display(status: IdeaStatusType): string {
 		if (status.tag === "ApprovedForProject") return "Approved";
 		return status.tag;
-	},
-} as const;
-
-export const VoteType = {
-	values: ["Up", "Down", "Veto"] as const,
-
-	is: {
-		up: (v: VoteTypeType) => v.tag === "Up",
-		down: (v: VoteTypeType) => v.tag === "Down",
-		veto: (v: VoteTypeType) => v.tag === "Veto",
-		positive: (v: VoteTypeType) => v.tag === "Up",
-		negative: (v: VoteTypeType) => ["Down", "Veto"].includes(v.tag),
-	},
-
-	fromString(s: string): VoteTypeType {
-		const map: Record<string, VoteTypeType> = {
-			up: { tag: "Up" },
-			down: { tag: "Down" },
-			veto: { tag: "Veto" },
-		};
-		return map[s.toLowerCase()] ?? { tag: "Up" };
-	},
-
-	display(v: VoteTypeType): string {
-		return v.tag.toLowerCase();
 	},
 } as const;
 

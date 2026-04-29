@@ -4,27 +4,31 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
-import { AgentRole, AgentStatus } from "./types";
+import {
+  AgentRole,
+  AgentStatus,
+} from "./types";
+
 
 export default __t.row({
-	id: __t.string().primaryKey(),
-	name: __t.string(),
-	get role() {
-		return AgentRole;
-	},
-	capabilities: __t.array(__t.string()),
-	get status() {
-		return AgentStatus;
-	},
-	zenonAddress: __t.string().name("zenon_address"),
-	identity: __t.identity(),
-	lastHeartbeat: __t.timestamp().name("last_heartbeat"),
-	currentTaskId: __t.option(__t.u64()).name("current_task_id"),
-	createdAt: __t.timestamp().name("created_at"),
-	lastActiveAt: __t.timestamp().name("last_active_at"),
+  id: __t.string().primaryKey(),
+  name: __t.string(),
+  get role() {
+    return AgentRole;
+  },
+  capabilities: __t.array(__t.string()),
+  get status() {
+    return AgentStatus;
+  },
+  zenonAddress: __t.string().name("zenon_address"),
+  identity: __t.identity(),
+  lastHeartbeat: __t.timestamp().name("last_heartbeat"),
+  currentTaskId: __t.option(__t.u64()).name("current_task_id"),
+  createdAt: __t.timestamp().name("created_at"),
+  lastActiveAt: __t.timestamp().name("last_active_at"),
 });

@@ -4,35 +4,38 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
-import { TaskStatus } from "./types";
+import {
+  TaskStatus,
+} from "./types";
+
 
 export default __t.row({
-	id: __t.u64().primaryKey(),
-	projectId: __t.u64().name("project_id"),
-	title: __t.string(),
-	description: __t.string(),
-	get status() {
-		return TaskStatus;
-	},
-	assignedTo: __t.option(__t.string()).name("assigned_to"),
-	claimedAt: __t.option(__t.timestamp()).name("claimed_at"),
-	githubIssueUrl: __t.option(__t.string()).name("github_issue_url"),
-	githubPrUrl: __t.option(__t.string()).name("github_pr_url"),
-	priority: __t.u8(),
-	sourceIdeaId: __t.option(__t.u64()).name("source_idea_id"),
-	reviewCount: __t.u8().name("review_count"),
-	get blockedFromStatus() {
-		return __t.option(TaskStatus).name("blocked_from_status");
-	},
-	archivedReason: __t.option(__t.string()).name("archived_reason"),
-	statusChangedBy: __t.option(__t.identity()).name("status_changed_by"),
-	statusChangedAt: __t.option(__t.timestamp()).name("status_changed_at"),
-	createdAt: __t.timestamp().name("created_at"),
-	updatedAt: __t.timestamp().name("updated_at"),
-	createdBy: __t.string().name("created_by"),
+  id: __t.u64().primaryKey(),
+  projectId: __t.u64().name("project_id"),
+  title: __t.string(),
+  description: __t.string(),
+  get status() {
+    return TaskStatus;
+  },
+  assignedTo: __t.option(__t.string()).name("assigned_to"),
+  claimedAt: __t.option(__t.timestamp()).name("claimed_at"),
+  githubIssueUrl: __t.option(__t.string()).name("github_issue_url"),
+  githubPrUrl: __t.option(__t.string()).name("github_pr_url"),
+  priority: __t.u8(),
+  sourceIdeaId: __t.option(__t.u64()).name("source_idea_id"),
+  reviewCount: __t.u8().name("review_count"),
+  get blockedFromStatus() {
+    return __t.option(TaskStatus).name("blocked_from_status");
+  },
+  archivedReason: __t.option(__t.string()).name("archived_reason"),
+  statusChangedBy: __t.option(__t.identity()).name("status_changed_by"),
+  statusChangedAt: __t.option(__t.timestamp()).name("status_changed_at"),
+  createdAt: __t.timestamp().name("created_at"),
+  updatedAt: __t.timestamp().name("updated_at"),
+  createdBy: __t.string().name("created_by"),
 });

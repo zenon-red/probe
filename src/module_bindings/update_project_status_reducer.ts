@@ -4,17 +4,19 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
 
-import { ProjectStatus } from "./types";
+import {
+  ProjectStatus,
+} from "./types";
 
 export default {
-	projectId: __t.u64(),
-	get status() {
-		return ProjectStatus;
-	},
+  projectId: __t.u64(),
+  get status() {
+    return ProjectStatus;
+  },
 };

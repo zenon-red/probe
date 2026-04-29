@@ -4,16 +4,19 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
-import { AgentRole } from "./types";
+import {
+  AgentRole,
+} from "./types";
+
 
 export default __t.row({
-	identity: __t.identity().primaryKey(),
-	get role() {
-		return AgentRole;
-	},
+  identity: __t.identity().primaryKey(),
+  get role() {
+    return AgentRole;
+  },
 });

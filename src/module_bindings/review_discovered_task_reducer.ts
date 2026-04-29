@@ -4,18 +4,20 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
 
-import { DiscoveryDecision } from "./types";
+import {
+  DiscoveryDecision,
+} from "./types";
 
 export default {
-	discoveryId: __t.u64(),
-	get decision() {
-		return DiscoveryDecision;
-	},
-	reason: __t.option(__t.string()),
+  discoveryId: __t.u64(),
+  get decision() {
+    return DiscoveryDecision;
+  },
+  reason: __t.option(__t.string()),
 };

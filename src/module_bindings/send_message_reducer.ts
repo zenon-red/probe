@@ -4,19 +4,21 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
 
-import { MessageType } from "./types";
+import {
+  MessageType,
+} from "./types";
 
 export default {
-	channelId: __t.u64(),
-	content: __t.string(),
-	get messageType() {
-		return MessageType;
-	},
-	contextId: __t.option(__t.string()),
+  channelId: __t.u64(),
+  content: __t.string(),
+  get messageType() {
+    return MessageType;
+  },
+  contextId: __t.option(__t.string()),
 };

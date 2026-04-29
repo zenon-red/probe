@@ -30,6 +30,8 @@ jobs:
       - uses: actions/checkout@v6
 
       - uses: oven-sh/setup-bun@v2.1.2
+        with:
+          bun-version: latest
 
       - name: Build binary
         run: |

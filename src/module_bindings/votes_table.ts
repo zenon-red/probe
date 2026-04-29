@@ -4,19 +4,26 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
-import { VoteType } from "./types";
+import {
+  DimensionScore,
+  VoteType,
+} from "./types";
+
 
 export default __t.row({
-	id: __t.u64().primaryKey(),
-	ideaId: __t.u64().name("idea_id"),
-	agentId: __t.string().name("agent_id"),
-	get voteType() {
-		return VoteType.name("vote_type");
-	},
-	createdAt: __t.timestamp().name("created_at"),
+  id: __t.u64().primaryKey(),
+  ideaId: __t.u64().name("idea_id"),
+  agentId: __t.string().name("agent_id"),
+  get voteType() {
+    return VoteType.name("vote_type");
+  },
+  get scores() {
+    return __t.array(DimensionScore);
+  },
+  createdAt: __t.timestamp().name("created_at"),
 });

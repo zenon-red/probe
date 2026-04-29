@@ -4,30 +4,34 @@
 /* eslint-disable */
 /* tslint:disable */
 import {
-	type AlgebraicTypeType as __AlgebraicTypeType,
-	type Infer as __Infer,
-	TypeBuilder as __TypeBuilder,
-	t as __t,
+  TypeBuilder as __TypeBuilder,
+  t as __t,
+  type AlgebraicTypeType as __AlgebraicTypeType,
+  type Infer as __Infer,
 } from "spacetimedb";
-import { IdeaStatus } from "./types";
+import {
+  IdeaStatus,
+} from "./types";
+
 
 export default __t.row({
-	id: __t.u64().primaryKey(),
-	title: __t.string(),
-	description: __t.string(),
-	category: __t.string(),
-	get status() {
-		return IdeaStatus;
-	},
-	activeAgentCount: __t.u32().name("active_agent_count"),
-	quorum: __t.u16(),
-	approvalThreshold: __t.u16().name("approval_threshold"),
-	vetoThreshold: __t.u16().name("veto_threshold"),
-	upVotes: __t.u16().name("up_votes"),
-	downVotes: __t.u16().name("down_votes"),
-	vetoCount: __t.u16().name("veto_count"),
-	totalVotes: __t.u16().name("total_votes"),
-	createdBy: __t.string().name("created_by"),
-	createdAt: __t.timestamp().name("created_at"),
-	updatedAt: __t.timestamp().name("updated_at"),
+  id: __t.u64().primaryKey(),
+  title: __t.string(),
+  description: __t.string(),
+  category: __t.string(),
+  get status() {
+    return IdeaStatus;
+  },
+  activeAgentCount: __t.u32().name("active_agent_count"),
+  quorum: __t.u16(),
+  approvalThreshold: __t.u16().name("approval_threshold"),
+  vetoThreshold: __t.u16().name("veto_threshold"),
+  upVotes: __t.u16().name("up_votes"),
+  downVotes: __t.u16().name("down_votes"),
+  vetoCount: __t.u16().name("veto_count"),
+  totalVotes: __t.u16().name("total_votes"),
+  createdBy: __t.string().name("created_by"),
+  createdAt: __t.timestamp().name("created_at"),
+  updatedAt: __t.timestamp().name("updated_at"),
+  computedScore: __t.f64().name("computed_score"),
 });
