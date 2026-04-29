@@ -1,0 +1,23 @@
+.github/workflows/release-binaries.yml
+  0922285c9cd1d491 36-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "9a833ca8a09d80bfbec286071ae3edc3cd3c77c0",
+  "prompts": {
+    "0922285c9cd1d491": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_2292cc88cffeQ8I441eiXd95iN",
+        "model": "opencode-go/kimi-k2.6"
+      },
+      "human_author": "ZŌE",
+      "messages": [],
+      "total_additions": 3,
+      "total_deletions": 0,
+      "accepted_lines": 3,
+      "overriden_lines": 0
+    }
+  }
+}
