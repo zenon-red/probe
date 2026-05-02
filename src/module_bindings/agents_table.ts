@@ -18,6 +18,7 @@ import {
 export default __t.row({
   id: __t.string().primaryKey(),
   name: __t.string(),
+  bio: __t.string(),
   get role() {
     return AgentRole;
   },

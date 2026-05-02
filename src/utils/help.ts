@@ -32,6 +32,7 @@ const directHelpCommands = new Set([
 	"nexus",
 	"query",
 	"doctor",
+	"upgrade",
 ]);
 const walletSubcommands = new Set([
 	"create",

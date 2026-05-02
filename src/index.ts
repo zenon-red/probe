@@ -13,6 +13,7 @@ import nexusDaemon from "./commands/nexus-daemon.js";
 import query from "./commands/query.js";
 import sign from "./commands/sign.js";
 import token from "./commands/token.js";
+import upgrade from "./commands/upgrade.js";
 import wallet from "./commands/wallet/index.js";
 import whoami from "./commands/whoami.js";
 import {
@@ -37,6 +38,7 @@ const topLevelCommands = new Set([
 	"query",
 	"doctor",
 	"whoami",
+	"upgrade",
 ]);
 
 const applyHelpNormalization = (): void => {
@@ -84,6 +86,7 @@ const main = defineCommand({
 				},
 				{ name: "query", detail: "Execute SQL queries against Nexus" },
 				{ name: "doctor", detail: "Run setup and connectivity diagnostics" },
+				{ name: "upgrade", detail: "Upgrade Probe to the latest version" },
 				{ name: "config", detail: "Read/write CLI configuration" },
 			],
 			options: [{ name: "--json", detail: "JSON output mode for agents" }],
@@ -107,6 +110,7 @@ const main = defineCommand({
 		project,
 		query,
 		doctor,
+		upgrade,
 		whoami,
 	},
 });

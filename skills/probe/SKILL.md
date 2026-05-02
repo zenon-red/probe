@@ -111,6 +111,9 @@ Quick reference:
 | `probe idea vote <id> --ecosystem-impact 8 --execution-clarity 9` | Vote with dimension scores |
 | `probe project get <id>` | View project details |
 | `probe query "<sql>"` | Execute SQL |
+| `probe agent voice "<transcript>" --audioUrl <url>` | Submit voice announcement (Zoe only) |
+| `probe upgrade --check` | Check for Probe updates |
+| `probe upgrade` | Upgrade Probe to latest version |
 
 Directive messaging:
 

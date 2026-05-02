@@ -39,21 +39,26 @@ import ClaimTaskReducer from "./claim_task_reducer";
 import CreateProjectReducer from "./create_project_reducer";
 import CreateTaskReducer from "./create_task_reducer";
 import DiscoverTaskReducer from "./discover_task_reducer";
+import FailVoiceAnnouncementReducer from "./fail_voice_announcement_reducer";
+import FinalizeVoiceAnnouncementReducer from "./finalize_voice_announcement_reducer";
 import HeartbeatReducer from "./heartbeat_reducer";
 import MarkIdeaImplementedReducer from "./mark_idea_implemented_reducer";
 import ProposeIdeaReducer from "./propose_idea_reducer";
 import RegisterAgentReducer from "./register_agent_reducer";
 import ReviewDiscoveredTaskReducer from "./review_discovered_task_reducer";
 import SeedUiDataReducer from "./seed_ui_data_reducer";
+import SeedVoiceAnnouncementsReducer from "./seed_voice_announcements_reducer";
 import SendMessageReducer from "./send_message_reducer";
 import SendProjectMessageReducer from "./send_project_message_reducer";
 import SetAgentStatusReducer from "./set_agent_status_reducer";
+import UpdateAgentBioReducer from "./update_agent_bio_reducer";
 import UpdateAgentCapabilitiesReducer from "./update_agent_capabilities_reducer";
 import UpdateProjectStatusReducer from "./update_project_status_reducer";
 import UpdateTaskStatusReducer from "./update_task_status_reducer";
 import VoteIdeaReducer from "./vote_idea_reducer";
 
 // Import all procedure arg schemas
+import * as GenerateVoiceProcedure from "./generate_voice_procedure";
 
 // Import all table schema definitions
 import AgentsRow from "./agents_table";
@@ -69,6 +74,7 @@ import ProjectMessagesRow from "./project_messages_table";
 import ProjectsRow from "./projects_table";
 import TaskDependenciesRow from "./task_dependencies_table";
 import TasksRow from "./tasks_table";
+import VoiceAnnouncementsRow from "./voice_announcements_table";
 import VotesRow from "./votes_table";
 
 /** Type-only namespace exports for generated type groups. */
@@ -269,6 +275,25 @@ const tablesSchema = __schema({
       { name: 'tasks_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, TasksRow),
+  voice_announcements: __table({
+    name: 'voice_announcements',
+    indexes: [
+      { accessor: 'by_agent', name: 'voice_announcements_agent_id_created_at_idx_btree', algorithm: 'btree', columns: [
+        'agentId',
+        'createdAt',
+      ] },
+      { accessor: 'id', name: 'voice_announcements_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_status', name: 'voice_announcements_status_created_at_idx_btree', algorithm: 'btree', columns: [
+        'status',
+        'createdAt',
+      ] },
+    ],
+    constraints: [
+      { name: 'voice_announcements_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, VoiceAnnouncementsRow),
   votes: __table({
     name: 'votes',
     indexes: [
@@ -296,15 +321,19 @@ const reducersSchema = __reducers(
   __reducerSchema("create_project", CreateProjectReducer),
   __reducerSchema("create_task", CreateTaskReducer),
   __reducerSchema("discover_task", DiscoverTaskReducer),
+  __reducerSchema("fail_voice_announcement", FailVoiceAnnouncementReducer),
+  __reducerSchema("finalize_voice_announcement", FinalizeVoiceAnnouncementReducer),
   __reducerSchema("heartbeat", HeartbeatReducer),
   __reducerSchema("mark_idea_implemented", MarkIdeaImplementedReducer),
   __reducerSchema("propose_idea", ProposeIdeaReducer),
   __reducerSchema("register_agent", RegisterAgentReducer),
   __reducerSchema("review_discovered_task", ReviewDiscoveredTaskReducer),
   __reducerSchema("seed_ui_data", SeedUiDataReducer),
+  __reducerSchema("seed_voice_announcements", SeedVoiceAnnouncementsReducer),
   __reducerSchema("send_message", SendMessageReducer),
   __reducerSchema("send_project_message", SendProjectMessageReducer),
   __reducerSchema("set_agent_status", SetAgentStatusReducer),
+  __reducerSchema("update_agent_bio", UpdateAgentBioReducer),
   __reducerSchema("update_agent_capabilities", UpdateAgentCapabilitiesReducer),
   __reducerSchema("update_project_status", UpdateProjectStatusReducer),
   __reducerSchema("update_task_status", UpdateTaskStatusReducer),
@@ -313,6 +342,7 @@ const reducersSchema = __reducers(
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */
 const proceduresSchema = __procedures(
+  __procedureSchema("generate_voice", GenerateVoiceProcedure.params, GenerateVoiceProcedure.returnType),
 );
 
 /** The remote SpacetimeDB module schema, both runtime and type information. */

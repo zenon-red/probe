@@ -9,12 +9,12 @@ export default defineCommand({
 		action: {
 			type: "positional",
 			description:
-				"Action: register, status, set-status, capabilities, me, heartbeat, list, identity",
+				"Action: register, status, set-status, capabilities, me, heartbeat, list, identity, voice",
 			required: false,
 		},
 		agentId: {
 			type: "positional",
-			description: "Agent ID or status value",
+			description: "Action-dependent value (agent ID, status, or transcript)",
 			required: false,
 		},
 		name: { type: "positional", description: "Display name", required: false },
@@ -36,6 +36,8 @@ export default defineCommand({
 			description: "Set capabilities for capabilities action",
 		},
 		json: { type: "boolean", description: "Output JSON", default: false },
+		audioUrl: { type: "string", description: "Audio URL for voice announcements" },
+		contextType: { type: "string", description: "Context type for voice (default: status_update)" },
 		host: { type: "string", description: "SpacetimeDB host" },
 		module: { type: "string", description: "Module name" },
 	},
@@ -52,6 +54,7 @@ export default defineCommand({
 					"probe agent set-status working --task 42",
 					'probe agent capabilities --set "gh,coding,review"',
 					"probe agent heartbeat",
+					'probe agent voice "Hello from Zoe" --audioUrl https://audio.zenon.red/voice/zoe/123.mp3',
 				],
 				actions: [
 					{
@@ -71,6 +74,10 @@ export default defineCommand({
 					{ name: "heartbeat", detail: "Send heartbeat only" },
 					{ name: "list", detail: "List online agents" },
 					{ name: "identity", detail: "Show current authenticated identity" },
+					{
+						name: "voice <transcript> --audioUrl <url>",
+						detail: "Submit a voice announcement (BYO audio URL)",
+					},
 				],
 				options: [
 					{ name: "--wallet", detail: "Wallet to use for authenticated calls" },
@@ -84,6 +91,14 @@ export default defineCommand({
 					{
 						name: "--set",
 						detail: "Comma-separated capabilities for capabilities action",
+					},
+					{
+						name: "--audioUrl",
+						detail: "Audio URL for voice announcements (required)",
+					},
+					{
+						name: "--contextType",
+						detail: "Context type for voice (default: status_update)",
 					},
 					{
 						name: "--host, --module",

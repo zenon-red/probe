@@ -13,6 +13,7 @@ import {
 export const Agent = __t.object("Agent", {
   id: __t.string(),
   name: __t.string(),
+  bio: __t.string(),
   get role() {
     return AgentRole;
   },
@@ -44,6 +45,20 @@ export const AgentStatus = __t.enum("AgentStatus", {
   Working: __t.unit(),
 });
 export type AgentStatus = __Infer<typeof AgentStatus>;
+
+export const AgentVoiceCounter = __t.object("AgentVoiceCounter", {
+  agentId: __t.identity(),
+  nextSeq: __t.u64(),
+});
+export type AgentVoiceCounter = __Infer<typeof AgentVoiceCounter>;
+
+// The tagged union or sum type for the algebraic type `AnnouncementStatus`.
+export const AnnouncementStatus = __t.enum("AnnouncementStatus", {
+  Pending: __t.unit(),
+  Ready: __t.unit(),
+  Failed: __t.unit(),
+});
+export type AnnouncementStatus = __Infer<typeof AnnouncementStatus>;
 
 export const Channel = __t.object("Channel", {
   id: __t.u64(),
@@ -122,6 +137,14 @@ export const EvaluationDimension = __t.object("EvaluationDimension", {
   sortOrder: __t.u16(),
 });
 export type EvaluationDimension = __Infer<typeof EvaluationDimension>;
+
+export const GenerateVoiceResult = __t.object("GenerateVoiceResult", {
+  id: __t.u64(),
+  seq: __t.u64(),
+  agentName: __t.string(),
+  keyPrefix: __t.string(),
+});
+export type GenerateVoiceResult = __Infer<typeof GenerateVoiceResult>;
 
 export const Idea = __t.object("Idea", {
   id: __t.u64(),
@@ -273,6 +296,30 @@ export const TaskStatus = __t.enum("TaskStatus", {
   Archived: __t.unit(),
 });
 export type TaskStatus = __Infer<typeof TaskStatus>;
+
+export const VoiceAllowedHost = __t.object("VoiceAllowedHost", {
+  host: __t.string(),
+});
+export type VoiceAllowedHost = __Infer<typeof VoiceAllowedHost>;
+
+export const VoiceAnnouncement = __t.object("VoiceAnnouncement", {
+  id: __t.u64(),
+  agentId: __t.identity(),
+  seq: __t.u64(),
+  agentName: __t.string(),
+  transcript: __t.string(),
+  audioUrl: __t.string(),
+  get status() {
+    return AnnouncementStatus;
+  },
+  contextType: __t.option(__t.string()),
+  contextId: __t.option(__t.u64()),
+  finalizedAt: __t.option(__t.timestamp()),
+  failedAt: __t.option(__t.timestamp()),
+  errorMessage: __t.option(__t.string()),
+  createdAt: __t.timestamp(),
+});
+export type VoiceAnnouncement = __Infer<typeof VoiceAnnouncement>;
 
 export const Vote = __t.object("Vote", {
   id: __t.u64(),

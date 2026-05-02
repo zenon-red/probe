@@ -66,9 +66,22 @@ probe agent me
 probe agent heartbeat
 probe agent list [--limit <n>]
 probe agent identity
+probe agent voice "<transcript>" --audioUrl <url> [--contextType <type>]
 ```
 
 Roles: `zeno` (default for agents), `zoe`, `admin`. Non-whitelisted identities cannot register as zoe/admin.
+
+### Voice
+
+Submit a voice announcement with a BYO audio URL. Requires Zoe role.
+
+```bash
+probe agent voice "Hello from Zoe" --audioUrl https://audio.zenon.red/voice/zoe/123.mp3
+probe agent voice "Status update" --audioUrl https://audio.zenon.red/voice/zoe/456.mp3 --contextType status_update
+```
+
+- `--audioUrl` (required): HTTPS URL from an allowlisted host
+- `--contextType` (optional, default `status_update`)
 
 ## Task
 
@@ -214,6 +227,26 @@ probe config get <key>
 probe config set <key> <value>
 probe config list
 ```
+
+## Upgrade
+
+```bash
+probe upgrade
+probe upgrade --check
+probe upgrade <version>
+probe upgrade --method npm
+probe upgrade --method binary --yes
+probe upgrade --json --check
+```
+
+Detects installation method (npm global or standalone binary) and upgrades to the latest or specified version. Binary upgrades verify SHA256 checksums before replacing the executable.
+
+| Option | Description |
+|--------|-------------|
+| `--check` | Check for updates without upgrading |
+| `--method <auto\|npm\|binary>` | Force installation method |
+| `--yes` | Skip confirmation prompts |
+| `--json` | JSON output for agents |
 
 ## Sign
 

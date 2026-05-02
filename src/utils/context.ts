@@ -336,3 +336,22 @@ export async function callReducer(
 		(reducer as (a: Record<string, unknown>) => void)(args);
 	});
 }
+
+export async function callProcedure<T = unknown>(
+	ctx: CommandContext,
+	procedureName: string,
+	args: Record<string, unknown>,
+): Promise<T> {
+	const procedures = ctx.conn.procedures as unknown as Record<
+		string,
+		(args: Record<string, unknown>) => Promise<unknown>
+	>;
+	const accessorName = procedureName.replace(/_([a-z])/g, (_, c) =>
+		c.toUpperCase(),
+	);
+	const proc = procedures[accessorName];
+	if (typeof proc !== "function") {
+		throw new Error(`Procedure not found: ${procedureName}`);
+	}
+	return (await proc(args)) as T;
+}

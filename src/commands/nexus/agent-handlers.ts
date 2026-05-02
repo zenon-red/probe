@@ -3,6 +3,7 @@ import {
 	type Agent,
 	CommandContext,
 	callReducer,
+	callProcedure,
 	withAuth,
 } from "~/utils/context.js";
 import { AgentRole, AgentStatus } from "~/utils/enums.js";
@@ -10,6 +11,10 @@ import { error, isJsonMode, success } from "~/utils/output.js";
 import { formatTimestamp, toMicros } from "~/utils/time.js";
 import { toonList } from "~/utils/toon.js";
 import { getWalletInfo } from "~/utils/wallet.js";
+import type { GenerateVoiceResult } from "~/module_bindings/types.js";
+
+const MAX_VOICE_TRANSCRIPT_LENGTH = 500;
+const DEFAULT_VOICE_CONTEXT_TYPE = "status_update";
 
 export interface AgentCommandArgs {
 	action?: string;
@@ -22,6 +27,8 @@ export interface AgentCommandArgs {
 	limit?: string;
 	capabilities?: string;
 	set?: string;
+	audioUrl?: string;
+	contextType?: string;
 	host?: string;
 	module?: string;
 }
@@ -411,11 +418,82 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
 				break;
 			}
 
+			case "voice": {
+				const transcript = args.agentId?.trim();
+				if (!transcript) {
+					error(
+						"TRANSCRIPT_REQUIRED",
+						"Transcript required. Provide as first positional argument.",
+					);
+				}
+				if (transcript.length > MAX_VOICE_TRANSCRIPT_LENGTH) {
+					error(
+						"TRANSCRIPT_TOO_LONG",
+						`Transcript exceeds ${MAX_VOICE_TRANSCRIPT_LENGTH} characters.`,
+					);
+				}
+				if (!args.audioUrl) {
+					error(
+						"AUDIO_URL_REQUIRED",
+						"--audioUrl is required for voice announcements.",
+					);
+				}
+
+				try {
+					await withAuth(
+						{ host: args.host, module: args.module, wallet: args.wallet },
+						async (ctx) => {
+							const contextType = args.contextType || DEFAULT_VOICE_CONTEXT_TYPE;
+							const result = await callProcedure<GenerateVoiceResult>(
+								ctx,
+								"generate_voice",
+								{
+								transcript,
+								audioUrl: args.audioUrl,
+								contextType,
+								},
+							);
+
+							const data = {
+								ok: true,
+								announcementId: result.id,
+								seq: result.seq,
+								agentName: result.agentName,
+								keyPrefix: result.keyPrefix,
+								audioUrl: args.audioUrl,
+								contextType,
+							};
+
+							success(data);
+							if (!isJsonMode()) {
+								console.log(
+									toonList("voice_announcement", [
+									{
+										id: result.id,
+										seq: result.seq,
+										agentName: result.agentName,
+										keyPrefix: result.keyPrefix,
+										audioUrl: args.audioUrl || "",
+									},
+								]),
+								);
+							}
+						},
+					);
+				} catch (err) {
+					error(
+						"PROCEDURE_FAILED",
+						err instanceof Error ? err.message : "Unknown error",
+					);
+				}
+				break;
+			}
+
 			default:
 				error(
 					"INVALID_ACTION",
 					`Invalid action: ${action}`,
-					"Use: register, status, set-status, capabilities, me, heartbeat, list, identity",
+					"Use: register, status, set-status, capabilities, me, heartbeat, list, identity, voice",
 				);
 		}
 	} catch (err) {
