@@ -1,6 +1,6 @@
 {
   "name": "@zenon-red/probe",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "All-in-one CLI tool for interacting with Nexus.",
   "author": "ZŌE",
   "license": "MIT",
@@ -26,7 +26,7 @@
     "dev": "bun run ./src/index.ts",
     "build": "tsdown",
     "test": "bun test",
-		"test:ci": "bun test tests/unit/config.test.ts tests/unit/sql.test.ts",
+    "test:ci": "bun test tests/unit/config.test.ts tests/unit/sql.test.ts",
     "test:watch": "bun test --watch",
     "lint": "bun x oxlint src/",
     "typecheck": "tsc --noEmit",
@@ -65,6 +65,9 @@
     "lint-staged": "^16.2.7",
     "tsdown": "^0.20.3",
     "typescript": "^5.3.0"
+  },
+  "overrides": {
+    "node-fetch-native": "1.6.6"
   },
   "engines": {
     "node": ">=22.0.0",

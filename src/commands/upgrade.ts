@@ -144,9 +144,22 @@ export default defineCommand({
 				targetRelease = gh.release;
 			}
 		} catch (err) {
+			const message =
+				err instanceof Error ? err.message : "Failed to check latest version";
+			if (
+				!args.target &&
+				method === "binary" &&
+				message.includes("GitHub API returned 404")
+			) {
+				error(
+					"NO_RELEASES_PUBLISHED",
+					"No GitHub releases are published yet for binary upgrades.",
+					"Use: npm install -g @zenon-red/probe (or your package manager) until the first release is published.",
+				);
+			}
 			error(
 				"VERSION_LOOKUP_FAILED",
-				err instanceof Error ? err.message : "Failed to check latest version",
+				message,
 			);
 		}
 
