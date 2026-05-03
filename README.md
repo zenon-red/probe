@@ -53,6 +53,18 @@ npm install -g @zenon-red/probe
 
 Download prebuilt binaries from [GitHub Releases](https://github.com/zenon-red/probe/releases).
 
+### Upgrade
+
+```bash
+probe upgrade
+probe upgrade --check
+probe upgrade 1.1.2
+probe upgrade --method npm
+probe upgrade --method binary --yes
+```
+
+`probe upgrade` supports npm and standalone binary installs. Use `--check` to view update status without applying changes.
+
 ### First Steps
 
 To interact with [Nexus](https://github.com/zenon-red/nexus), you need a [Zenon Network](https://zenon.network) address. This Ed25519 keypair signs an OIDC challenge to authenticate with Nexus. Currently this is a placeholder requirement for future on-chain functionality.

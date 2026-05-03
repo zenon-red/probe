@@ -12,7 +12,7 @@
         "consola": "^3.4.2",
         "kolorist": "^1.8.0",
         "spacetimedb": "^2.0.1",
-        "znn-typescript-sdk": "github:digitalSloth/znn-typescript-sdk",
+        "znn-typescript-sdk": "https://codeload.github.com/PlasmaKing/znn-typescript-sdk/tar.gz/865bc8866d798893ed364f6db4f14162efe0b396",
       },
       "devDependencies": {
         "@commitlint/cli": "^20.4.2",
@@ -25,6 +25,9 @@
         "typescript": "^5.3.0",
       },
     },
+  },
+  "overrides": {
+    "node-fetch-native": "1.6.6",
   },
   "packages": {
     "@babel/code-frame": ["@babel/code-frame@7.29.0", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.28.5", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw=="],
@@ -469,7 +472,7 @@
 
     "node-addon-api": ["node-addon-api@8.5.0", "", {}, "sha512-/bRZty2mXUIFY/xU5HLvveNHlswNJej+RnxBjOMkidWfwZzgTbPG1E3K5TOxRLOR+5hX7bSofy8yf1hZevMS8A=="],
 
-    "node-fetch-native": ["node-fetch-native@1.6.7", "", {}, "sha512-g9yhqoedzIUm0nTnTqAQvueMPVOuIY16bqgAJJC8XOOubYFNwz6IER9qs0Gq2Xd0+CecCKFjtdDTMA4u4xG06Q=="],
+    "node-fetch-native": ["node-fetch-native@1.6.6", "", {}, "sha512-8Mc2HhqPdlIfedsuZoc3yioPuzp6b+L5jRCRY1QzuWZh2EGJVQrGppC6V6cF0bLdbW0+O2YpqCA25aF/1lvipQ=="],
 
     "node-gyp-build": ["node-gyp-build@4.8.4", "", { "bin": { "node-gyp-build": "bin.js", "node-gyp-build-optional": "optional.js", "node-gyp-build-test": "build-test.js" } }, "sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ=="],
 
@@ -631,7 +634,7 @@
 
     "yargs-parser": ["yargs-parser@21.1.1", "", {}, "sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw=="],
 
-    "znn-typescript-sdk": ["znn-typescript-sdk@github:digitalSloth/znn-typescript-sdk#74a7293", { "dependencies": { "@noble/ed25519": "^2.2.3", "@noble/hashes": "^1.8.0", "@open-rpc/client-js": "^2.0.0", "@scure/bip39": "^1.6.0", "argon2": "^0.43.0", "argon2-browser": "^1.18.0", "bech32": "^2.0.0", "bignumber.js": "^9.3.0", "buffer": "^6.0.3", "commander": "^13.1.0", "crypto-browserify": "^3.5.1", "decimal.js": "^10.5.0", "ed25519-hd-key": "^1.3.0", "figlet": "^1.7.0", "rpc-websockets": "^9.2.0" }, "bin": { "znn-cli": "./dist/cli/cli.cjs" } }, "digitalSloth-znn-typescript-sdk-74a7293"],
+    "znn-typescript-sdk": ["znn-typescript-sdk@https://codeload.github.com/PlasmaKing/znn-typescript-sdk/tar.gz/865bc8866d798893ed364f6db4f14162efe0b396", { "dependencies": { "@noble/ed25519": "^2.2.3", "@noble/hashes": "^1.8.0", "@open-rpc/client-js": "^2.0.0", "@scure/bip39": "^1.6.0", "argon2": "^0.43.0", "argon2-browser": "^1.18.0", "bech32": "^2.0.0", "bignumber.js": "^9.3.0", "buffer": "^6.0.3", "commander": "^13.1.0", "crypto-browserify": "^3.5.1", "decimal.js": "^10.5.0", "ed25519-hd-key": "^1.3.0", "figlet": "^1.7.0", "rpc-websockets": "^9.2.0" }, "bin": { "znn-cli": "./dist/cli/cli.cjs" } }],
 
     "@babel/code-frame/@babel/helper-validator-identifier": ["@babel/helper-validator-identifier@7.28.5", "", {}, "sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q=="],
 

@@ -54,7 +54,7 @@
     "consola": "^3.4.2",
     "kolorist": "^1.8.0",
     "spacetimedb": "^2.0.1",
-    "znn-typescript-sdk": "github:digitalSloth/znn-typescript-sdk"
+    "znn-typescript-sdk": "https://codeload.github.com/PlasmaKing/znn-typescript-sdk/tar.gz/865bc8866d798893ed364f6db4f14162efe0b396"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.4.2",

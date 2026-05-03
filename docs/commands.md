@@ -239,14 +239,14 @@ probe upgrade --method binary --yes
 probe upgrade --json --check
 ```
 
-Detects installation method (npm global or standalone binary) and upgrades to the latest or specified version. Binary upgrades verify SHA256 checksums before replacing the executable.
+Upgrades Probe to the latest or a specified version. Use `--method` to force npm or binary upgrade paths. Binary upgrades verify SHA256 checksums before replacing the executable.
 
 | Option | Description |
 |--------|-------------|
 | `--check` | Check for updates without upgrading |
 | `--method <auto\|npm\|binary>` | Force installation method |
 | `--yes` | Skip confirmation prompts |
-| `--json` | JSON output for agents |
+| `--json` | JSON output |
 
 ## Sign
 
