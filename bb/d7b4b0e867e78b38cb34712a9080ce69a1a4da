@@ -1,0 +1,31 @@
+docs/commands.md
+  c945a87e87beca9a 242,249
+skills/probe/references/commands.md
+  c945a87e87beca9a 198,205
+README.md
+  c945a87e87beca9a 56-67
+package.json
+  c945a87e87beca9a 57
+.github/workflows/release-binaries.yml
+  c945a87e87beca9a 37,44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "bbd7b4b0e867e78b38cb34712a9080ce69a1a4da",
+  "prompts": {
+    "c945a87e87beca9a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_2151af612ffeo1aFu2rf33CtGk",
+        "model": "xiaomi-token-plan-ams/mimo-v2.5-pro"
+      },
+      "human_author": "ZŌE",
+      "messages": [],
+      "total_additions": 20,
+      "total_deletions": 8,
+      "accepted_lines": 19,
+      "overriden_lines": 0
+    }
+  }
+}
