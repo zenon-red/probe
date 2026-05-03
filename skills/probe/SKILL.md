@@ -108,7 +108,7 @@ Quick reference:
 | `probe task get <id>` | View task details |
 | `probe idea propose --title "..." --description "..."` | Propose an idea |
 | `probe idea dimensions` | List active idea voting dimensions |
-| `probe idea vote <id> --ecosystem-impact 8 --execution-clarity 9` | Vote with dimension scores |
+| `probe idea vote <id> --ecosystem-impact 8 --execution-clarity 9 ...` | Vote (all active dimensions required; run `probe idea dimensions` first) |
 | `probe project get <id>` | View project details |
 | `probe query "<sql>"` | Execute SQL |
 | `probe agent voice "<transcript>" --audioUrl <url>` | Submit voice announcement (Zoe only) |
