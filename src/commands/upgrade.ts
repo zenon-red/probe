@@ -105,7 +105,7 @@ export default defineCommand({
 					},
 					{ name: "--method", detail: "Force install method: auto, npm, binary" },
 					{ name: "--yes", detail: "Skip confirmation prompts" },
-					{ name: "--json", detail: "JSON output for agents" },
+					{ name: "--json", detail: "JSON output" },
 				],
 			});
 			return;
@@ -187,7 +187,7 @@ export default defineCommand({
 			error(
 				"METHOD_UNKNOWN",
 				"Could not detect installation method for in-place upgrade.",
-				"Use `probe upgrade --check --json` for agent-driven updates, or pass --method npm|binary explicitly.",
+				"Use --method npm|binary explicitly, or run your package manager upgrade command (e.g. `bun add -g @zenon-red/probe`).",
 			);
 		}
 

@@ -25,15 +25,38 @@ const REQUEST_TIMEOUT = 30_000;
 const require = createRequire(import.meta.url);
 
 export function normalizeVersion(input: string): string {
-	return input.replace(/^v/, "");
+	const trimmed = input.trim();
+	if (trimmed.startsWith(`${PACKAGE}@`)) {
+		return trimmed.slice(`${PACKAGE}@`.length);
+	}
+	if (trimmed.startsWith("refs/tags/")) {
+		return normalizeVersion(trimmed.slice("refs/tags/".length));
+	}
+	return trimmed.replace(/^v/, "");
 }
 
 export function getCurrentVersion(): string {
+	const candidates = [
+		"../../package.json",
+		"../package.json",
+		"../../../package.json",
+	];
 	try {
-		return require("../../package.json").version as string;
+		for (const candidate of candidates) {
+			try {
+				const version = require(candidate).version as string;
+				if (version) return version;
+			} catch {
+				// try next candidate
+			}
+		}
+		if (process.env.npm_package_version) {
+			return process.env.npm_package_version;
+		}
 	} catch {
-		return "0.0.0";
+		// fallthrough
 	}
+	return "0.0.0";
 }
 
 export function detectMethod(explicit?: InstallMethodArg): InstallMethod {
@@ -127,7 +150,16 @@ export async function fetchGitHubReleaseByVersion(
 	version: string,
 ): Promise<GitHubRelease> {
 	const normalized = normalizeVersion(version);
-	return await fetchGitHubRelease(`tags/v${normalized}`);
+	try {
+		return await fetchGitHubRelease(`tags/v${normalized}`);
+	} catch (err) {
+		const message = err instanceof Error ? err.message : "";
+		if (!message.includes("404")) {
+			throw err;
+		}
+		const packageTag = encodeURIComponent(`${PACKAGE}@${normalized}`);
+		return await fetchGitHubRelease(`tags/${packageTag}`);
+	}
 }
 
 export function resolveBinaryAssetName(): string {
