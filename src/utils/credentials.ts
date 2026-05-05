@@ -42,6 +42,7 @@ export const resolvePasswordInput = async (
 	const first = await password({
 		message: options.promptMessage,
 		validate: (value) => {
+			if (!value) return;
 			if (options.minLength && value.length < options.minLength) {
 				return `Password must be at least ${options.minLength} characters`;
 			}
@@ -99,7 +100,8 @@ export const resolveMnemonicInput = async (
 	const input = await text({
 		message: "Enter mnemonic phrase:",
 		validate: (value) =>
-			value.trim().split(/\s+/).length === 24
+			!value ? "Mnemonic must be 24 words"
+			: value.trim().split(/\s+/).length === 24
 				? undefined
 				: "Mnemonic must be 24 words",
 	});

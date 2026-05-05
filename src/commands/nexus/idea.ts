@@ -262,7 +262,7 @@ export default defineCommand({
 
 					if (args.status)
 						ideas = ideas.filter((i) =>
-							IdeaStatus.matches(i.status, args.status),
+							IdeaStatus.matches(i.status, args.status!),
 						);
 					if (args.category)
 						ideas = ideas.filter((i) => i.category === args.category);

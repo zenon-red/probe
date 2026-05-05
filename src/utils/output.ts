@@ -100,11 +100,11 @@ export function spinner(message: string) {
 	};
 
 	const succeed = (msg?: string) => {
-		clack.stop(msg || message, 0);
+		clack.stop(msg || message);
 	};
 
 	const fail = (msg?: string) => {
-		clack.stop(msg || message, 1);
+		clack.stop(msg || message);
 	};
 
 	return {

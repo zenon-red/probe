@@ -134,8 +134,8 @@ export default defineCommand({
 							{ host: args.host, module: args.module, wallet: args.wallet },
 							async (ctx) => {
 								await callReducer(ctx, "discoverTask", {
-									currentTaskId: BigInt(args.task),
-									projectId: BigInt(args.project),
+									currentTaskId: BigInt(args.task!),
+									projectId: BigInt(args.project!),
 									title: args.title,
 									description: args.description || "",
 									priority: 5,
