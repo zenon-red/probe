@@ -277,64 +277,30 @@ export async function callReducer(
 	reducerName: string,
 	args: Record<string, unknown>,
 ): Promise<void> {
-	return new Promise((resolve, reject) => {
-		let settled = false;
-		const timeoutMs = Math.max(1000, ctx.config.requestTimeout);
+	const reducers = ctx.conn.reducers as unknown as Record<
+		string,
+		(args: Record<string, unknown>) => Promise<void>
+	>;
+	const reducer = reducers[reducerName];
+	if (typeof reducer !== "function") {
+		throw new Error(`Reducer not found: ${reducerName}`);
+	}
 
-		const reducers = ctx.conn.reducers as unknown as Record<string, unknown>;
-		const reducer = reducers[reducerName];
-		if (typeof reducer !== "function") {
-			reject(new Error(`Reducer not found: ${reducerName}`));
-			return;
-		}
-
-		const callback = (
-			eventCtx: { event: { status: { tag: string; value?: string } } },
-			_reducerArgs: unknown,
-		) => {
-			if (settled) return;
-			settled = true;
-
-			cleanup();
-			const status = eventCtx.event.status;
-			if (status.tag === "Failed") {
-				reject(new Error(status.value || "Reducer failed"));
-			} else if (status.tag === "OutOfEnergy") {
-				reject(new Error("Transaction out of energy"));
-			} else {
-				resolve();
-			}
-		};
-
-		const onMethod =
-			`on${reducerName.charAt(0).toUpperCase() + reducerName.slice(1)}` as keyof typeof ctx.conn.reducers;
-		const offMethod =
-			`removeOn${reducerName.charAt(0).toUpperCase() + reducerName.slice(1)}` as keyof typeof ctx.conn.reducers;
-
-		const cleanup = () => {
-			clearTimeout(timeout);
-			const remove = ctx.conn.reducers[offMethod] as unknown;
-			if (typeof remove === "function") {
-				(remove as (cb: typeof callback) => void)(callback);
-			}
-		};
-
-		const timeout = setTimeout(() => {
-			if (settled) return;
-			settled = true;
-			cleanup();
-			reject(
-				new Error(`Reducer timed out after ${timeoutMs}ms: ${reducerName}`),
-			);
-		}, timeoutMs);
-
-		const on = ctx.conn.reducers[onMethod] as unknown;
-		if (typeof on === "function") {
-			(on as (cb: typeof callback) => void)(callback);
-		}
-
-		(reducer as (a: Record<string, unknown>) => void)(args);
-	});
+	const timeoutMs = Math.max(1000, ctx.config.requestTimeout);
+	await Promise.race([
+		reducer(args),
+		new Promise<never>((_, reject) =>
+			setTimeout(
+				() =>
+					reject(
+						new Error(
+							`Reducer timed out after ${timeoutMs}ms: ${reducerName}`,
+						),
+					),
+				timeoutMs,
+			),
+		),
+	]);
 }
 
 export async function callProcedure<T = unknown>(
