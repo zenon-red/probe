@@ -287,10 +287,11 @@ export async function callReducer(
 	}
 
 	const timeoutMs = Math.max(1000, ctx.config.requestTimeout);
+	let timer: ReturnType<typeof setTimeout>;
 	await Promise.race([
-		reducer(args),
-		new Promise<never>((_, reject) =>
-			setTimeout(
+		reducer(args).finally(() => clearTimeout(timer)),
+		new Promise<never>((_, reject) => {
+			timer = setTimeout(
 				() =>
 					reject(
 						new Error(
@@ -298,8 +299,8 @@ export async function callReducer(
 						),
 					),
 				timeoutMs,
-			),
-		),
+			);
+		}),
 	]);
 }
 
