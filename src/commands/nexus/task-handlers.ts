@@ -6,6 +6,7 @@ import {
 	type TaskDependency,
 	withAuth,
 } from "~/utils/context.js";
+import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { TaskStatus } from "~/utils/enums.js";
 import { error, isJsonMode, success } from "~/utils/output.js";
 import { toMicros } from "~/utils/time.js";
@@ -605,6 +606,6 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
 		}
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
-		error("CONNECTION_ERROR", message);
+		failWithConnectionOrUnexpected(message);
 	}
 };

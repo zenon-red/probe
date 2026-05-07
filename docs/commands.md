@@ -62,6 +62,7 @@ probe agent register <agentId> <name> [role] --wallet <name> [--capabilities <cs
 probe agent status
 probe agent set-status <online|offline|working|busy> [--task <id>]
 probe agent capabilities --set <csv>
+probe agent bio [--set <text>|--clear|--agent <id>]
 probe agent me
 probe agent heartbeat
 probe agent list [--limit <n>]
@@ -149,6 +150,7 @@ probe message list --context 123 --limit 50
 
 ```bash
 probe idea list [--status <status>] [--category <cat>] [--limit <n>]
+probe idea pending [--limit <n>]
 probe idea get <id>
 probe idea dimensions
 probe idea propose --title <text> --description <text> [--category <cat>]

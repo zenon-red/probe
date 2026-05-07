@@ -2,6 +2,7 @@ import { defineCommand } from "citty";
 import type { Agent } from "~/utils/context.js";
 import { withAuth } from "~/utils/context.js";
 import { AgentRole, AgentStatus } from "~/utils/enums.js";
+import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { error, isJsonMode, setJsonMode, success } from "~/utils/output.js";
 import { formatTimestamp } from "~/utils/time.js";
 import { toonList } from "~/utils/toon.js";
@@ -60,9 +61,8 @@ export default defineCommand({
 				},
 			);
 		} catch (err) {
-			// Handle connection errors gracefully - avoid citty/consola stack traces
 			const message = err instanceof Error ? err.message : String(err);
-			error("CONNECTION_ERROR", message);
+			failWithConnectionOrUnexpected(message);
 		}
 	},
 });

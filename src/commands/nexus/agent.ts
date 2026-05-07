@@ -6,15 +6,15 @@ import { type AgentCommandArgs, runAgentAction } from "./agent-handlers.js";
 export default defineCommand({
 	meta: { name: "agent", description: "Agent management" },
 	args: {
-		action: {
-			type: "positional",
-			description:
-				"Action: register, status, set-status, capabilities, me, heartbeat, list, identity, voice",
-			required: false,
-		},
+			action: {
+				type: "positional",
+				description:
+					"Action: register, status, set-status, capabilities, bio, me, heartbeat, list, identity, voice",
+				required: false,
+			},
 		agentId: {
 			type: "positional",
-			description: "Action-dependent value (agent ID, status, or transcript)",
+			description: "Action-dependent value (agent ID, status, bio text, or transcript)",
 			required: false,
 		},
 		name: { type: "positional", description: "Display name", required: false },
@@ -33,8 +33,10 @@ export default defineCommand({
 		},
 		set: {
 			type: "string",
-			description: "Set capabilities for capabilities action",
+			description: "Set capabilities for capabilities action or bio text for bio action",
 		},
+		agent: { type: "string", description: "Agent ID for bio action lookup" },
+		clear: { type: "boolean", description: "Clear bio for bio action" },
 		json: { type: "boolean", description: "Output JSON", default: false },
 		audioUrl: { type: "string", description: "Audio URL for voice announcements" },
 		contextType: { type: "string", description: "Context type for voice (default: status_update)" },
@@ -53,10 +55,11 @@ export default defineCommand({
 					'probe agent register agent-1 "Builder" zeno --wallet my-wallet',
 					"probe agent set-status working --task 42",
 					'probe agent capabilities --set "gh,coding,review"',
+					'probe agent bio "Build systems and task orchestration"',
 					"probe agent heartbeat",
 					'probe agent voice "Hello from Zoe" --audioUrl https://audio.zenon.red/voice/zoe/123.mp3',
 				],
-				actions: [
+					actions: [
 					{
 						name: "register <agentId> <name> [role]",
 						detail: "Register a new agent identity",
@@ -69,6 +72,10 @@ export default defineCommand({
 					{
 						name: "capabilities --set <list>",
 						detail: "Set capabilities for authenticated agent",
+					},
+					{
+						name: "bio [--set <text>|--clear|--agent <id>]",
+						detail: "View or update agent bio",
 					},
 					{ name: "me", detail: "Show current authenticated agent profile" },
 					{ name: "heartbeat", detail: "Send heartbeat only" },
@@ -90,7 +97,12 @@ export default defineCommand({
 					},
 					{
 						name: "--set",
-						detail: "Comma-separated capabilities for capabilities action",
+						detail: "Set value for capabilities or bio action",
+					},
+					{ name: "--agent", detail: "Agent ID for bio action lookup" },
+					{
+						name: "--clear",
+						detail: "Clear bio for authenticated agent",
 					},
 					{
 						name: "--audioUrl",

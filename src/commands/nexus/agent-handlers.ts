@@ -7,6 +7,7 @@ import {
 	withAuth,
 } from "~/utils/context.js";
 import { AgentRole, AgentStatus } from "~/utils/enums.js";
+import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { error, isJsonMode, success } from "~/utils/output.js";
 import { formatTimestamp, toMicros } from "~/utils/time.js";
 import { toonList } from "~/utils/toon.js";
@@ -27,6 +28,8 @@ export interface AgentCommandArgs {
 	limit?: string;
 	capabilities?: string;
 	set?: string;
+	agent?: string;
+	clear?: boolean;
 	audioUrl?: string;
 	contextType?: string;
 	host?: string;
@@ -45,7 +48,7 @@ const normalizeCapabilities = (value?: string): string[] => {
 	];
 };
 
-const currentAgentForIdentity = (ctx: CommandContext): Agent | undefined => {
+export const currentAgentForIdentity = (ctx: CommandContext): Agent | undefined => {
 	return ctx
 		.iter<Agent>("agents")
 		.find((a) => a.identity.toHexString() === ctx.identity?.toHexString());
@@ -60,6 +63,12 @@ const renderAgent = (agent: Agent, identity?: string) => ({
 	currentTaskId: agent.currentTaskId ? agent.currentTaskId.toString() : "",
 	capabilities: agent.capabilities.join(","),
 	identity: identity || "",
+});
+
+const renderAgentBio = (agent: Agent) => ({
+	agentId: agent.id,
+	name: agent.name,
+	bio: agent.bio,
 });
 
 export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
@@ -320,6 +329,101 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
 				break;
 			}
 
+			case "bio": {
+				const bioFromPositional = args.agentId?.trim();
+				const hasSet = typeof args.set === "string";
+				const hasClear = Boolean(args.clear);
+				const hasPositionalBio = Boolean(bioFromPositional);
+				const targetAgentId = args.agent?.trim();
+
+				if (hasSet && hasClear) {
+					error("INVALID_USAGE", "Use either --set or --clear, not both.");
+				}
+				if (hasSet && hasPositionalBio) {
+					error(
+						"INVALID_USAGE",
+						"Provide bio text either as positional argument or --set, not both.",
+					);
+				}
+				if (targetAgentId && (hasSet || hasClear || hasPositionalBio)) {
+					error(
+						"INVALID_USAGE",
+						"--agent is read-only. Do not combine with --set, --clear, or positional bio text.",
+					);
+				}
+
+				const isWrite = hasSet || hasClear || hasPositionalBio;
+
+				if (isWrite) {
+					const bio = hasClear ? "" : (hasSet ? args.set : bioFromPositional) || "";
+					try {
+						await withAuth(
+							{ host: args.host, module: args.module, wallet: args.wallet },
+							async (ctx) => {
+								await callReducer(ctx, "updateAgentBio", { bio });
+								const myAgent = currentAgentForIdentity(ctx);
+								success({
+									updated: true,
+									agentId: myAgent?.id,
+									bio,
+								});
+								if (!isJsonMode()) {
+									console.log(
+										toonList("agent_bio_updated", [
+											{ agentId: myAgent?.id || "", bio },
+										]),
+									);
+								}
+							},
+						);
+					} catch (err) {
+						error(
+							"REDUCER_FAILED",
+							err instanceof Error ? err.message : "Unknown error",
+						);
+					}
+					break;
+				}
+
+				if (targetAgentId) {
+					await using ctx = await CommandContext.create({
+						host: args.host,
+						module: args.module,
+					});
+					const agent = ctx.iter<Agent>("agents").find((a) => a.id === targetAgentId);
+					if (!agent) {
+						error("AGENT_NOT_FOUND", `Agent not found: ${targetAgentId}`);
+					}
+					success(renderAgentBio(agent));
+					if (!isJsonMode()) {
+						console.log(
+							toonList("agent_bio", [renderAgentBio(agent)]),
+						);
+					}
+					break;
+				}
+
+				await withAuth(
+					{ host: args.host, module: args.module, wallet: args.wallet },
+					async (ctx) => {
+						const myAgent = currentAgentForIdentity(ctx);
+						if (!myAgent)
+							error(
+								"NOT_REGISTERED",
+								"Agent not registered. Run `probe agent register` first.",
+							);
+
+						success(renderAgentBio(myAgent));
+						if (!isJsonMode()) {
+							console.log(
+								toonList("agent_bio", [renderAgentBio(myAgent)]),
+							);
+						}
+					},
+				);
+				break;
+			}
+
 			case "heartbeat": {
 				try {
 					await withAuth(
@@ -493,12 +597,11 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
 				error(
 					"INVALID_ACTION",
 					`Invalid action: ${action}`,
-					"Use: register, status, set-status, capabilities, me, heartbeat, list, identity, voice",
+					"Use: register, status, set-status, capabilities, bio, me, heartbeat, list, identity, voice",
 				);
 		}
 	} catch (err) {
-		// Handle connection errors gracefully - avoid citty/consola stack traces
 		const message = err instanceof Error ? err.message : String(err);
-		error("CONNECTION_ERROR", message);
+		failWithConnectionOrUnexpected(message);
 	}
 };

@@ -5,6 +5,7 @@ import {
 	type DiscoveredTask,
 	withAuth,
 } from "~/utils/context.js";
+import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { printHelp } from "~/utils/help.js";
 import { error, isJsonMode, setJsonMode, success } from "~/utils/output.js";
 import { formatTimestamp, toMicros } from "~/utils/time.js";
@@ -322,7 +323,7 @@ export default defineCommand({
 			}
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
-			error("CONNECTION_ERROR", message);
+			failWithConnectionOrUnexpected(message);
 		}
 	},
 });

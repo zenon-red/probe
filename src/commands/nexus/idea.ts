@@ -4,10 +4,13 @@ import {
 	callReducer,
 	type EvaluationDimension,
 	type Idea,
+	type Vote,
 	withAuth,
 } from "~/utils/context.js";
 import { IdeaStatus } from "~/utils/enums.js";
+import { currentAgentForIdentity } from "~/commands/nexus/agent-handlers.js";
 import { printHelp } from "~/utils/help.js";
+import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { error, isJsonMode, setJsonMode, success } from "~/utils/output.js";
 import { toMicros } from "~/utils/time.js";
 import { toonList } from "~/utils/toon.js";
@@ -23,6 +26,28 @@ const SCORE_FLAGS = [
 ] as const;
 
 type DimensionScoreInput = { dimension: string; score: number };
+
+const sortIdeasNewest = (ideas: Idea[]): Idea[] => {
+	return ideas.sort((a, b) => {
+		const aMicros = toMicros(a.createdAt);
+		const bMicros = toMicros(b.createdAt);
+		if (aMicros !== bMicros) return bMicros > aMicros ? 1 : -1;
+		if (a.id === b.id) return 0;
+		return b.id > a.id ? 1 : -1;
+	});
+};
+
+const renderIdeaList = (ideas: Idea[]) => {
+	return ideas.map((i) => ({
+		id: i.id.toString(),
+		title: i.title,
+		category: i.category,
+		status: IdeaStatus.display(i.status),
+		votes: `${i.totalVotes}/${i.quorum}`,
+		up: i.upVotes,
+		veto: i.vetoCount,
+	}));
+};
 
 function normalizeScore(rawScore: unknown, label: string): number {
 	const score = Number(rawScore);
@@ -138,7 +163,7 @@ export default defineCommand({
 	args: {
 		action: {
 			type: "positional",
-			description: "Action: list, propose, vote, get, dimensions",
+			description: "Action: list, pending, propose, vote, get, dimensions",
 			required: false,
 		},
 		id: { type: "positional", description: "Idea ID", required: false },
@@ -194,6 +219,7 @@ export default defineCommand({
 				],
 				actions: [
 					{ name: "list", detail: "List ideas with optional filters" },
+					{ name: "pending", detail: "List voting ideas you have not voted on" },
 					{ name: "get <id>", detail: "Show one idea" },
 					{ name: "dimensions", detail: "List active evaluation dimensions" },
 					{ name: "propose", detail: "Propose a new idea" },
@@ -227,7 +253,7 @@ export default defineCommand({
 					{ name: "--execution-clarity", detail: "Execution clarity score" },
 					{ name: "--score", detail: "Additional dimension score as name=value; repeatable" },
 					{ name: "--status", detail: "Status filter for list" },
-					{ name: "--limit", detail: "Max ideas returned for list" },
+					{ name: "--limit", detail: "Max ideas returned for list/pending" },
 					{ name: "--wallet", detail: "Wallet to use for authenticated calls" },
 					{
 						name: "--host, --module",
@@ -266,32 +292,60 @@ export default defineCommand({
 						);
 					if (args.category)
 						ideas = ideas.filter((i) => i.category === args.category);
-					ideas = ideas.sort((a, b) => {
-						const aMicros = toMicros(a.createdAt);
-						const bMicros = toMicros(b.createdAt);
-						if (aMicros !== bMicros) return bMicros > aMicros ? 1 : -1;
-						if (a.id === b.id) return 0;
-						return b.id > a.id ? 1 : -1;
-					});
+					ideas = sortIdeasNewest(ideas);
 					if (limit !== undefined) ideas = ideas.slice(0, limit);
 
 					success({ ideas, count: ideas.length });
 					if (!isJsonMode()) {
 						console.log(
-							toonList(
-								"ideas",
-								ideas.map((i) => ({
-									id: i.id.toString(),
-									title: i.title,
-									category: i.category,
-									status: IdeaStatus.display(i.status),
-									votes: `${i.totalVotes}/${i.quorum}`,
-									up: i.upVotes,
-									veto: i.vetoCount,
-								})),
-							),
+							toonList("ideas", renderIdeaList(ideas)),
 						);
 					}
+					break;
+				}
+
+				case "pending": {
+					const limit = args.limit ? parseInt(args.limit, 10) : undefined;
+
+					if (limit !== undefined && (!Number.isFinite(limit) || limit <= 0)) {
+						error("INVALID_LIMIT", "--limit must be a positive integer");
+					}
+
+					await withAuth(
+						{ host: args.host, module: args.module, wallet: args.wallet },
+						async (ctx) => {
+							const myAgent = currentAgentForIdentity(ctx);
+							if (!myAgent) {
+								error(
+									"NOT_REGISTERED",
+									"Agent not registered. Run `probe agent register` first.",
+								);
+							}
+
+							const votedIdeaIds = new Set(
+								ctx
+									.iter<Vote>("votes")
+									.filter((v) => v.agentId === myAgent.id)
+									.map((v) => v.ideaId),
+							);
+
+							let ideas = ctx
+								.iter<Idea>("ideas")
+								.filter((i) => IdeaStatus.is.voting(i.status))
+								.filter((i) => !votedIdeaIds.has(i.id));
+
+							ideas = sortIdeasNewest(ideas);
+
+							if (limit !== undefined) ideas = ideas.slice(0, limit);
+
+							success({ ideas, count: ideas.length });
+							if (!isJsonMode()) {
+								console.log(
+									toonList("ideas", renderIdeaList(ideas)),
+								);
+							}
+						},
+					);
 					break;
 				}
 
@@ -439,12 +493,12 @@ export default defineCommand({
 					error(
 						"INVALID_ACTION",
 						`Invalid action: ${action}`,
-						"Use: list, propose, vote, get, dimensions",
+						"Use: list, pending, propose, vote, get, dimensions",
 					);
 			}
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
-			error("CONNECTION_ERROR", message);
+			failWithConnectionOrUnexpected(message);
 		}
 	},
 });

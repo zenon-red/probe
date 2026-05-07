@@ -9,6 +9,7 @@ import {
 	withAuth,
 } from "~/utils/context.js";
 import { MessageType } from "~/utils/enums.js";
+import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { error, isJsonMode, success } from "~/utils/output.js";
 import { formatTimestamp, toMicros } from "~/utils/time.js";
 import { toonList } from "~/utils/toon.js";
@@ -561,6 +562,6 @@ export const runMessageAction = async (
 		}
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
-		error("CONNECTION_ERROR", message);
+		failWithConnectionOrUnexpected(message);
 	}
 };
