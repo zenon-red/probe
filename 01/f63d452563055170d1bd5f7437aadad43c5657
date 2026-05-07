@@ -1,0 +1,49 @@
+src/commands/nexus/idea.ts
+  s_c64a678a5d4dad::t_27f016341ae06f 11,317
+  s_c64a678a5d4dad::t_1f707a8f5022d3 30-51,295,301,318-322,328,337,344
+  s_c64a678a5d4dad::t_ac2098312ccb2c 13,501
+  s_c64a678a5d4dad::t_d27935cdb28463 7,166,222,256,307-316,323-327,329-336,338-343,345-351,496
+src/commands/nexus/discover.ts
+  s_c64a678a5d4dad::t_716d0dacd16ba0 8,326
+src/commands/whoami.ts
+  s_c64a678a5d4dad::t_b0f01d7dab4651 5,65
+src/commands/nexus/project.ts
+  s_c64a678a5d4dad::t_5fa8903a56fc04 9,297
+src/utils/errors.ts
+  s_c64a678a5d4dad::t_ff9c495ac5ae42 9-12
+  s_c64a678a5d4dad::t_28677c9faa00c9 1-8,13-25
+src/commands/nexus/agent.ts
+  s_c64a678a5d4dad::t_8b7c5c9ca4b202 9-14,36,38-39,62,76-79,100-105
+  s_c64a678a5d4dad::t_cfd16f7d8a84b2 17,58
+src/commands/nexus/message-handlers.ts
+  s_c64a678a5d4dad::t_c2d9d211819767 12,565
+skills/probe/SKILL.md
+  s_c64a678a5d4dad::t_695ed2b8b7288e 110,113
+src/commands/nexus/task-handlers.ts
+  s_c64a678a5d4dad::t_48ffd16628e114 9,609
+docs/commands.md
+  s_c64a678a5d4dad::t_489254a0767849 65,153
+skills/probe/references/commands.md
+  s_c64a678a5d4dad::t_edbdf24f9fea37 64,124
+src/commands/nexus/agent-handlers.ts
+  s_c64a678a5d4dad::t_0d19dabcbf5582 68-73,397,400,416,419
+  s_c64a678a5d4dad::t_512c0c4baa4142 10,605
+  s_c64a678a5d4dad::t_d5e3016aca4083 51
+  s_c64a678a5d4dad::t_0d87a6db4bcb30 31-32,332-396,398-399,401-415,417-418,420-426,600
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "01f63d452563055170d1bd5f7437aadad43c5657",
+  "prompts": {},
+  "sessions": {
+    "s_c64a678a5d4dad": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1fca57480ffeO4TBhBDwU08EPE",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
