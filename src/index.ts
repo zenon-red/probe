@@ -21,6 +21,7 @@ import {
 	printHelp,
 	setForceHelpRequested,
 } from "./utils/help.js";
+import { isJsonMode } from "./utils/output.js";
 
 const topLevelCommands = new Set([
 	"wallet",
@@ -136,8 +137,22 @@ process.on("unhandledRejection", (err: unknown) => {
 		// Error message already printed by the error() utility
 		process.exit(1);
 	}
-	// For unexpected errors, let the default handler deal with it
-	throw err;
+	if (isJsonMode()) {
+		console.error(
+			JSON.stringify({
+				success: false,
+				error: {
+					code: "UNEXPECTED_ERROR",
+					message: err instanceof Error ? err.message : String(err),
+				},
+			}),
+		);
+	} else {
+		console.error(
+			err instanceof Error ? err.message : String(err),
+		);
+	}
+	process.exit(1);
 });
 
 applyHelpNormalization();

@@ -151,9 +151,7 @@ export const runMessageAction = async (
 									id: m.id.toString(),
 									location,
 									senderId: m.senderId,
-									content:
-										m.content.slice(0, 50) +
-										(m.content.length > 50 ? "..." : ""),
+									content: m.content,
 									messageType: MessageType.display(m.messageType),
 									contextId: m.contextId || null,
 									createdAt: formatTimestamp(m.createdAt),
@@ -263,9 +261,7 @@ export const runMessageAction = async (
 									id: m.id.toString(),
 									location,
 									senderId: m.senderId,
-									content:
-										m.content.slice(0, 50) +
-										(m.content.length > 50 ? "..." : ""),
+									content: m.content,
 									messageType: MessageType.display(m.messageType),
 									contextId: m.contextId || null,
 									createdAt: formatTimestamp(m.createdAt),

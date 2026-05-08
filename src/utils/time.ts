@@ -19,8 +19,7 @@ export const formatTimestamp = (value: unknown, fallback = ""): string => {
 	}
 	return new Date(Number(micros / 1000n))
 		.toISOString()
-		.replace("T", " ")
-		.slice(0, 19);
+		.replace("T", " ");
 };
 
 export const formatIsoTimestamp = (value: unknown, fallback = ""): string => {

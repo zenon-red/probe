@@ -4,6 +4,7 @@ import { dim } from "kolorist";
 import type { OutputResult } from "~/types/index.js";
 
 const outputModeStorage = new AsyncLocalStorage<{ jsonMode: boolean }>();
+let jsonModeFallback = false;
 
 const jsonReplacer = (_key: string, value: unknown): unknown => {
 	if (typeof value === "bigint") {
@@ -22,11 +23,12 @@ const printJson = (value: unknown, stderr = false): void => {
 };
 
 export function setJsonMode(enabled: boolean) {
+	jsonModeFallback = enabled;
 	outputModeStorage.enterWith({ jsonMode: enabled });
 }
 
 export function isJsonMode(): boolean {
-	return outputModeStorage.getStore()?.jsonMode === true;
+	return outputModeStorage.getStore()?.jsonMode === true || jsonModeFallback;
 }
 
 export function success<T>(data: T): void {
