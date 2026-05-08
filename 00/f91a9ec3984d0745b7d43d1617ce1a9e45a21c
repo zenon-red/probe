@@ -1,0 +1,45 @@
+src/commands/nexus/message-handlers.ts
+  s_f7559e4c7c8d5c::t_cd294f27876936 154
+  s_f7559e4c7c8d5c::t_8a771dde852aa9 264
+src/index.ts
+  s_91418a7a8dcaa9::t_32c9b0cc1a2554 140-155
+  s_91418a7a8dcaa9::t_92bf05e61fa9a7 24
+src/utils/time.ts
+  s_f7559e4c7c8d5c::t_7e6a76dfbc5526 22
+package.json
+  s_f7559e4c7c8d5c::t_484a2a7e131239 3
+src/utils/output.ts
+  s_3f4772fe43b39a::t_feede3a5004425 7,26,31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "00f91a9ec3984d0745b7d43d1617ce1a9e45a21c",
+  "prompts": {},
+  "sessions": {
+    "s_3f4772fe43b39a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f72d9ef3ffek7nyW0KYb650fY",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_91418a7a8dcaa9": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f8931bdbffeqZ0WsMYWwzTXQA",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_f7559e4c7c8d5c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f64dfa2fffeBM89x0mZMcrWkF",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
