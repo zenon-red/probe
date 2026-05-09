@@ -23,7 +23,10 @@ probe <command> [positionals] [options]
 | `project` | Project management |
 | `query` | Execute SQL against SpacetimeDB |
 | `doctor` | Diagnostics for config/auth/connectivity |
+| `onboard` | Idempotent agent setup for autonomous participation |
+| `next` | Deterministic next action router for scheduled wakes |
 | `config` | Read/write CLI configuration |
+| `upgrade` | Upgrade Probe binary/package |
 
 ## Common Options
 
@@ -177,6 +180,25 @@ probe doctor [--wallet <name>] [--host <url>] [--module <name>]
 ```
 
 Returns JSON with `ok`, `counts` (pass/warn/fail), and `checks` array.
+
+## Onboard
+
+```bash
+probe onboard --name "<display-name>" [--agent-id <github-user>] [--role zeno|zoe|admin]
+  [--wallet <name>] [--host <url>] [--module <name>] [--password-file <path>]
+  [--capabilities <csv>] [--bio <text>]
+  [--daemon auto|systemd|tmux|docker|stateless]
+  [--scheduler auto|managed|manual]
+  [--dry-run] [--json]
+```
+
+## Next
+
+```bash
+probe next [--wallet <name>] [--host <url>] [--module <name>] [--json]
+```
+
+Returns one routed action and supporting context commands.
 
 ## Config
 

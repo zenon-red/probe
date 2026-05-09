@@ -5,6 +5,7 @@ export interface NexusConfig {
 	passwordMinLength: number;
 	tokenCacheDir: string;
 	requestTimeout: number;
+	schedulerConfirmed?: boolean;
 	spacetime: {
 		host: string;
 		module: string;

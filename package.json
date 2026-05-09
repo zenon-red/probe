@@ -1,6 +1,6 @@
 {
   "name": "@zenon-red/probe",
-  "version": "1.1.8",
+  "version": "1.2.0",
   "description": "All-in-one CLI tool for interacting with Nexus.",
   "author": "ZŌE",
   "license": "MIT",

@@ -10,6 +10,42 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+// The tagged union or sum type for the algebraic type `ActionEventType`.
+export const ActionEventType = __t.enum("ActionEventType", {
+  Issued: __t.unit(),
+  Completed: __t.unit(),
+  Skipped: __t.unit(),
+  Failed: __t.unit(),
+  Expired: __t.unit(),
+});
+export type ActionEventType = __Infer<typeof ActionEventType>;
+
+// The tagged union or sum type for the algebraic type `ActionKind`.
+export const ActionKind = __t.enum("ActionKind", {
+  Repair: __t.unit(),
+  Inbox: __t.unit(),
+  Vote: __t.unit(),
+  Propose: __t.unit(),
+  ContinueTask: __t.unit(),
+  ClaimTask: __t.unit(),
+  ProjectSetup: __t.unit(),
+  CreateTasks: __t.unit(),
+  ValidateReviews: __t.unit(),
+  ReviewDiscovery: __t.unit(),
+  Idle: __t.unit(),
+});
+export type ActionKind = __Infer<typeof ActionKind>;
+
+// The tagged union or sum type for the algebraic type `ActionStatus`.
+export const ActionStatus = __t.enum("ActionStatus", {
+  Issued: __t.unit(),
+  Completed: __t.unit(),
+  Skipped: __t.unit(),
+  Failed: __t.unit(),
+  Expired: __t.unit(),
+});
+export type ActionStatus = __Infer<typeof ActionStatus>;
+
 export const Agent = __t.object("Agent", {
   id: __t.string(),
   name: __t.string(),
@@ -29,6 +65,36 @@ export const Agent = __t.object("Agent", {
   lastActiveAt: __t.timestamp(),
 });
 export type Agent = __Infer<typeof Agent>;
+
+export const AgentAction = __t.object("AgentAction", {
+  id: __t.u64(),
+  agentId: __t.string(),
+  get kind() {
+    return ActionKind;
+  },
+  targetType: __t.option(__t.string()),
+  targetId: __t.option(__t.string()),
+  reasonCode: __t.string(),
+  get status() {
+    return ActionStatus;
+  },
+  createdAt: __t.timestamp(),
+  updatedAt: __t.timestamp(),
+});
+export type AgentAction = __Infer<typeof AgentAction>;
+
+export const AgentActionEvent = __t.object("AgentActionEvent", {
+  id: __t.u64(),
+  actionId: __t.u64(),
+  agentId: __t.string(),
+  get eventType() {
+    return ActionEventType;
+  },
+  eventCode: __t.option(__t.string()),
+  note: __t.option(__t.string()),
+  createdAt: __t.timestamp(),
+});
+export type AgentActionEvent = __Infer<typeof AgentActionEvent>;
 
 // The tagged union or sum type for the algebraic type `AgentRole`.
 export const AgentRole = __t.enum("AgentRole", {

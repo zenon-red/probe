@@ -416,26 +416,63 @@ export default defineCommand({
 				}
 
 				case "propose": {
-					if (!args.title) error("ARGS_REQUIRED", "Title required");
+					const title = String(args.title || "").trim();
+					if (!title) error("ARGS_REQUIRED", "Title required");
+					const description = String(args.description || "").trim();
+					if (!description) {
+						error(
+							"DESCRIPTION_REQUIRED",
+							"Description required and cannot be empty",
+						);
+					}
+					const category = String(args.category || "general");
+					let published: Idea | undefined;
 
 					try {
 						await withAuth(
 							{ host: args.host, module: args.module, wallet: args.wallet },
 							async (ctx) => {
+								const myAgent = currentAgentForIdentity(ctx);
 								await callReducer(ctx, "proposeIdea", {
-									title: args.title,
-									description: args.description || "",
-									category: args.category || "general",
+									title,
+									description,
+									category,
 								});
+
+								published = sortIdeasNewest(ctx.iter<Idea>("ideas")).find(
+									(idea) =>
+										idea.title === title &&
+										idea.category === category &&
+										idea.description === description &&
+										(!myAgent || idea.createdBy === myAgent.id),
+								);
 							},
 						);
-						success({ proposed: true, title: args.title });
+						success({
+							proposed: true,
+							idea: published
+								? {
+									id: published.id.toString(),
+									title: published.title,
+									category: published.category,
+									descriptionLength: published.description.length,
+								}
+								: {
+									title,
+									category,
+									descriptionLength: description.length,
+								},
+						});
 						if (!isJsonMode()) {
 							console.log(
 								toonList("idea_proposed", [
 									{
-										title: args.title,
-										category: args.category || "general",
+										id: published?.id.toString() || "",
+										title,
+										category,
+										descriptionLength: published
+											? published.description.length
+											: description.length,
 									},
 								]),
 							);

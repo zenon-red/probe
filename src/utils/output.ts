@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import { spinner as clackSpinner, log } from "@clack/prompts";
+import { spinner as clackSpinner, log, note as clackNote } from "@clack/prompts";
 import { dim } from "kolorist";
 import type { OutputResult } from "~/types/index.js";
 
@@ -78,6 +78,12 @@ export function successMessage(message: string): void {
 export function warning(message: string): void {
 	if (!isJsonMode()) {
 		log.warn(message);
+	}
+}
+
+export function note(message: string, title?: string): void {
+	if (!isJsonMode()) {
+		clackNote(message, title);
 	}
 }
 

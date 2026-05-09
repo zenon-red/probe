@@ -3,6 +3,8 @@ import { defineCommand, runMain } from "citty";
 import auth from "./commands/auth.js";
 import config from "./commands/config.js";
 import doctor from "./commands/doctor.js";
+import next from "./commands/next.js";
+import onboard from "./commands/onboard.js";
 import agent from "./commands/nexus/agent.js";
 import discover from "./commands/nexus/discover.js";
 import idea from "./commands/nexus/idea.js";
@@ -40,6 +42,8 @@ const topLevelCommands = new Set([
 	"doctor",
 	"whoami",
 	"upgrade",
+	"onboard",
+	"next",
 ]);
 
 const applyHelpNormalization = (): void => {
@@ -87,6 +91,8 @@ const main = defineCommand({
 				},
 				{ name: "query", detail: "Execute SQL queries against Nexus" },
 				{ name: "doctor", detail: "Run setup and connectivity diagnostics" },
+				{ name: "onboard", detail: "Idempotent agent setup for autonomous participation" },
+				{ name: "next", detail: "Deterministic router for one bounded action per wake" },
 				{ name: "upgrade", detail: "Upgrade Probe to the latest version" },
 				{ name: "config", detail: "Read/write CLI configuration" },
 			],
@@ -96,24 +102,26 @@ const main = defineCommand({
 			],
 		});
 	},
-	subCommands: {
-		wallet,
-		auth,
-		sign,
-		token,
-		config,
-		nexus: nexusDaemon,
-		agent,
-		task,
-		message,
-		idea,
-		discover,
-		project,
-		query,
-		doctor,
-		upgrade,
-		whoami,
-	},
+		subCommands: {
+			wallet,
+			auth,
+			sign,
+			token,
+			config,
+			nexus: nexusDaemon,
+			agent,
+			task,
+			message,
+			idea,
+			discover,
+			project,
+			query,
+			doctor,
+			onboard,
+			next,
+			upgrade,
+			whoami,
+		},
 });
 
 // Global error handler to suppress stack traces for expected errors
