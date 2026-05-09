@@ -1,0 +1,126 @@
+docs/commands.md
+  s_492bbcf0e8fbf2::t_66786669909ca0 24-25
+  s_492bbcf0e8fbf2::t_8c518a111ae137 219-222,226-232,234-248,250-277,279-286,288-297
+  s_2fe742bc0d92d4::t_6586e25afcad93 223,225,233,287,298
+  s_2fe742bc0d92d4::t_754d3e53093bc5 278
+  s_2fe742bc0d92d4::t_19c918e87c769f 224,249
+src/utils/daemon.ts
+  s_492bbcf0e8fbf2::t_55e00926099e69 1,3-115,209-250,252-258,263,272-303,305-318
+  s_492bbcf0e8fbf2::t_bf08a6c6b9da6f 2
+  s_2fe742bc0d92d4::t_7f3932594ce43b 130-144,167,259-262,264-271
+  s_492bbcf0e8fbf2::t_b1c203f35268bf 116-129,145-166,168-208
+  s_492bbcf0e8fbf2::t_c25b904c881a0c 251
+  s_492bbcf0e8fbf2::t_6f66d1e6432da6 304
+src/commands/next.ts
+  s_492bbcf0e8fbf2::t_676278671807f3 16,121
+  s_492bbcf0e8fbf2::t_9ea39c2b01bb11 1-14,17-81,83-84,86-109,111-113,115-120,122-151,155-170,172-184,220-239
+  s_2fe742bc0d92d4::t_ec0ee4799255bd 152-154,203-206
+  s_2fe742bc0d92d4::t_875116a30ccfc3 82,85,110,114,171
+skills/probe/references/commands.md
+  s_2fe742bc0d92d4::t_f899b73e5ef54f 26-27,29,184-201
+src/index.ts
+  s_492bbcf0e8fbf2::t_43d645240ff325 45-46
+  s_492bbcf0e8fbf2::t_0ff1c087887835 105-124
+  s_492bbcf0e8fbf2::t_dcc4c44247d7a4 6-7
+  s_492bbcf0e8fbf2::t_87a9ad8af39259 94-95
+docs/getting-started.md
+  s_492bbcf0e8fbf2::t_0e1023631a95d4 8-9,15,18,20-32,34,37-46,48,50,52,109-116,118,195
+  s_2fe742bc0d92d4::t_82fabff68a700d 117
+src/commands/doctor.ts
+  s_492bbcf0e8fbf2::t_a8d6e8b081c45b 4,53-58,60
+src/types/config.ts
+  s_492bbcf0e8fbf2::t_a8450d309e14ea 8
+src/utils/next-router.ts
+  s_492bbcf0e8fbf2::t_d556acd6c03648 1,4-17,19-32,44-57,99-283
+  s_2fe742bc0d92d4::t_1a68bffb551a44 3,18,33-43,58-98
+  s_492bbcf0e8fbf2::t_f2754bfe618ff8 2
+src/utils/auth-flow.ts
+  s_492bbcf0e8fbf2::t_1fea4214f08b91 1,3-43
+  s_492bbcf0e8fbf2::t_147696b5f5ec34 2
+src/utils/runtime-detection.ts
+  s_492bbcf0e8fbf2::t_0bf1e91701bdc2 105,107-109,111-115,118-129,131-133,136-144
+  s_492bbcf0e8fbf2::t_3902cae3f67f27 148,174-175,177,179,187,204,225
+  s_492bbcf0e8fbf2::t_d10e3a9752569a 151
+  s_492bbcf0e8fbf2::t_507534d5ac7606 154-155,158-159,169-170,172-173
+  s_492bbcf0e8fbf2::t_b5a80a7c7ea697 163
+  s_2fe742bc0d92d4::t_e88ee7b24231f8 72,117
+  s_492bbcf0e8fbf2::t_6b96082b9540fd 5
+  s_492bbcf0e8fbf2::t_da8409bfe5ece2 152-153,157,167-168,171
+  s_2fe742bc0d92d4::t_0b3a247235b86f 71,116
+  s_492bbcf0e8fbf2::t_6c7cc9d5c7f461 74
+  s_492bbcf0e8fbf2::t_5fa6489de28257 1-2,4,6-15,17-26,28-64,66-70,73,75-84,86-104,106,134-135,145-147,149,160-161,164-166,178,180-186,188-203,205-224,226-241
+  s_2fe742bc0d92d4::t_e7d774a9b99d3e 16,27,65,85,110,130,150,156,162
+  s_492bbcf0e8fbf2::t_c61fd8f1a251a3 3,176
+src/utils/skills-install.ts
+  s_492bbcf0e8fbf2::t_33d519bfb293db 1-73
+src/utils/health.ts
+  s_492bbcf0e8fbf2::t_081be54877f5e3 1-2,4-140,142-197
+  s_492bbcf0e8fbf2::t_56abe578637950 141
+  s_492bbcf0e8fbf2::t_a33977e6ddcf61 3
+package.json
+  s_2fe742bc0d92d4::t_7ef296cc5a84d9 3
+src/utils/scheduler-plans.ts
+  s_492bbcf0e8fbf2::t_3f89b15480ab1e 102,111-112
+  s_2fe742bc0d92d4::t_07fe4cea02f54f 125
+  s_492bbcf0e8fbf2::t_8cba32408e7a81 3-4,147,152
+  s_2fe742bc0d92d4::t_9f57db54ece063 54
+  s_492bbcf0e8fbf2::t_0e8bfadcf8bfe8 150-151
+  s_492bbcf0e8fbf2::t_014469ae1a9f80 1,13-21,30,34
+  s_492bbcf0e8fbf2::t_84641078cfe23e 36-38
+  s_2fe742bc0d92d4::t_be3b1ab3011249 43,94,108
+  s_492bbcf0e8fbf2::t_c3815f1bd99416 2,31,35
+  s_492bbcf0e8fbf2::t_436c1896abd8d1 5-12,22-29,32-33,39-42,44-53,55-93,95-101,103-107,109-110,113-124,126-146,148-149,154-160
+skills/probe/SKILL.md
+  s_2fe742bc0d92d4::t_93557ed1f7bd07 3,8,10-13,15-17,20-21,24,27-28,31,33,36-42,45-51,53,55,58,61,63-73,75-76,78,80-83,85,88-93,96,98-100,102,104-106
+src/commands/onboard.ts
+  s_492bbcf0e8fbf2::t_db6bbc159723ef 5-7,10-11,14,16-31,141-151,155-156,160-162,167,170,173,176-178,182-184,188,191,194,197,200,203,206,209,211,213,224-225,227-230,254,256
+  s_2fe742bc0d92d4::t_44e051f793f95a 84,129
+  s_2fe742bc0d92d4::t_a5c5466e3dab14 214-222,231-233
+  s_492bbcf0e8fbf2::t_f4cc6d5bc12f4b 255
+  s_2fe742bc0d92d4::t_25dae65f13f8c6 270
+  s_492bbcf0e8fbf2::t_93f092a97bfe31 116-117
+  s_2fe742bc0d92d4::t_2f5c3d2733e3a2 57-64,124
+  s_492bbcf0e8fbf2::t_f6baa74fd5f9e5 135
+  s_2fe742bc0d92d4::t_bbbae8055a4e02 101-109
+  s_492bbcf0e8fbf2::t_6ce590332d347c 1-4,9,12,15,32-56,65-83,85-100,110-115,118-123,125-128,130-134,136-140,152-154,157-159,163-166,168-169,171-172,174-175,179-181,185-187,189-190,192-193,195-196,198-199,201-202,204-205,207-208,210,212,223,226,234-237,257,275-278
+src/commands/nexus/idea.ts
+  s_2fe742bc0d92d4::t_61281dbde00fc5 419-429,435,437-439,441-448,451-465,470-475
+src/utils/onboard/steps.ts
+  s_492bbcf0e8fbf2::t_84169bf3b23dce 18,20
+  s_2fe742bc0d92d4::t_551708c36bcd31 30-31,244-249,328-333,363-368,449-450,520-525,547-548
+  s_492bbcf0e8fbf2::t_4b2f3b15ef92a6 230-236
+  s_2fe742bc0d92d4::t_91381d416d42d1 2,72,472
+  s_492bbcf0e8fbf2::t_489d93be738930 267-272
+  s_492bbcf0e8fbf2::t_57e43527cd4748 462-464,466,468-471,473-478
+  s_492bbcf0e8fbf2::t_c44e0c62946cb7 19
+  s_492bbcf0e8fbf2::t_6707652627a25b 507-508
+  s_2fe742bc0d92d4::t_246fe81c9b8402 465,467,514
+  s_2fe742bc0d92d4::t_63b44f2f401569 499,509
+  s_492bbcf0e8fbf2::t_e5db2ae91f9708 1,3-17,21-29,32-71,73-229,237-243,250-266,273-327,334-362,369-426,430-448,451-461,479-491,493-498,500-506,510-513,515-519,526-546,549-557
+  s_492bbcf0e8fbf2::t_fb5ae49ba26160 427-429
+  s_2fe742bc0d92d4::t_9a0e8c6c02b554 492
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "9ce8dbbc065a228c2c570144b2c263860ae1c2f6",
+  "prompts": {},
+  "sessions": {
+    "s_2fe742bc0d92d4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f1a38e4affexApHVE8AzWs552",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_492bbcf0e8fbf2": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f28bc8d1ffeFEHoMOsP00KxGA",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": null
+    }
+  }
+}
