@@ -1,0 +1,19 @@
+src/commands/onboard.ts
+  s_492bbcf0e8fbf2::t_08baa842992733 608-617
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "72c9d88772e9568b6099bc5b0e30d631180ce88b",
+  "prompts": {},
+  "sessions": {
+    "s_492bbcf0e8fbf2": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f28bc8d1ffeFEHoMOsP00KxGA",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
