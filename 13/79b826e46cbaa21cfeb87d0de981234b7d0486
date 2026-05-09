@@ -1,0 +1,23 @@
+src/commands/onboard.ts
+  s_492bbcf0e8fbf2::t_93f092a97bfe31 102-103
+  s_492bbcf0e8fbf2::t_f6baa74fd5f9e5 121
+src/utils/onboard/steps.ts
+  s_492bbcf0e8fbf2::t_4b2f3b15ef92a6 222-228
+  s_492bbcf0e8fbf2::t_489d93be738930 254-259
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "1379b826e46cbaa21cfeb87d0de981234b7d0486",
+  "prompts": {},
+  "sessions": {
+    "s_492bbcf0e8fbf2": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f28bc8d1ffeFEHoMOsP00KxGA",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
