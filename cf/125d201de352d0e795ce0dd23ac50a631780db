@@ -1,0 +1,58 @@
+src/utils/daemon.ts
+  s_2fe742bc0d92d4::t_7f3932594ce43b 130-144,167,259-262,264-271
+src/utils/scheduler-plans.ts
+  s_2fe742bc0d92d4::t_9f57db54ece063 54
+  s_2fe742bc0d92d4::t_be3b1ab3011249 43,94,108
+  s_2fe742bc0d92d4::t_07fe4cea02f54f 125
+package.json
+  s_2fe742bc0d92d4::t_7ef296cc5a84d9 3
+skills/probe/SKILL.md
+  s_2fe742bc0d92d4::t_93557ed1f7bd07 3,8,10-13,15-17,20-21,24,27-28,31,33,36-42,45-51,53,55,58,61,63-73,75-76,78,80-83,85,88-93,96,98-100,102,104-106
+src/commands/nexus/idea.ts
+  s_2fe742bc0d92d4::t_61281dbde00fc5 419-429,435,437-439,441-448,451-465,470-475
+src/commands/next.ts
+  s_2fe742bc0d92d4::t_ec0ee4799255bd 152-154,203-206
+  s_2fe742bc0d92d4::t_875116a30ccfc3 82,85,110,114,171
+skills/probe/references/commands.md
+  s_2fe742bc0d92d4::t_f899b73e5ef54f 26-27,29,184-201
+src/utils/onboard/steps.ts
+  s_2fe742bc0d92d4::t_246fe81c9b8402 465,467,514
+  s_2fe742bc0d92d4::t_9a0e8c6c02b554 492
+  s_2fe742bc0d92d4::t_63b44f2f401569 499,509
+  s_2fe742bc0d92d4::t_551708c36bcd31 30-31,244-249,328-333,363-368,449-450,520-525,547-548
+  s_2fe742bc0d92d4::t_91381d416d42d1 2,72,472
+src/commands/onboard.ts
+  s_2fe742bc0d92d4::t_25dae65f13f8c6 270
+  s_2fe742bc0d92d4::t_bbbae8055a4e02 101-109
+  s_2fe742bc0d92d4::t_2f5c3d2733e3a2 57-64,124
+  s_2fe742bc0d92d4::t_a5c5466e3dab14 214-222,231-233
+  s_2fe742bc0d92d4::t_44e051f793f95a 84,129
+src/utils/next-router.ts
+  s_2fe742bc0d92d4::t_1a68bffb551a44 3,18,33-43,58-98
+src/utils/runtime-detection.ts
+  s_2fe742bc0d92d4::t_e88ee7b24231f8 72,117
+  s_2fe742bc0d92d4::t_e7d774a9b99d3e 16,27,65,85,110,130,150,156,162
+  s_2fe742bc0d92d4::t_0b3a247235b86f 71,116
+docs/getting-started.md
+  s_2fe742bc0d92d4::t_82fabff68a700d 117
+docs/commands.md
+  s_2fe742bc0d92d4::t_6586e25afcad93 223,225,233,287,298
+  s_2fe742bc0d92d4::t_19c918e87c769f 224,249
+  s_2fe742bc0d92d4::t_754d3e53093bc5 278
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "cf125d201de352d0e795ce0dd23ac50a631780db",
+  "prompts": {},
+  "sessions": {
+    "s_2fe742bc0d92d4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f1a38e4affexApHVE8AzWs552",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
