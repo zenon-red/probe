@@ -1,0 +1,22 @@
+docs/commands.md
+  s_492bbcf0e8fbf2::t_66786669909ca0 24-25
+  s_492bbcf0e8fbf2::t_8c518a111ae137 219-297
+docs/getting-started.md
+  s_492bbcf0e8fbf2::t_0e1023631a95d4 8-9,15,18,20-32,34,37-46,48,50,52,109-118,195
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "3dd0c101d1db436e32a0a689ceaa8891cb290545",
+  "prompts": {},
+  "sessions": {
+    "s_492bbcf0e8fbf2": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f28bc8d1ffeFEHoMOsP00KxGA",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
