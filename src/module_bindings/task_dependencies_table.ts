@@ -9,10 +9,7 @@ import {
   type AlgebraicTypeType as __AlgebraicTypeType,
   type Infer as __Infer,
 } from "spacetimedb";
-import {
-  DependencyType,
-} from "./types";
-
+import { DependencyType } from "./types";
 
 export default __t.row({
   id: __t.u64().primaryKey(),

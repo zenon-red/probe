@@ -1,10 +1,10 @@
 import { getConfig } from "~/utils/config.js";
 import {
-	type Agent,
-	CommandContext,
-	callReducer,
-	callProcedure,
-	withAuth,
+  type Agent,
+  CommandContext,
+  callReducer,
+  callProcedure,
+  withAuth,
 } from "~/utils/context.js";
 import { AgentRole, AgentStatus } from "~/utils/enums.js";
 import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
@@ -18,590 +18,517 @@ const MAX_VOICE_TRANSCRIPT_LENGTH = 500;
 const DEFAULT_VOICE_CONTEXT_TYPE = "status_update";
 
 export interface AgentCommandArgs {
-	action?: string;
-	agentId?: string;
-	name?: string;
-	role?: string;
-	address?: string;
-	wallet?: string;
-	task?: string;
-	limit?: string;
-	capabilities?: string;
-	set?: string;
-	agent?: string;
-	clear?: boolean;
-	audioUrl?: string;
-	contextType?: string;
-	host?: string;
-	module?: string;
+  action?: string;
+  agentId?: string;
+  name?: string;
+  role?: string;
+  address?: string;
+  wallet?: string;
+  task?: string;
+  limit?: string;
+  capabilities?: string;
+  set?: string;
+  agent?: string;
+  clear?: boolean;
+  audioUrl?: string;
+  contextType?: string;
+  host?: string;
+  module?: string;
 }
 
 const normalizeCapabilities = (value?: string): string[] => {
-	if (!value) return [];
-	return [
-		...new Set(
-			value
-				.split(",")
-				.map((item) => item.trim().toLowerCase())
-				.filter(Boolean),
-		),
-	];
+  if (!value) return [];
+  return [
+    ...new Set(
+      value
+        .split(",")
+        .map((item) => item.trim().toLowerCase())
+        .filter(Boolean),
+    ),
+  ];
 };
 
 export const currentAgentForIdentity = (ctx: CommandContext): Agent | undefined => {
-	return ctx
-		.iter<Agent>("agents")
-		.find((a) => a.identity.toHexString() === ctx.identity?.toHexString());
+  return ctx
+    .iter<Agent>("agents")
+    .find((a) => a.identity.toHexString() === ctx.identity?.toHexString());
 };
 
 const renderAgent = (agent: Agent, identity?: string) => ({
-	id: agent.id,
-	name: agent.name,
-	role: AgentRole.display(agent.role),
-	status: AgentStatus.display(agent.status),
-	lastHeartbeat: formatTimestamp(agent.lastHeartbeat),
-	currentTaskId: agent.currentTaskId ? agent.currentTaskId.toString() : "",
-	capabilities: agent.capabilities.join(","),
-	identity: identity || "",
+  id: agent.id,
+  name: agent.name,
+  role: AgentRole.display(agent.role),
+  status: AgentStatus.display(agent.status),
+  lastHeartbeat: formatTimestamp(agent.lastHeartbeat),
+  currentTaskId: agent.currentTaskId ? agent.currentTaskId.toString() : "",
+  capabilities: agent.capabilities.join(","),
+  identity: identity || "",
 });
 
 const renderAgentBio = (agent: Agent) => ({
-	agentId: agent.id,
-	name: agent.name,
-	bio: agent.bio,
+  agentId: agent.id,
+  name: agent.name,
+  bio: agent.bio,
 });
 
 export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
-	const action = args.action;
-	if (!action) {
-		error("ACTION_REQUIRED", "Agent action required");
-	}
+  const action = args.action;
+  if (!action) {
+    error("ACTION_REQUIRED", "Agent action required");
+  }
 
-	try {
-		switch (action) {
-			case "register": {
-				const agentId = args.agentId;
-				const name = args.name;
-				const role = args.role || "zeno";
+  try {
+    switch (action) {
+      case "register": {
+        const agentId = args.agentId;
+        const name = args.name;
+        const role = args.role || "zeno";
 
-				if (!agentId || !name)
-					error("ARGS_REQUIRED", "Agent ID and name required");
+        if (!agentId || !name) error("ARGS_REQUIRED", "Agent ID and name required");
 
-				const config = await getConfig();
-				const walletName = args.wallet || config.defaultWallet;
-				if (!args.address && !walletName)
-					error(
-						"WALLET_REQUIRED",
-						"--address or --wallet required (or set default wallet)",
-					);
+        const config = await getConfig();
+        const walletName = args.wallet || config.defaultWallet;
+        if (!args.address && !walletName)
+          error("WALLET_REQUIRED", "--address or --wallet required (or set default wallet)");
 
-				let address = args.address;
-				const capabilities = normalizeCapabilities(args.capabilities);
-				if (!address && walletName) {
-					const wallet = await getWalletInfo(walletName);
-					if (!wallet)
-						error("WALLET_NOT_FOUND", `Wallet not found: ${walletName}`);
-					address = wallet.address;
-				}
+        let address = args.address;
+        const capabilities = normalizeCapabilities(args.capabilities);
+        if (!address && walletName) {
+          const wallet = await getWalletInfo(walletName);
+          if (!wallet) error("WALLET_NOT_FOUND", `Wallet not found: ${walletName}`);
+          address = wallet.address;
+        }
 
-				try {
-					await withAuth(
-						{ host: args.host, module: args.module, wallet: walletName },
-						async (ctx) => {
-							await callReducer(ctx, "registerAgent", {
-								agentId,
-								name,
-								role: AgentRole.fromString(role),
-								zenonAddress: address as string,
-							});
+        try {
+          await withAuth(
+            { host: args.host, module: args.module, wallet: walletName },
+            async (ctx) => {
+              await callReducer(ctx, "registerAgent", {
+                agentId,
+                name,
+                role: AgentRole.fromString(role),
+                zenonAddress: address as string,
+              });
 
-							if (capabilities.length > 0) {
-								await callReducer(ctx, "updateAgentCapabilities", {
-									capabilities,
-								});
-							}
+              if (capabilities.length > 0) {
+                await callReducer(ctx, "updateAgentCapabilities", {
+                  capabilities,
+                });
+              }
 
-							await new Promise((r) => setTimeout(r, 500));
-							const registered = ctx
-								.iter<Agent>("agents")
-								.find((a) => a.id === agentId);
-							if (!registered) {
-								if (role === "zoe" || role === "admin") {
-									error(
-										"UNAUTHORIZED",
-										"Only whitelisted identities can register as zoe or admin",
-									);
-								}
-								error("REGISTRATION_FAILED", "Registration failed");
-							}
-						},
-					);
-					success({
-						registered: true,
-						agentId,
-						name,
-						role,
-						address,
-						capabilities,
-					});
-					if (!isJsonMode()) {
-						console.log(
-							toonList("agent_registered", [
-								{
-									agentId,
-									name,
-									role,
-									address,
-									capabilities: capabilities.join(","),
-								},
-							]),
-						);
-					}
-				} catch (err) {
-					error(
-						"REDUCER_FAILED",
-						err instanceof Error ? err.message : "Unknown error",
-					);
-				}
-				break;
-			}
+              await new Promise((r) => setTimeout(r, 500));
+              const registered = ctx.iter<Agent>("agents").find((a) => a.id === agentId);
+              if (!registered) {
+                if (role === "zoe" || role === "admin") {
+                  error("UNAUTHORIZED", "Only whitelisted identities can register as zoe or admin");
+                }
+                error("REGISTRATION_FAILED", "Registration failed");
+              }
+            },
+          );
+          success({
+            registered: true,
+            agentId,
+            name,
+            role,
+            address,
+            capabilities,
+          });
+          if (!isJsonMode()) {
+            console.log(
+              toonList("agent_registered", [
+                {
+                  agentId,
+                  name,
+                  role,
+                  address,
+                  capabilities: capabilities.join(","),
+                },
+              ]),
+            );
+          }
+        } catch (err) {
+          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+        }
+        break;
+      }
 
-			case "status": {
-				if (args.agentId || args.task || args.capabilities) {
-					error(
-						"INVALID_USAGE",
-						"Use `probe agent set-status <online|offline|working|busy>` to update status. `probe agent status` only shows current status.",
-					);
-				}
+      case "status": {
+        if (args.agentId || args.task || args.capabilities) {
+          error(
+            "INVALID_USAGE",
+            "Use `probe agent set-status <online|offline|working|busy>` to update status. `probe agent status` only shows current status.",
+          );
+        }
 
-				await withAuth(
-					{ host: args.host, module: args.module, wallet: args.wallet },
-					async (ctx) => {
-						const myAgent = currentAgentForIdentity(ctx);
-						if (!myAgent)
-							error(
-								"NOT_REGISTERED",
-								"Agent not registered. Run `probe agent register` first.",
-							);
+        await withAuth(
+          { host: args.host, module: args.module, wallet: args.wallet },
+          async (ctx) => {
+            const myAgent = currentAgentForIdentity(ctx);
+            if (!myAgent)
+              error("NOT_REGISTERED", "Agent not registered. Run `probe agent register` first.");
 
-						success(myAgent);
-						if (!isJsonMode()) {
-							console.log(
-								toonList("agent", [
-									renderAgent(myAgent, ctx.identity?.toHexString()),
-								]),
-							);
-						}
-					},
-				);
-				break;
-			}
+            success(myAgent);
+            if (!isJsonMode()) {
+              console.log(toonList("agent", [renderAgent(myAgent, ctx.identity?.toHexString())]));
+            }
+          },
+        );
+        break;
+      }
 
-			case "set-status": {
-				const nextStatus = args.agentId;
-				if (!nextStatus) {
-					error(
-						"STATUS_REQUIRED",
-						"Status required. Use: online, offline, working, busy",
-					);
-				}
-				if (args.capabilities) {
-					error(
-						"INVALID_USAGE",
-						"Use `probe agent capabilities --set <list>` to update capabilities.",
-					);
-				}
+      case "set-status": {
+        const nextStatus = args.agentId;
+        if (!nextStatus) {
+          error("STATUS_REQUIRED", "Status required. Use: online, offline, working, busy");
+        }
+        if (args.capabilities) {
+          error(
+            "INVALID_USAGE",
+            "Use `probe agent capabilities --set <list>` to update capabilities.",
+          );
+        }
 
-				const normalized = nextStatus.toLowerCase();
-				const allowed = new Set(["online", "offline", "working", "busy"]);
-				if (!allowed.has(normalized)) {
-					error(
-						"INVALID_STATUS",
-						`Invalid status: ${nextStatus}. Use: online, offline, working, busy`,
-					);
-				}
+        const normalized = nextStatus.toLowerCase();
+        const allowed = new Set(["online", "offline", "working", "busy"]);
+        if (!allowed.has(normalized)) {
+          error(
+            "INVALID_STATUS",
+            `Invalid status: ${nextStatus}. Use: online, offline, working, busy`,
+          );
+        }
 
-				const mapped = AgentStatus.fromString(normalized);
-				const isWorking = AgentStatus.is.working(mapped);
-				if (isWorking && !args.task) {
-					error(
-						"TASK_REQUIRED",
-						"--task is required when setting status to working",
-					);
-				}
-				if (!isWorking && args.task) {
-					error(
-						"TASK_NOT_ALLOWED",
-						"--task is only allowed when setting status to working",
-					);
-				}
+        const mapped = AgentStatus.fromString(normalized);
+        const isWorking = AgentStatus.is.working(mapped);
+        if (isWorking && !args.task) {
+          error("TASK_REQUIRED", "--task is required when setting status to working");
+        }
+        if (!isWorking && args.task) {
+          error("TASK_NOT_ALLOWED", "--task is only allowed when setting status to working");
+        }
 
-				try {
-					await withAuth(
-						{ host: args.host, module: args.module, wallet: args.wallet },
-						async (ctx) => {
-							await callReducer(ctx, "setAgentStatus", {
-								status: mapped,
-								taskId: isWorking ? BigInt(args.task as string) : undefined,
-							});
-						},
-					);
+        try {
+          await withAuth(
+            { host: args.host, module: args.module, wallet: args.wallet },
+            async (ctx) => {
+              await callReducer(ctx, "setAgentStatus", {
+                status: mapped,
+                taskId: isWorking ? BigInt(args.task as string) : undefined,
+              });
+            },
+          );
 
-					success({
-						updated: true,
-						status: normalized,
-						taskId: args.task || null,
-					});
-					if (!isJsonMode()) {
-						console.log(
-							toonList("agent_status_updated", [
-								{
-									status: normalized,
-									taskId: args.task || "",
-								},
-							]),
-						);
-					}
-				} catch (err) {
-					error(
-						"REDUCER_FAILED",
-						err instanceof Error ? err.message : "Unknown error",
-					);
-				}
-				break;
-			}
+          success({
+            updated: true,
+            status: normalized,
+            taskId: args.task || null,
+          });
+          if (!isJsonMode()) {
+            console.log(
+              toonList("agent_status_updated", [
+                {
+                  status: normalized,
+                  taskId: args.task || "",
+                },
+              ]),
+            );
+          }
+        } catch (err) {
+          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+        }
+        break;
+      }
 
-			case "capabilities": {
-				if (!args.set) error("CAPABILITIES_REQUIRED", "--set is required");
+      case "capabilities": {
+        if (!args.set) error("CAPABILITIES_REQUIRED", "--set is required");
 
-				const capabilities = normalizeCapabilities(args.set);
-				try {
-					await withAuth(
-						{ host: args.host, module: args.module, wallet: args.wallet },
-						async (ctx) => {
-							await callReducer(ctx, "updateAgentCapabilities", {
-								capabilities,
-							});
-							const myAgent = currentAgentForIdentity(ctx);
-							success({ updated: true, agentId: myAgent?.id, capabilities });
-							if (!isJsonMode()) {
-								console.log(
-									toonList("agent_capabilities_updated", [
-										{
-											agentId: myAgent?.id || "",
-											capabilities: capabilities.join(","),
-										},
-									]),
-								);
-							}
-						},
-					);
-				} catch (err) {
-					error(
-						"REDUCER_FAILED",
-						err instanceof Error ? err.message : "Unknown error",
-					);
-				}
-				break;
-			}
+        const capabilities = normalizeCapabilities(args.set);
+        try {
+          await withAuth(
+            { host: args.host, module: args.module, wallet: args.wallet },
+            async (ctx) => {
+              await callReducer(ctx, "updateAgentCapabilities", {
+                capabilities,
+              });
+              const myAgent = currentAgentForIdentity(ctx);
+              success({ updated: true, agentId: myAgent?.id, capabilities });
+              if (!isJsonMode()) {
+                console.log(
+                  toonList("agent_capabilities_updated", [
+                    {
+                      agentId: myAgent?.id || "",
+                      capabilities: capabilities.join(","),
+                    },
+                  ]),
+                );
+              }
+            },
+          );
+        } catch (err) {
+          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+        }
+        break;
+      }
 
-			case "me": {
-				await withAuth(
-					{ host: args.host, module: args.module, wallet: args.wallet },
-					async (ctx) => {
-						const myAgent = currentAgentForIdentity(ctx);
-						if (!myAgent)
-							error(
-								"NOT_REGISTERED",
-								"Agent not registered. Run `probe agent register` first.",
-							);
+      case "me": {
+        await withAuth(
+          { host: args.host, module: args.module, wallet: args.wallet },
+          async (ctx) => {
+            const myAgent = currentAgentForIdentity(ctx);
+            if (!myAgent)
+              error("NOT_REGISTERED", "Agent not registered. Run `probe agent register` first.");
 
-						success(myAgent);
-						if (!isJsonMode()) {
-							console.log(
-								toonList("agent", [
-									renderAgent(myAgent, ctx.identity?.toHexString()),
-								]),
-							);
-						}
-					},
-				);
-				break;
-			}
+            success(myAgent);
+            if (!isJsonMode()) {
+              console.log(toonList("agent", [renderAgent(myAgent, ctx.identity?.toHexString())]));
+            }
+          },
+        );
+        break;
+      }
 
-			case "bio": {
-				const bioFromPositional = args.agentId?.trim();
-				const hasSet = typeof args.set === "string";
-				const hasClear = Boolean(args.clear);
-				const hasPositionalBio = Boolean(bioFromPositional);
-				const targetAgentId = args.agent?.trim();
+      case "bio": {
+        const bioFromPositional = args.agentId?.trim();
+        const hasSet = typeof args.set === "string";
+        const hasClear = Boolean(args.clear);
+        const hasPositionalBio = Boolean(bioFromPositional);
+        const targetAgentId = args.agent?.trim();
 
-				if (hasSet && hasClear) {
-					error("INVALID_USAGE", "Use either --set or --clear, not both.");
-				}
-				if (hasSet && hasPositionalBio) {
-					error(
-						"INVALID_USAGE",
-						"Provide bio text either as positional argument or --set, not both.",
-					);
-				}
-				if (targetAgentId && (hasSet || hasClear || hasPositionalBio)) {
-					error(
-						"INVALID_USAGE",
-						"--agent is read-only. Do not combine with --set, --clear, or positional bio text.",
-					);
-				}
+        if (hasSet && hasClear) {
+          error("INVALID_USAGE", "Use either --set or --clear, not both.");
+        }
+        if (hasSet && hasPositionalBio) {
+          error(
+            "INVALID_USAGE",
+            "Provide bio text either as positional argument or --set, not both.",
+          );
+        }
+        if (targetAgentId && (hasSet || hasClear || hasPositionalBio)) {
+          error(
+            "INVALID_USAGE",
+            "--agent is read-only. Do not combine with --set, --clear, or positional bio text.",
+          );
+        }
 
-				const isWrite = hasSet || hasClear || hasPositionalBio;
+        const isWrite = hasSet || hasClear || hasPositionalBio;
 
-				if (isWrite) {
-					const bio = hasClear ? "" : (hasSet ? args.set : bioFromPositional) || "";
-					try {
-						await withAuth(
-							{ host: args.host, module: args.module, wallet: args.wallet },
-							async (ctx) => {
-								await callReducer(ctx, "updateAgentBio", { bio });
-								const myAgent = currentAgentForIdentity(ctx);
-								success({
-									updated: true,
-									agentId: myAgent?.id,
-									bio,
-								});
-								if (!isJsonMode()) {
-									console.log(
-										toonList("agent_bio_updated", [
-											{ agentId: myAgent?.id || "", bio },
-										]),
-									);
-								}
-							},
-						);
-					} catch (err) {
-						error(
-							"REDUCER_FAILED",
-							err instanceof Error ? err.message : "Unknown error",
-						);
-					}
-					break;
-				}
+        if (isWrite) {
+          const bio = hasClear ? "" : (hasSet ? args.set : bioFromPositional) || "";
+          try {
+            await withAuth(
+              { host: args.host, module: args.module, wallet: args.wallet },
+              async (ctx) => {
+                await callReducer(ctx, "updateAgentBio", { bio });
+                const myAgent = currentAgentForIdentity(ctx);
+                success({
+                  updated: true,
+                  agentId: myAgent?.id,
+                  bio,
+                });
+                if (!isJsonMode()) {
+                  console.log(toonList("agent_bio_updated", [{ agentId: myAgent?.id || "", bio }]));
+                }
+              },
+            );
+          } catch (err) {
+            error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+          }
+          break;
+        }
 
-				if (targetAgentId) {
-					await using ctx = await CommandContext.create({
-						host: args.host,
-						module: args.module,
-					});
-					const agent = ctx.iter<Agent>("agents").find((a) => a.id === targetAgentId);
-					if (!agent) {
-						error("AGENT_NOT_FOUND", `Agent not found: ${targetAgentId}`);
-					}
-					success(renderAgentBio(agent));
-					if (!isJsonMode()) {
-						console.log(
-							toonList("agent_bio", [renderAgentBio(agent)]),
-						);
-					}
-					break;
-				}
+        if (targetAgentId) {
+          await using ctx = await CommandContext.create({
+            host: args.host,
+            module: args.module,
+          });
+          const agent = ctx.iter<Agent>("agents").find((a) => a.id === targetAgentId);
+          if (!agent) {
+            error("AGENT_NOT_FOUND", `Agent not found: ${targetAgentId}`);
+          }
+          success(renderAgentBio(agent));
+          if (!isJsonMode()) {
+            console.log(toonList("agent_bio", [renderAgentBio(agent)]));
+          }
+          break;
+        }
 
-				await withAuth(
-					{ host: args.host, module: args.module, wallet: args.wallet },
-					async (ctx) => {
-						const myAgent = currentAgentForIdentity(ctx);
-						if (!myAgent)
-							error(
-								"NOT_REGISTERED",
-								"Agent not registered. Run `probe agent register` first.",
-							);
+        await withAuth(
+          { host: args.host, module: args.module, wallet: args.wallet },
+          async (ctx) => {
+            const myAgent = currentAgentForIdentity(ctx);
+            if (!myAgent)
+              error("NOT_REGISTERED", "Agent not registered. Run `probe agent register` first.");
 
-						success(renderAgentBio(myAgent));
-						if (!isJsonMode()) {
-							console.log(
-								toonList("agent_bio", [renderAgentBio(myAgent)]),
-							);
-						}
-					},
-				);
-				break;
-			}
+            success(renderAgentBio(myAgent));
+            if (!isJsonMode()) {
+              console.log(toonList("agent_bio", [renderAgentBio(myAgent)]));
+            }
+          },
+        );
+        break;
+      }
 
-			case "heartbeat": {
-				try {
-					await withAuth(
-						{ host: args.host, module: args.module, wallet: args.wallet },
-						async (ctx) => {
-							const myAgent = currentAgentForIdentity(ctx);
-							if (!myAgent) error("NOT_REGISTERED", "Agent not registered");
+      case "heartbeat": {
+        try {
+          await withAuth(
+            { host: args.host, module: args.module, wallet: args.wallet },
+            async (ctx) => {
+              const myAgent = currentAgentForIdentity(ctx);
+              if (!myAgent) error("NOT_REGISTERED", "Agent not registered");
 
-							await callReducer(ctx, "heartbeat", {
-								agentId: myAgent.id,
-							});
-							success({ heartbeat: true });
-							if (!isJsonMode()) {
-								console.log(
-									toonList("agent_heartbeat", [
-										{
-											agentId: myAgent.id,
-											status: AgentStatus.display(myAgent.status),
-										},
-									]),
-								);
-							}
-						},
-					);
-				} catch (err) {
-					error(
-						"REDUCER_FAILED",
-						err instanceof Error ? err.message : "Unknown error",
-					);
-				}
-				break;
-			}
+              await callReducer(ctx, "heartbeat", {
+                agentId: myAgent.id,
+              });
+              success({ heartbeat: true });
+              if (!isJsonMode()) {
+                console.log(
+                  toonList("agent_heartbeat", [
+                    {
+                      agentId: myAgent.id,
+                      status: AgentStatus.display(myAgent.status),
+                    },
+                  ]),
+                );
+              }
+            },
+          );
+        } catch (err) {
+          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+        }
+        break;
+      }
 
-			case "list": {
-				await using ctx = await CommandContext.create({
-					host: args.host,
-					module: args.module,
-				});
-				const limit = args.limit ? parseInt(args.limit, 10) : undefined;
-				if (limit !== undefined && (!Number.isFinite(limit) || limit <= 0)) {
-					error("INVALID_LIMIT", "--limit must be a positive integer");
-				}
+      case "list": {
+        await using ctx = await CommandContext.create({
+          host: args.host,
+          module: args.module,
+        });
+        const limit = args.limit ? parseInt(args.limit, 10) : undefined;
+        if (limit !== undefined && (!Number.isFinite(limit) || limit <= 0)) {
+          error("INVALID_LIMIT", "--limit must be a positive integer");
+        }
 
-				let onlineAgents = ctx
-					.iter<Agent>("agents")
-					.filter((a) => !AgentStatus.is.offline(a.status));
-				onlineAgents = onlineAgents.sort((a, b) => {
-					const aMicros = toMicros(
-						a.lastHeartbeat || a.createdAt || a.lastActiveAt,
-					);
-					const bMicros = toMicros(
-						b.lastHeartbeat || b.createdAt || b.lastActiveAt,
-					);
-					if (aMicros !== bMicros) return bMicros > aMicros ? 1 : -1;
-					return b.id.localeCompare(a.id);
-				});
-				if (limit !== undefined) onlineAgents = onlineAgents.slice(0, limit);
+        let onlineAgents = ctx
+          .iter<Agent>("agents")
+          .filter((a) => !AgentStatus.is.offline(a.status));
+        onlineAgents = onlineAgents.sort((a, b) => {
+          const aMicros = toMicros(a.lastHeartbeat || a.createdAt || a.lastActiveAt);
+          const bMicros = toMicros(b.lastHeartbeat || b.createdAt || b.lastActiveAt);
+          if (aMicros !== bMicros) return bMicros > aMicros ? 1 : -1;
+          return b.id.localeCompare(a.id);
+        });
+        if (limit !== undefined) onlineAgents = onlineAgents.slice(0, limit);
 
-				success({ agents: onlineAgents, count: onlineAgents.length });
-				if (!isJsonMode()) {
-					console.log(
-						toonList(
-							"agents",
-							onlineAgents.map((a) => ({
-								id: a.id,
-								name: a.name,
-								role: AgentRole.display(a.role),
-								status: AgentStatus.display(a.status),
-								last_heartbeat: formatTimestamp(a.lastHeartbeat),
-								capabilities: a.capabilities.join(","),
-							})),
-						),
-					);
-				}
-				break;
-			}
+        success({ agents: onlineAgents, count: onlineAgents.length });
+        if (!isJsonMode()) {
+          console.log(
+            toonList(
+              "agents",
+              onlineAgents.map((a) => ({
+                id: a.id,
+                name: a.name,
+                role: AgentRole.display(a.role),
+                status: AgentStatus.display(a.status),
+                last_heartbeat: formatTimestamp(a.lastHeartbeat),
+                capabilities: a.capabilities.join(","),
+              })),
+            ),
+          );
+        }
+        break;
+      }
 
-			case "identity": {
-				await withAuth(
-					{ host: args.host, module: args.module, wallet: args.wallet },
-					async (ctx) => {
-						const identityHex = ctx.identity?.toHexString();
-						success({ identity: identityHex, wallet: args.wallet });
-						if (!isJsonMode()) {
-							console.log(
-								toonList("identity", [
-									{
-										identity: identityHex || "",
-										wallet: args.wallet || "",
-									},
-								]),
-							);
-						}
-					},
-				);
-				break;
-			}
+      case "identity": {
+        await withAuth(
+          { host: args.host, module: args.module, wallet: args.wallet },
+          async (ctx) => {
+            const identityHex = ctx.identity?.toHexString();
+            success({ identity: identityHex, wallet: args.wallet });
+            if (!isJsonMode()) {
+              console.log(
+                toonList("identity", [
+                  {
+                    identity: identityHex || "",
+                    wallet: args.wallet || "",
+                  },
+                ]),
+              );
+            }
+          },
+        );
+        break;
+      }
 
-			case "voice": {
-				const transcript = args.agentId?.trim();
-				if (!transcript) {
-					error(
-						"TRANSCRIPT_REQUIRED",
-						"Transcript required. Provide as first positional argument.",
-					);
-				}
-				if (transcript.length > MAX_VOICE_TRANSCRIPT_LENGTH) {
-					error(
-						"TRANSCRIPT_TOO_LONG",
-						`Transcript exceeds ${MAX_VOICE_TRANSCRIPT_LENGTH} characters.`,
-					);
-				}
-				if (!args.audioUrl) {
-					error(
-						"AUDIO_URL_REQUIRED",
-						"--audioUrl is required for voice announcements.",
-					);
-				}
+      case "voice": {
+        const transcript = args.agentId?.trim();
+        if (!transcript) {
+          error(
+            "TRANSCRIPT_REQUIRED",
+            "Transcript required. Provide as first positional argument.",
+          );
+        }
+        if (transcript.length > MAX_VOICE_TRANSCRIPT_LENGTH) {
+          error(
+            "TRANSCRIPT_TOO_LONG",
+            `Transcript exceeds ${MAX_VOICE_TRANSCRIPT_LENGTH} characters.`,
+          );
+        }
+        if (!args.audioUrl) {
+          error("AUDIO_URL_REQUIRED", "--audioUrl is required for voice announcements.");
+        }
 
-				try {
-					await withAuth(
-						{ host: args.host, module: args.module, wallet: args.wallet },
-						async (ctx) => {
-							const contextType = args.contextType || DEFAULT_VOICE_CONTEXT_TYPE;
-							const result = await callProcedure<GenerateVoiceResult>(
-								ctx,
-								"generate_voice",
-								{
-								transcript,
-								audioUrl: args.audioUrl,
-								contextType,
-								},
-							);
+        try {
+          await withAuth(
+            { host: args.host, module: args.module, wallet: args.wallet },
+            async (ctx) => {
+              const contextType = args.contextType || DEFAULT_VOICE_CONTEXT_TYPE;
+              const result = await callProcedure<GenerateVoiceResult>(ctx, "generate_voice", {
+                transcript,
+                audioUrl: args.audioUrl,
+                contextType,
+              });
 
-							const data = {
-								ok: true,
-								announcementId: result.id,
-								seq: result.seq,
-								agentName: result.agentName,
-								keyPrefix: result.keyPrefix,
-								audioUrl: args.audioUrl,
-								contextType,
-							};
+              const data = {
+                ok: true,
+                announcementId: result.id,
+                seq: result.seq,
+                agentName: result.agentName,
+                keyPrefix: result.keyPrefix,
+                audioUrl: args.audioUrl,
+                contextType,
+              };
 
-							success(data);
-							if (!isJsonMode()) {
-								console.log(
-									toonList("voice_announcement", [
-									{
-										id: result.id,
-										seq: result.seq,
-										agentName: result.agentName,
-										keyPrefix: result.keyPrefix,
-										audioUrl: args.audioUrl || "",
-									},
-								]),
-								);
-							}
-						},
-					);
-				} catch (err) {
-					error(
-						"PROCEDURE_FAILED",
-						err instanceof Error ? err.message : "Unknown error",
-					);
-				}
-				break;
-			}
+              success(data);
+              if (!isJsonMode()) {
+                console.log(
+                  toonList("voice_announcement", [
+                    {
+                      id: result.id,
+                      seq: result.seq,
+                      agentName: result.agentName,
+                      keyPrefix: result.keyPrefix,
+                      audioUrl: args.audioUrl || "",
+                    },
+                  ]),
+                );
+              }
+            },
+          );
+        } catch (err) {
+          error("PROCEDURE_FAILED", err instanceof Error ? err.message : "Unknown error");
+        }
+        break;
+      }
 
-			default:
-				error(
-					"INVALID_ACTION",
-					`Invalid action: ${action}`,
-					"Use: register, status, set-status, capabilities, bio, me, heartbeat, list, identity, voice",
-				);
-		}
-	} catch (err) {
-		const message = err instanceof Error ? err.message : String(err);
-		failWithConnectionOrUnexpected(message);
-	}
+      default:
+        error(
+          "INVALID_ACTION",
+          `Invalid action: ${action}`,
+          "Use: register, status, set-status, capabilities, bio, me, heartbeat, list, identity, voice",
+        );
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    failWithConnectionOrUnexpected(message);
+  }
 };

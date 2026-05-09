@@ -7,48 +7,48 @@ import { loadUserConfig } from "./user-config.js";
 let cachedConfig: NexusConfig | null = null;
 
 export async function getConfig(): Promise<NexusConfig> {
-	if (cachedConfig) {
-		return cachedConfig;
-	}
+  if (cachedConfig) {
+    return cachedConfig;
+  }
 
-	const [c12Config, userConfig] = await Promise.all([
-		loadConfig<NexusConfig>({
-			name: "probe",
-			defaults: DEFAULT_CONFIG,
-			envName: "PROBE",
-		}),
-		loadUserConfig(),
-	]);
+  const [c12Config, userConfig] = await Promise.all([
+    loadConfig<NexusConfig>({
+      name: "probe",
+      defaults: DEFAULT_CONFIG,
+      envName: "PROBE",
+    }),
+    loadUserConfig(),
+  ]);
 
-	cachedConfig = {
-		...DEFAULT_CONFIG,
-		...c12Config.config,
-		...userConfig,
-	};
+  cachedConfig = {
+    ...DEFAULT_CONFIG,
+    ...c12Config.config,
+    ...userConfig,
+  };
 
-	cachedConfig.walletDir = expandHomeDir(cachedConfig.walletDir);
-	cachedConfig.tokenCacheDir = expandHomeDir(cachedConfig.tokenCacheDir);
+  cachedConfig.walletDir = expandHomeDir(cachedConfig.walletDir);
+  cachedConfig.tokenCacheDir = expandHomeDir(cachedConfig.tokenCacheDir);
 
-	return cachedConfig;
+  return cachedConfig;
 }
 
 export function clearConfigCache(): void {
-	cachedConfig = null;
+  cachedConfig = null;
 }
 
 export function expandHomeDir(path: string): string {
-	if (path.startsWith("~/")) {
-		return join(homedir(), path.slice(2));
-	}
-	return path;
+  if (path.startsWith("~/")) {
+    return join(homedir(), path.slice(2));
+  }
+  return path;
 }
 
 export async function getWalletDir(): Promise<string> {
-	const config = await getConfig();
-	return config.walletDir;
+  const config = await getConfig();
+  return config.walletDir;
 }
 
 export async function getTokenCacheDir(): Promise<string> {
-	const config = await getConfig();
-	return config.tokenCacheDir;
+  const config = await getConfig();
+  return config.tokenCacheDir;
 }

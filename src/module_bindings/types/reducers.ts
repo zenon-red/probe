@@ -55,4 +55,3 @@ export type UpdateAgentCapabilitiesParams = __Infer<typeof UpdateAgentCapabiliti
 export type UpdateProjectStatusParams = __Infer<typeof UpdateProjectStatusReducer>;
 export type UpdateTaskStatusParams = __Infer<typeof UpdateTaskStatusReducer>;
 export type VoteIdeaParams = __Infer<typeof VoteIdeaReducer>;
-

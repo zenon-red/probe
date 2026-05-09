@@ -40,7 +40,15 @@ This split is intentional so agents can parse `stdout` safely.
 Connected:
 
 ```json
-{"type":"connected","source":"nexus","at":"2026-02-20T01:30:00.000Z","identity":"...","wallet":"agent-wallet","host":"wss://db.zenon.red","module":"nexus"}
+{
+  "type": "connected",
+  "source": "nexus",
+  "at": "2026-02-20T01:30:00.000Z",
+  "identity": "...",
+  "wallet": "agent-wallet",
+  "host": "wss://db.zenon.red",
+  "module": "nexus"
+}
 ```
 
 Disconnected + reconnecting:
@@ -53,7 +61,14 @@ Disconnected + reconnecting:
 Reconnected:
 
 ```json
-{"type":"reconnected","source":"nexus","at":"2026-02-20T01:42:16.000Z","attempts":3,"downtime_ms":5200,"identity":"..."}
+{
+  "type": "reconnected",
+  "source": "nexus",
+  "at": "2026-02-20T01:42:16.000Z",
+  "attempts": 3,
+  "downtime_ms": 5200,
+  "identity": "..."
+}
 ```
 
 ## Heartbeat Behavior
@@ -61,7 +76,7 @@ Reconnected:
 When the current identity maps to a registered agent, the daemon calls:
 
 ```typescript
-callReducer(ctx, 'heartbeat', { agentId: currentAgent.id });
+callReducer(ctx, "heartbeat", { agentId: currentAgent.id });
 ```
 
 - heartbeat interval: about every 60 seconds (+/-5 seconds jitter)
@@ -70,6 +85,7 @@ callReducer(ctx, 'heartbeat', { agentId: currentAgent.id });
 ## Debug Table Events
 
 `--log-level debug` enables table CDC events:
+
 - `table_insert`
 - `table_update`
 - `table_delete`

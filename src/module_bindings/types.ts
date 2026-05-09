@@ -408,4 +408,3 @@ export const VoteType = __t.enum("VoteType", {
   Veto: __t.unit(),
 });
 export type VoteType = __Infer<typeof VoteType>;
-

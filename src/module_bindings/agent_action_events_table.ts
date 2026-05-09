@@ -9,10 +9,7 @@ import {
   type AlgebraicTypeType as __AlgebraicTypeType,
   type Infer as __Infer,
 } from "spacetimedb";
-import {
-  ActionEventType,
-} from "./types";
-
+import { ActionEventType } from "./types";
 
 export default __t.row({
   id: __t.u64().primaryKey(),

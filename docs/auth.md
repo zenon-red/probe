@@ -17,13 +17,13 @@ Probe uses a custom OIDC-like flow backed to require Zenon Network (Ed25519) key
 
 The backend OIDC provider (`nexus/backend/main.ts`) exposes:
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/.well-known/openid-configuration` | GET | OIDC discovery document |
-| `/.well-known/jwks.json` | GET | JWT public keys |
-| `/auth/challenge` | POST | Request signed challenge |
-| `/auth/token` | POST | Exchange signature for JWT |
-| `/health` | GET | Server health check |
+| Endpoint                            | Method | Purpose                    |
+| ----------------------------------- | ------ | -------------------------- |
+| `/.well-known/openid-configuration` | GET    | OIDC discovery document    |
+| `/.well-known/jwks.json`            | GET    | JWT public keys            |
+| `/auth/challenge`                   | POST   | Request signed challenge   |
+| `/auth/token`                       | POST   | Exchange signature for JWT |
+| `/health`                           | GET    | Server health check        |
 
 ## Challenge Request
 
@@ -35,6 +35,7 @@ Content-Type: application/json
 ```
 
 Response:
+
 ```json
 {
   "nonce": "uuid-v4",
@@ -60,6 +61,7 @@ Content-Type: application/json
 ```
 
 Response:
+
 ```json
 {
   "access_token": "eyJ...",
@@ -75,6 +77,7 @@ Token TTL: 2,592,000 seconds (30 days).
 ## JWT Claims
 
 The JWT contains:
+
 - `iss`: Issuer URL
 - `sub`: Zenon address
 - `aud`: `spacetimedb`
@@ -100,6 +103,7 @@ probe auth my-wallet --save
 ```
 
 This:
+
 1. Loads wallet `my-wallet` (prompts for password)
 2. Calls `/auth/challenge` with wallet address
 3. Signs challenge with Zenon's Ed25519 private key
@@ -117,6 +121,7 @@ Returns cached token validity and expiration.
 ### Password Sources
 
 Priority order:
+
 1. `--password-file <path>`: Read password from file
 2. `PROBE_WALLET_PASSWORD` environment variable
 3. Interactive prompt (requires TTY)
@@ -133,22 +138,24 @@ probe auth my-wallet --save
 ## SpacetimeDB Integration
 
 The JWT is passed to SpacetimeDB as a Bearer token. SpacetimeDB validates:
+
 1. JWT signature via JWKS endpoint
 2. Token expiration
 3. Extracts identity from `sub` claim
 
 Commands requiring authentication call `requireAuth()` in `src/utils/context.ts`, which:
+
 1. Loads cached token
 2. Connects to SpacetimeDB with token
 3. Rejects on 401/unauthorized
 
 ## Error Codes
 
-| Code | Meaning |
-|------|---------|
-| `invalid_address` | Malformed Zenon address |
-| `invalid_public_key` | Public key not 32 bytes hex |
+| Code                   | Meaning                                |
+| ---------------------- | -------------------------------------- |
+| `invalid_address`      | Malformed Zenon address                |
+| `invalid_public_key`   | Public key not 32 bytes hex            |
 | `address_key_mismatch` | Address doesn't derive from public key |
-| `invalid_signature` | Signature verification failed |
-| `expired_nonce` | Challenge nonce expired or invalid |
-| `rate_limited` | Too many challenge requests |
+| `invalid_signature`    | Signature verification failed          |
+| `expired_nonce`        | Challenge nonce expired or invalid     |
+| `rate_limited`         | Too many challenge requests            |

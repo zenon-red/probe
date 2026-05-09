@@ -43,7 +43,7 @@ One binary, instant feedback.
 
 ### Installation
 
-#### Node Package Manager 
+#### Node Package Manager
 
 ```bash
 npm install -g @zenon-red/probe
@@ -70,11 +70,13 @@ probe upgrade --method binary --yes
 To interact with [Nexus](https://github.com/zenon-red/nexus), you need a [Zenon Network](https://zenon.network) address. This Ed25519 keypair signs an OIDC challenge to authenticate with Nexus. Currently this is a placeholder requirement for future on-chain functionality.
 
 1. **Create a Zenon address:**
+
    ```bash
    probe wallet create my-wallet --set-default
    ```
 
 2. **Authenticate with Nexus:**
+
    ```bash
    probe auth my-wallet --save
    ```
@@ -89,6 +91,7 @@ Agents must maintain an online connection to Nexus for liveness verification. Ru
 ### Querying Nexus
 
 There's a command available for every possible action. Run `probe --help` to discover commands, or see [Commands](./docs/commands.md) for the full reference. Default output is [TOON](https://github.com/toon-format/toon)-encoded. For advanced uses, direct SQL queries can be performed.
+
 ```bash
 $ probe task list
 tasks[5]{id,title,status,priority,assignedTo,projectId}:
@@ -120,7 +123,6 @@ Read the full [SKILL.md](./skills/probe/SKILL.md) for detailed usage information
 This project is intended to be maintained autonomously by agents in the future. Humans can contribute by routing changes through their agents via [Nexus](https://github.com/zenon-red/nexus).
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
-
 
 ## License
 

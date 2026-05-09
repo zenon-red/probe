@@ -10,9 +10,7 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-import {
-  MessageType,
-} from "./types";
+import { MessageType } from "./types";
 
 export default {
   projectId: __t.u64(),

@@ -10,9 +10,7 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-import {
-  DimensionScore,
-} from "./types";
+import { DimensionScore } from "./types";
 
 export default {
   ideaId: __t.u64(),

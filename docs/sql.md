@@ -251,6 +251,7 @@ CREATE TABLE project_messages (
 ## Query Examples
 
 List high-priority tasks (filter status client-side):
+
 ```sql
 SELECT t.id, t.title, t.status, t.assigned_to, t.priority
 FROM tasks t
@@ -259,6 +260,7 @@ LIMIT 20;
 ```
 
 Find tasks with dependencies (note: complex types return as arrays):
+
 ```sql
 SELECT t.id, t.title, d.depends_on_id
 FROM tasks t
@@ -267,6 +269,7 @@ LIMIT 20;
 ```
 
 Agent activity (selecting only primitive columns):
+
 ```sql
 SELECT a.id, a.name, a.status, a.current_task_id
 FROM agents a
@@ -274,14 +277,16 @@ WHERE a.status != NULL;
 ```
 
 Idea voting progress (select primitives only):
+
 ```sql
-SELECT id, title, up_votes, down_votes, veto_count, 
+SELECT id, title, up_votes, down_votes, veto_count,
        total_votes, quorum, approval_threshold
 FROM ideas
 LIMIT 50;
 ```
 
 Count tasks by status (done client-side after fetching):
+
 ```sql
 SELECT COUNT(*) as total FROM tasks;
 ```
@@ -289,6 +294,7 @@ SELECT COUNT(*) as total FROM tasks;
 ## Output
 
 ### Default (TOON)
+
 Token-efficient format, ideal for humans and LLMs:
 
 ```yaml
@@ -298,6 +304,7 @@ query_1[5]{id,title,priority}:
 ```
 
 ### JSON Mode (`--json`)
+
 Structured output with keyed objects (easier for programmatic parsing):
 
 ```json
@@ -307,8 +314,8 @@ Structured output with keyed objects (easier for programmatic parsing):
     "query_1": {
       "columns": ["id", "title", "priority"],
       "rows": [
-        {"id": 1, "title": "Task A", "priority": 4},
-        {"id": 2, "title": "Task B", "priority": 7}
+        { "id": 1, "title": "Task A", "priority": 4 },
+        { "id": 2, "title": "Task B", "priority": 7 }
       ]
     }
   }
@@ -316,6 +323,7 @@ Structured output with keyed objects (easier for programmatic parsing):
 ```
 
 ### With `--meta`
+
 Includes timing and statistics:
 
 ```json
@@ -331,18 +339,19 @@ Includes timing and statistics:
 
 ## Error Handling
 
-| Status | Error Code | Meaning |
-|--------|------------|---------|
-| 401 | `AUTH_REQUIRED` | Token expired or invalid |
-| 400 | `SQL_INVALID` | Syntax error or invalid query |
-| timeout | `SQL_UNAVAILABLE` | Request timed out |
-| other | `SQL_UNAVAILABLE` | Connection or server error |
+| Status  | Error Code        | Meaning                       |
+| ------- | ----------------- | ----------------------------- |
+| 401     | `AUTH_REQUIRED`   | Token expired or invalid      |
+| 400     | `SQL_INVALID`     | Syntax error or invalid query |
+| timeout | `SQL_UNAVAILABLE` | Request timed out             |
+| other   | `SQL_UNAVAILABLE` | Connection or server error    |
 
 ## SQL Limitations
 
 SpacetimeDB supports a subset of SQL. Key limitations:
 
 ### What's Supported
+
 - ✅ `SELECT col1, col2 FROM table`
 - ✅ `SELECT * FROM table`
 - ✅ `WHERE column = literal` (numbers, strings, booleans)
@@ -352,6 +361,7 @@ SpacetimeDB supports a subset of SQL. Key limitations:
 - ✅ `LIMIT n`
 
 ### What's NOT Supported
+
 - ❌ `ORDER BY` - Sort results client-side
 - ❌ `GROUP BY`, `HAVING`
 - ❌ `SUM`, `AVG`, `MIN`, `MAX` - Only `COUNT(*)` works
@@ -366,8 +376,8 @@ SpacetimeDB supports a subset of SQL. Key limitations:
 Columns with SpacetimeDB enums, Options, or Timestamps return **algebraic type arrays** instead of friendly values:
 
 ```yaml
-status[2]: [0, []]           # Enum variant 0 (open)
-assigned_to[2]: [1, []]      # Option::None
+status[2]: [0, []] # Enum variant 0 (open)
+assigned_to[2]: [1, []] # Option::None
 claimed_at[2]: [0, [123...]] # Option::Some(timestamp)
 ```
 

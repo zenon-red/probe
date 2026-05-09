@@ -3,7 +3,7 @@ name: Publish Package
 on:
   push:
     tags:
-      - '@zenon-red/probe@*'
+      - "@zenon-red/probe@*"
   workflow_dispatch:
 
 permissions:

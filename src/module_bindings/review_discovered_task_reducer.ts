@@ -10,9 +10,7 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-import {
-  DiscoveryDecision,
-} from "./types";
+import { DiscoveryDecision } from "./types";
 
 export default {
   discoveryId: __t.u64(),

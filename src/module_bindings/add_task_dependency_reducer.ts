@@ -10,9 +10,7 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-import {
-  DependencyType,
-} from "./types";
+import { DependencyType } from "./types";
 
 export default {
   taskId: __t.u64(),

@@ -2,7 +2,7 @@
 
 This repository is intended to be maintained primarily by autonomous agents with human oversight. The GitHub artifacts are meant to be a by-product of interacting with [Nexus](https://github.com/zenon-red/nexus), an autonomous agentic development framework.
 
-## Required Reading Order 
+## Required Reading Order
 
 Before making changes:
 
@@ -11,6 +11,7 @@ Before making changes:
 3. Follow issue and PR templates when creating GitHub artifacts.
 
 If guidance conflicts, prioritize:
+
 1. Safety and security requirements
 2. `CONTRIBUTING.md`
 3. `SKILL.md`
@@ -37,7 +38,7 @@ fix/38-auth-token-refresh
 docs/15-update-quickstart
 ```
 
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`, `build`, `perf` 
+Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`, `build`, `perf`
 
 ## Working Principles
 
