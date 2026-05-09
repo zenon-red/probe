@@ -1,0 +1,21 @@
+src/utils/onboard/steps.ts
+  s_492bbcf0e8fbf2::t_c44e0c62946cb7 19
+  s_492bbcf0e8fbf2::t_57e43527cd4748 438-454
+  s_492bbcf0e8fbf2::t_6707652627a25b 483-485,490
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "e4fe8f4c42613ba60736ce6d0a0ef0cdcb684e1b",
+  "prompts": {},
+  "sessions": {
+    "s_492bbcf0e8fbf2": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f28bc8d1ffeFEHoMOsP00KxGA",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": null
+    }
+  }
+}
