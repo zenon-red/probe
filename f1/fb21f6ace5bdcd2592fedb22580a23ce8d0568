@@ -1,0 +1,26 @@
+src/commands/onboard.ts
+  s_492bbcf0e8fbf2::t_ba307953842503 12
+  s_492bbcf0e8fbf2::t_122d8f2069dbaa 220-233
+src/utils/scheduler-plans.ts
+  s_492bbcf0e8fbf2::t_77d233b9f63f59 205-207
+  s_492bbcf0e8fbf2::t_1cdf17516a256a 5,162-204,208-239
+src/utils/runtime-detection.ts
+  s_492bbcf0e8fbf2::t_d10e3a9752569a 149
+  s_492bbcf0e8fbf2::t_b5a80a7c7ea697 161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "f1fb21f6ace5bdcd2592fedb22580a23ce8d0568",
+  "prompts": {},
+  "sessions": {
+    "s_492bbcf0e8fbf2": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f28bc8d1ffeFEHoMOsP00KxGA",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
