@@ -1,0 +1,19 @@
+src/utils/runtime-detection.ts
+  s_492bbcf0e8fbf2::t_c61fd8f1a251a3 3,57-58,60-104,106,108-118,196,202
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "ba589fdf7ee1904849c82a11142b2caf19bb5ef3",
+  "prompts": {},
+  "sessions": {
+    "s_492bbcf0e8fbf2": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f28bc8d1ffeFEHoMOsP00KxGA",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
