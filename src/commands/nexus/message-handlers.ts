@@ -24,6 +24,91 @@ export interface MessageCommandArgs {
   wallet?: string;
   host?: string;
   module?: string;
+  raw?: boolean;
+}
+
+const MAX_MESSAGE_CONTENT_LENGTH = 4000;
+
+type ContentViolation =
+  | { type: "length"; length: number; max: number }
+  | { type: "control"; sequence: string; position: number };
+
+function escapeForDisplay(input: string): string {
+  let out = "";
+  for (const char of input) {
+    const code = char.charCodeAt(0);
+    if (code === 0x1b) {
+      out += "\\x1b";
+    } else if (code === 0x7f) {
+      out += "\\x7f";
+    } else if (code < 0x20) {
+      out += `\\x${code.toString(16).padStart(2, "0")}`;
+    } else {
+      out += char;
+    }
+  }
+  return out;
+}
+
+function findControlSequence(content: string): { sequence: string; position: number } | null {
+  const patterns = [
+    /\x1B\[[0-?]*[ -/]*[@-~]/g, // CSI
+    /\x1B\][^\x07\x1B]*(?:\x07|\x1B\\)/g, // OSC
+    /\x1B[@-_]/g, // single-char ESC
+    /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, // control chars except \t, \n, \r
+  ];
+
+  let earliest: { sequence: string; position: number } | null = null;
+  for (const pattern of patterns) {
+    pattern.lastIndex = 0;
+    const match = pattern.exec(content);
+    if (!match || match.index === undefined) continue;
+    const hit = { sequence: match[0], position: match.index + 1 };
+    if (!earliest || hit.position < earliest.position) {
+      earliest = hit;
+    }
+  }
+
+  return earliest;
+}
+
+function validateMessageContent(content: string, raw: boolean): ContentViolation | null {
+  if (content.length > MAX_MESSAGE_CONTENT_LENGTH) {
+    return {
+      type: "length",
+      length: content.length,
+      max: MAX_MESSAGE_CONTENT_LENGTH,
+    };
+  }
+
+  if (raw) {
+    return null;
+  }
+
+  const control = findControlSequence(content);
+  if (!control) return null;
+  return {
+    type: "control",
+    sequence: escapeForDisplay(control.sequence),
+    position: control.position,
+  };
+}
+
+function validateOrFail(content: string, raw: boolean): void {
+  const violation = validateMessageContent(content, raw);
+  if (!violation) return;
+  if (violation.type === "length") {
+    error(
+      "MESSAGE_CONTENT_TOO_LONG",
+      `Message content length ${violation.length} exceeds max ${violation.max} characters.`,
+      "Send a concise plain-text summary or split the content into multiple messages.",
+    );
+  }
+  error(
+    "MESSAGE_CONTENT_INVALID",
+    `ANSI escape sequence ${violation.sequence} at position ${violation.position}.`,
+    "Send a plain-text summary, not raw command output. Use --raw if intentional.",
+  );
 }
 
 const isNumeric = (str: string): boolean => /^\d+$/.test(str);
@@ -246,6 +331,8 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
           );
         }
 
+        validateOrFail(content, !!args.raw);
+
         try {
           await withAuth(
             { host: args.host, module: args.module, wallet: args.wallet },
@@ -344,6 +431,8 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
             "Target and message content required. Usage: probe message send <target> <content>",
           );
         }
+
+        validateOrFail(content, !!args.raw);
 
         if ((args.type || "user").toLowerCase() === "directive") {
           error(

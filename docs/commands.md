@@ -117,9 +117,9 @@ probe task claim <id>
 
 ```bash
 probe message list [target] [--limit <n>] [--context <id>]
-probe message send <target> <content> [--type user|system] [--context <id>]
+probe message send <target> <content> [--type user|system] [--context <id>] [--raw]
 probe message directives [target] [--limit <n>]
-probe message directive <target> <content> [--context <id>]
+probe message directive <target> <content> [--context <id>] [--raw]
 probe message channels
 ```
 
@@ -134,6 +134,9 @@ TOON output includes: `id`, `location`, `senderId`, `content`, `messageType`, `c
 `message directives` returns directive messages only.
 
 `message directive` is a convenience alias for sending a directive without `--type`.
+
+`message send` and `message directive` reject terminal control/ANSI sequences by default and cap content length at 4000 characters.
+Use `--raw` only when sending exact raw bytes is intentional.
 
 Threading pattern:
 

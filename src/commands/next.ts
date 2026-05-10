@@ -1,16 +1,17 @@
 import { defineCommand } from "citty";
-import { log } from "@clack/prompts";
 import { checkAutoUpdateInBackground } from "~/utils/auto-update.js";
 import { callReducer, type Agent, withAuth } from "~/utils/context.js";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { isJsonMode, note, setJsonMode, success } from "~/utils/output.js";
+import { isJsonMode, setJsonMode, success } from "~/utils/output.js";
 import { runHealthChecks, type HealthCheck } from "~/utils/health.js";
 import { chooseNext, REASON_CODES, type NextAction } from "~/utils/next-router.js";
+import { buildContextCommands, getNextActionDef } from "~/utils/next-action-defs.js";
+import { toonList } from "~/utils/toon.js";
 
 interface NextResult {
   action: NextAction;
   contextCommands: string[];
-  completion: { instruction: string; maxActions: number };
+  completion: { taskInstruction: string; maxActions: number };
   health: HealthCheck[];
 }
 
@@ -71,8 +72,7 @@ export default defineCommand({
         },
         contextCommands: ["probe doctor"],
         completion: {
-          instruction: "Complete the routed action.",
-          maxActions: 1,
+          ...getNextActionDef("repair"),
         },
         health: health.checks,
       });
@@ -101,8 +101,7 @@ export default defineCommand({
           },
           contextCommands: ["probe doctor"],
           completion: {
-            instruction: "Complete the routed action.",
-            maxActions: 1,
+            ...getNextActionDef("repair"),
           },
           health: health.checks,
         });
@@ -119,33 +118,15 @@ export default defineCommand({
             targetType: action.target?.type,
             targetId: action.target?.id,
             reasonCode: action.reason_code,
-            leaseExpiresAt: undefined,
           });
         } catch {
           // non-fatal
         }
       }
 
-      const contextCommands: string[] = [];
-      if (action.target?.type === "idea") {
-        contextCommands.push(`probe idea get ${action.target.id}`);
-        contextCommands.push("probe idea dimensions");
-      }
-      if (action.target?.type === "task") {
-        contextCommands.push(`probe task get ${action.target.id}`);
-      }
-      if (action.target?.type === "message") {
-        contextCommands.push(`probe message list ${agent.id} --limit 10`);
-      }
-      if (action.target?.type === "directive") {
-        contextCommands.push("probe message directives general --limit 1");
-      }
-      if (action.target?.type === "project") {
-        contextCommands.push(`probe project get ${action.target.id}`);
-      }
-      if (action.target?.type === "discovered_task") {
-        contextCommands.push(`probe discover get ${action.target.id}`);
-      }
+      const contextCommands = buildContextCommands(action, agent.id);
+
+      const actionDef = getNextActionDef(action.kind);
 
       emit({
         action: {
@@ -156,8 +137,8 @@ export default defineCommand({
         },
         contextCommands,
         completion: {
-          instruction: "Complete the routed action.",
-          maxActions: 1,
+          taskInstruction: actionDef.taskInstruction,
+          maxActions: actionDef.maxActions,
         },
         health: health.checks,
       });
@@ -175,51 +156,31 @@ export default defineCommand({
         return;
       }
 
-      const { action } = result;
-      const displayNames: Record<string, string> = {
-        propose: "Propose an Idea",
-        vote: "Vote on Ideas",
-        claim_task: "Claim a Task",
-        continue_task: "Continue Task",
-        inbox: "Check Inbox",
-        project_setup: "Set Up Project",
-        create_tasks: "Create Tasks",
-        validate_reviews: "Validate Reviews",
-        review_discovery: "Review Discovery",
-        repair: "Repair",
-        idle: "Idle",
-      };
-      const displayName =
-        action.reason_code === REASON_CODES.READ_DIRECTIVE
-          ? "Read Directive"
-          : displayNames[action.kind] || action.kind;
+      success(result);
+      const targetType = result.action.target?.type || "";
+      const targetId = result.action.target?.id || "";
 
-      log.step(`NEXT ACTION: ${displayName.toUpperCase()}`);
-
-      if (action.skill) {
-        note(
-          `Load and follow the skill ${action.skill} to the best of your abilities.`,
-          "Instructions",
-        );
-      }
+      console.log(
+        toonList("next_action", [
+          {
+            kind: result.action.kind,
+            reason_code: result.action.reason_code,
+            skill: result.action.skill || "",
+            target_type: targetType,
+            target_id: targetId,
+            max_actions: result.completion.maxActions,
+            task_instruction: result.completion.taskInstruction,
+          },
+        ]),
+      );
 
       if (result.contextCommands.length > 0) {
-        for (const cmd of result.contextCommands) {
-          log.info(cmd);
-        }
-      }
-
-      if (action.kind === "repair") {
-        const failed = result.health.filter((c) => c.status === "fail" || c.status === "warn");
-        if (failed.length > 0) {
-          for (const c of failed) {
-            log.error(`${c.check}: ${c.detail}`);
-          }
-        }
-      }
-
-      if (action.kind === "idle") {
-        log.info("No pending work. All health checks pass.");
+        console.log(
+          toonList(
+            "context_commands",
+            result.contextCommands.map((cmd) => ({ command: cmd })),
+          ),
+        );
       }
     }
   },

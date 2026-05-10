@@ -32,6 +32,11 @@ export default defineCommand({
     },
     limit: { type: "string", description: "Limit messages", default: "20" },
     wallet: { type: "string", description: "Wallet name" },
+    raw: {
+      type: "boolean",
+      description: "Allow raw control/ANSI sequences in content",
+      default: false,
+    },
     json: { type: "boolean", description: "Output JSON", default: false },
     host: { type: "string", description: "SpacetimeDB host" },
     module: { type: "string", description: "Module name" },
@@ -81,6 +86,10 @@ export default defineCommand({
             name: "--limit",
             detail: "Max messages returned for list (default: 20)",
           },
+          {
+            name: "--raw",
+            detail: "Allow raw control/ANSI content in send/directive payloads",
+          },
           { name: "--wallet", detail: "Wallet to use for send" },
           {
             name: "--host, --module",
@@ -98,6 +107,7 @@ export default defineCommand({
         ],
         notes: [
           "Quotes are only required when target/content contains spaces.",
+          "send/directive reject terminal control sequences by default; use --raw only when intentional.",
           "Use `probe message channels` to discover available channel names and project IDs.",
         ],
       });
