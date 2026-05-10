@@ -1,0 +1,24 @@
+src/commands/next.ts
+  s_670fc0660ed382::t_b37d1967f57ce0 19-32,93,123,129-130,134-137,140
+src/utils/context.ts
+  s_670fc0660ed382::t_be01b79867d952 249
+  s_670fc0660ed382::t_40f3c81730e1c4 158
+package.json
+  s_670fc0660ed382::t_4b8da7df5cff79 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "8981fcd7a0f45ef5516561bf513ecf9b1ac91485",
+  "prompts": {},
+  "sessions": {
+    "s_670fc0660ed382": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f0223b53ffe1Zx4k0tX3zJJK0",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
