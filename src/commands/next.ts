@@ -13,7 +13,22 @@ interface NextResult {
   contextCommands: string[];
   completion: { taskInstruction: string; maxActions: number };
   health: HealthCheck[];
+  persisted: boolean;
 }
+
+const KIND_TAGS: Record<string, string> = {
+  repair: "Repair",
+  inbox: "Inbox",
+  vote: "Vote",
+  propose: "Propose",
+  continue_task: "ContinueTask",
+  claim_task: "ClaimTask",
+  project_setup: "ProjectSetup",
+  create_tasks: "CreateTasks",
+  validate_reviews: "ValidateReviews",
+  review_discovery: "ReviewDiscovery",
+  idle: "Idle",
+};
 
 export default defineCommand({
   meta: {
@@ -75,6 +90,7 @@ export default defineCommand({
           ...getNextActionDef("repair"),
         },
         health: health.checks,
+        persisted: false,
       });
     }
 
@@ -104,21 +120,29 @@ export default defineCommand({
             ...getNextActionDef("repair"),
           },
           health: health.checks,
+          persisted: false,
         });
       }
 
       const action = chooseNext(ctx, agent);
 
+      let persisted = false;
+
       // Persist action if not idle/repair
       if (action.kind !== "idle" && action.kind !== "repair") {
         try {
+          const reducerKind = KIND_TAGS[action.kind];
+          if (!reducerKind) {
+            throw new Error(`Unsupported action kind for reducer: ${action.kind}`);
+          }
           await callReducer(ctx, "issue_agent_action", {
             agentId: agent.id,
-            kind: action.kind,
+            kind: { tag: reducerKind },
             targetType: action.target?.type,
             targetId: action.target?.id,
             reasonCode: action.reason_code,
           });
+          persisted = true;
         } catch {
           // non-fatal
         }
@@ -141,6 +165,7 @@ export default defineCommand({
           maxActions: actionDef.maxActions,
         },
         health: health.checks,
+        persisted,
       });
     });
 

@@ -155,6 +155,7 @@ export class CommandContext implements AsyncDisposable {
                 })
                 .subscribe([
                   "SELECT * FROM agents",
+                  "SELECT * FROM agent_actions",
                   "SELECT * FROM tasks",
                   "SELECT * FROM ideas",
                   "SELECT * FROM messages",
@@ -245,7 +246,8 @@ export async function callReducer(
     string,
     (args: Record<string, unknown>) => Promise<void>
   >;
-  const reducer = reducers[reducerName];
+  const accessorName = reducerName.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+  const reducer = reducers[accessorName];
   if (typeof reducer !== "function") {
     throw new Error(`Reducer not found: ${reducerName}`);
   }
