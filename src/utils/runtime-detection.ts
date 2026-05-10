@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { access } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -69,10 +69,14 @@ const hermesScheduler: SchedulerAdapter = {
     try {
       const cronExpr = `*/${input.intervalMinutes} * * * *`;
       const message =
-        "Load and internalize the skill zr-nexus-primer. Execute `probe next` and follow its instructions exactly.";
-      execSync(
-        `hermes cron create "${cronExpr}" "${message}" --name "ZENON ${input.agentId} wake"`,
-        { stdio: "ignore", timeout: 15000 },
+        "Load and internalize the skill zr-nexus-primer. Execute probe next and follow its instructions exactly.";
+      execFileSync(
+        "hermes",
+        ["cron", "create", cronExpr, message, "--name", `ZENON ${input.agentId} wake`],
+        {
+          stdio: "ignore",
+          timeout: 15000,
+        },
       );
       return {
         success: true,
@@ -114,9 +118,19 @@ const openclawScheduler: SchedulerAdapter = {
     try {
       const cronExpr = `*/${input.intervalMinutes} * * * *`;
       const message =
-        "Load and internalize the skill zr-nexus-primer. Execute `probe next` and follow its instructions exactly.";
-      execSync(
-        `openclaw cron add --name "ZENON ${input.agentId} wake" --cron "${cronExpr}" --message "${message}"`,
+        "Load and internalize the skill zr-nexus-primer. Execute probe next and follow its instructions exactly.";
+      execFileSync(
+        "openclaw",
+        [
+          "cron",
+          "add",
+          "--name",
+          `ZENON ${input.agentId} wake`,
+          "--cron",
+          cronExpr,
+          "--message",
+          message,
+        ],
         { stdio: "ignore", timeout: 15000 },
       );
       return {

@@ -83,6 +83,12 @@ export function detectMethod(explicit?: InstallMethodArg): InstallMethod {
   // npm global install heuristic
   if (argv1.includes("node_modules") || resolvedProbePath.includes("node_modules")) return "npm";
 
+  // fnm-managed global shim heuristic (common on VPS/dev shells)
+  // e.g. /run/user/<uid>/fnm_multishells/<id>/bin/probe
+  if (resolvedProbePath.includes("/fnm_multishells/") && resolvedProbePath.endsWith("/probe")) {
+    return "npm";
+  }
+
   // Try npm list (only if npm exists)
   try {
     const out = execSync("npm list -g @zenon-red/probe --depth=0 2>/dev/null", {

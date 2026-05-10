@@ -38,7 +38,7 @@ function detectAgentFrameworks(): {
 }
 
 export function buildAgenticRuntimePlan(input: ScheduleInput): string {
-  const wakeCommand = "Load and internalize the skill zr-nexus-primer. Execute `probe next`.";
+  const wakeCommand = "Load and internalize the skill zr-nexus-primer. Execute probe next.";
   const frameworks = detectAgentFrameworks();
 
   const installedFrameworks = Object.entries(frameworks)
