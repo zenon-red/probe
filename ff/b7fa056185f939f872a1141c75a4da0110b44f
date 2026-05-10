@@ -1,0 +1,30 @@
+package.json
+  s_670fc0660ed382::t_6989e427fba2d7 3
+src/utils/runtime-detection.ts
+  s_670fc0660ed382::t_52a82d22729dda 172
+  s_670fc0660ed382::t_f1e2c41e85dc05 62-68,73
+  s_670fc0660ed382::t_fe535531e4f3c8 158-159,163,174-176
+  s_670fc0660ed382::t_6343d0a79e4420 107
+  s_670fc0660ed382::t_501542409aab11 84
+  s_670fc0660ed382::t_1dc5e0b0edf35f 169
+  s_670fc0660ed382::t_ecbabec52afdac 250-260
+  s_670fc0660ed382::t_d9006a57ddf7a4 93-94,98,109-111
+  s_670fc0660ed382::t_c3fcbbf3eeba74 104,120-126,131-132
+  s_670fc0660ed382::t_2e1be00d07c2d6 151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "ffb7fa056185f939f872a1141c75a4da0110b44f",
+  "prompts": {},
+  "sessions": {
+    "s_670fc0660ed382": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f0223b53ffe1Zx4k0tX3zJJK0",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
