@@ -59,11 +59,18 @@ const hermesScheduler: SchedulerAdapter = {
   supported: true,
   mode: "managed",
   async configure(input) {
+    if (!commandExists("hermes") && !(await pathExists(join(homedir(), ".hermes")))) {
+      return {
+        success: false,
+        mode: "manual",
+        detail: "hermes CLI not found in PATH and ~/.hermes does not exist",
+      };
+    }
     if (!commandExists("hermes")) {
       return {
         success: false,
         mode: "manual",
-        detail: "hermes CLI not found in PATH",
+        detail: "hermes dotdir found but CLI not in PATH; install hermes or use --scheduler manual",
       };
     }
     try {
@@ -74,7 +81,7 @@ const hermesScheduler: SchedulerAdapter = {
         "hermes",
         ["cron", "create", cronExpr, message, "--name", `ZENON ${input.agentId} wake`],
         {
-          stdio: "ignore",
+          stdio: "pipe",
           timeout: 15000,
         },
       );
@@ -83,23 +90,25 @@ const hermesScheduler: SchedulerAdapter = {
         mode: "managed",
         detail: `Created hermes cron job for ${input.agentId}`,
       };
-    } catch {
+    } catch (err: unknown) {
+      const stderr = (err as { stderr?: Buffer })?.stderr?.toString().trim() || "";
       return {
         success: false,
         mode: "manual",
-        detail: "hermes cron create failed",
+        detail: stderr ? `hermes cron create failed: ${stderr}` : "hermes cron create failed",
       };
     }
   },
   async verify() {
     if (!commandExists("hermes")) {
-      return { configured: false, detail: "hermes CLI not found" };
+      return { configured: false, detail: "hermes CLI not found in PATH" };
     }
     try {
-      execSync("hermes cron list", { stdio: "ignore", timeout: 10000 });
+      execSync("hermes cron list", { stdio: "pipe", timeout: 10000 });
       return { configured: true, detail: "hermes cron list succeeded" };
-    } catch {
-      return { configured: false, detail: "hermes cron list failed" };
+    } catch (err: unknown) {
+      const stderr = (err as { stderr?: Buffer })?.stderr?.toString().trim() || "";
+      return { configured: false, detail: stderr || "hermes cron list failed" };
     }
   },
 };
@@ -108,11 +117,19 @@ const openclawScheduler: SchedulerAdapter = {
   supported: true,
   mode: "managed",
   async configure(input) {
+    if (!commandExists("openclaw") && !(await pathExists(join(homedir(), ".openclaw")))) {
+      return {
+        success: false,
+        mode: "manual",
+        detail: "openclaw CLI not found in PATH and ~/.openclaw does not exist",
+      };
+    }
     if (!commandExists("openclaw")) {
       return {
         success: false,
         mode: "manual",
-        detail: "openclaw CLI not found in PATH",
+        detail:
+          "openclaw dotdir found but CLI not in PATH; install openclaw or use --scheduler manual",
       };
     }
     try {
@@ -131,30 +148,32 @@ const openclawScheduler: SchedulerAdapter = {
           "--message",
           message,
         ],
-        { stdio: "ignore", timeout: 15000 },
+        { stdio: "pipe", timeout: 15000 },
       );
       return {
         success: true,
         mode: "managed",
         detail: `Created openclaw cron job for ${input.agentId}`,
       };
-    } catch {
+    } catch (err: unknown) {
+      const stderr = (err as { stderr?: Buffer })?.stderr?.toString().trim() || "";
       return {
         success: false,
         mode: "manual",
-        detail: "openclaw cron add failed",
+        detail: stderr ? `openclaw cron add failed: ${stderr}` : "openclaw cron add failed",
       };
     }
   },
   async verify() {
     if (!commandExists("openclaw")) {
-      return { configured: false, detail: "openclaw CLI not found" };
+      return { configured: false, detail: "openclaw CLI not found in PATH" };
     }
     try {
-      execSync("openclaw cron list", { stdio: "ignore", timeout: 10000 });
+      execSync("openclaw cron list", { stdio: "pipe", timeout: 10000 });
       return { configured: true, detail: "openclaw cron list succeeded" };
-    } catch {
-      return { configured: false, detail: "openclaw cron list failed" };
+    } catch (err: unknown) {
+      const stderr = (err as { stderr?: Buffer })?.stderr?.toString().trim() || "";
+      return { configured: false, detail: stderr || "openclaw cron list failed" };
     }
   },
 };
@@ -215,17 +234,6 @@ export const runtimeAdapters: RuntimeAdapter[] = [
     },
     scheduler: openclawScheduler,
   },
-  {
-    id: "universal",
-    displayName: "Universal",
-    async detectCurrent() {
-      return true; // fallback
-    },
-    async detectInstalled() {
-      return true; // always available
-    },
-    scheduler: universalScheduler,
-  },
 ];
 
 export async function detectRuntime(): Promise<RuntimeAdapter> {
@@ -239,5 +247,15 @@ export async function detectRuntime(): Promise<RuntimeAdapter> {
       return adapter;
     }
   }
-  return runtimeAdapters[runtimeAdapters.length - 1]; // universal
+  return {
+    id: "universal",
+    displayName: "Universal",
+    async detectCurrent() {
+      return true;
+    },
+    async detectInstalled() {
+      return true;
+    },
+    scheduler: universalScheduler,
+  };
 }
