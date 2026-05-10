@@ -1,0 +1,19 @@
+package.json
+  s_eb29274b58874e::t_f02326d5be5d41 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "7ee76541b98bfde52dff3f4afd9d23fa662c422b",
+  "prompts": {},
+  "sessions": {
+    "s_eb29274b58874e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f0328997ffeRNpikgT68r12KD",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
