@@ -1,0 +1,37 @@
+src/commands/nexus/message.ts
+  s_670fc0660ed382::t_aee29179a83d2a 35-39,89-92,110
+package.json
+  s_670fc0660ed382::t_633b74adb98c82 3
+src/commands/next.ts
+  s_670fc0660ed382::t_274e6a80be010f 8,14
+  s_670fc0660ed382::t_8e3f514827c797 75,104
+  s_670fc0660ed382::t_a524ad04bc7f8a 5,9,159,163,165,173-175
+  s_670fc0660ed382::t_79a99e5ffa3cec 127
+  s_670fc0660ed382::t_6013e442c1adf5 129,140-141,172
+  s_670fc0660ed382::t_fd3d8077e4ac8e 160-162,164,166-171,178-183
+docs/commands.md
+  s_670fc0660ed382::t_017dc081da3cae 120,122,138-139
+src/utils/next-action-defs.ts
+  s_670fc0660ed382::t_27fa0350b4f2bb 24-25,34-35
+  s_670fc0660ed382::t_f14954b6aa652a 1-3,5-9,12-14,16-18,21-23,26-28,31-33,36-38,41-43,46-48,51-53,56-58,60-64,66-97
+  s_670fc0660ed382::t_a64d473a4691da 4,10,19,29,39,44,49,54,59
+src/commands/nexus/message-handlers.ts
+  s_670fc0660ed382::t_e14f7553823166 27-96,335
+  s_670fc0660ed382::t_d7637e02a7196a 97-111,334,435
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "ab42fae8ce0d5e8055198a43fdc8658b80fad95d",
+  "prompts": {},
+  "sessions": {
+    "s_670fc0660ed382": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f0223b53ffe1Zx4k0tX3zJJK0",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
