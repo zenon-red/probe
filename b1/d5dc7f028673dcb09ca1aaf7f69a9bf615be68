@@ -1,0 +1,29 @@
+src/utils/next-router.ts
+  s_051f58b49720a7::t_a77df163a2a8e9 165,167-171
+src/commands/nexus/message-handlers.ts
+  s_670fc0660ed382::t_795b159f6e7f15 55-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "b1d5dc7f028673dcb09ca1aaf7f69a9bf615be68",
+  "prompts": {},
+  "sessions": {
+    "s_051f58b49720a7": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1ec23639affeYeEgz9zwCR2Pm3",
+        "model": "glm-5.1"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_670fc0660ed382": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1f0223b53ffe1Zx4k0tX3zJJK0",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
