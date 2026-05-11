@@ -52,10 +52,14 @@ function escapeForDisplay(input: string): string {
 
 function findControlSequence(content: string): { sequence: string; position: number } | null {
   const patterns = [
-    /\x1B\[[0-?]*[ -/]*[@-~]/g, // CSI
-    /\x1B\][^\x07\x1B]*(?:\x07|\x1B\\)/g, // OSC
-    /\x1B[@-_]/g, // single-char ESC
-    /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, // control chars except \t, \n, \r
+    // oxlint-disable-next-line no-control-regex -- intentionally detecting ANSI control bytes
+    /\x1B\[[0-?]*[ -/]*[@-~]/g,
+    // oxlint-disable-next-line no-control-regex -- intentionally detecting ANSI control bytes
+    /\x1B\][^\x07\x1B]*(?:\x07|\x1B\\)/g,
+    // oxlint-disable-next-line no-control-regex -- intentionally detecting ANSI control bytes
+    /\x1B[@-_]/g,
+    // oxlint-disable-next-line no-control-regex -- intentionally detecting control characters
+    /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g,
   ];
 
   let earliest: { sequence: string; position: number } | null = null;

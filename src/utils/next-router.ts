@@ -134,18 +134,6 @@ export function chooseNext(ctx: CommandContext, agent: Agent): NextAction {
       };
     }
 
-    // Propose
-    const pendingCount = ctx
-      .iter<Idea>("ideas")
-      .filter((i) => IdeaStatus.is.voting(i.status)).length;
-    if (pendingCount < 3) {
-      return {
-        kind: "propose",
-        reason_code: REASON_CODES.PROPOSAL_SCOUT_DUE,
-        skill: SKILLS.propose,
-      };
-    }
-
     // Continue task
     const tasks = ctx.iter<Task>("tasks");
     const owned = tasks.find(
@@ -174,6 +162,13 @@ export function chooseNext(ctx: CommandContext, agent: Agent): NextAction {
         skill: SKILLS.claim_task,
       };
     }
+
+    // Propose (fallback — always propose when nothing else to do)
+    return {
+      kind: "propose",
+      reason_code: REASON_CODES.PROPOSAL_SCOUT_DUE,
+      skill: SKILLS.propose,
+    };
   }
 
   // 3. Zoe routing
