@@ -419,6 +419,8 @@ export default defineCommand({
             );
             success({
               proposed: true,
+              status: "PendingHumanReview",
+              hint: "Idea requires human review before voting",
               idea: published
                 ? {
                     id: published.id.toString(),

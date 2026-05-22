@@ -61,6 +61,7 @@ export const Agent = __t.object("Agent", {
   identity: __t.identity(),
   lastHeartbeat: __t.timestamp(),
   currentTaskId: __t.option(__t.u64()),
+  onboardedAt: __t.option(__t.timestamp()),
   createdAt: __t.timestamp(),
   lastActiveAt: __t.timestamp(),
 });
@@ -101,6 +102,7 @@ export const AgentRole = __t.enum("AgentRole", {
   Zoe: __t.unit(),
   Admin: __t.unit(),
   Zeno: __t.unit(),
+  Human: __t.unit(),
 });
 export type AgentRole = __Infer<typeof AgentRole>;
 
@@ -232,11 +234,31 @@ export const Idea = __t.object("Idea", {
   createdAt: __t.timestamp(),
   updatedAt: __t.timestamp(),
   computedScore: __t.f64(),
+  revision: __t.u32(),
+  contentHash: __t.string(),
+  approvedRevision: __t.option(__t.u32()),
+  approvedContentHash: __t.option(__t.string()),
 });
 export type Idea = __Infer<typeof Idea>;
 
+export const IdeaFeedback = __t.object("IdeaFeedback", {
+  id: __t.u64(),
+  ideaId: __t.u64(),
+  reviewerId: __t.string(),
+  get decision() {
+    return ReviewDecision;
+  },
+  reasonCode: __t.string(),
+  comment: __t.string(),
+  createdAt: __t.timestamp(),
+});
+export type IdeaFeedback = __Infer<typeof IdeaFeedback>;
+
 // The tagged union or sum type for the algebraic type `IdeaStatus`.
 export const IdeaStatus = __t.enum("IdeaStatus", {
+  PendingHumanReview: __t.unit(),
+  HumanApproved: __t.unit(),
+  ChangesRequested: __t.unit(),
   Voting: __t.unit(),
   ApprovedForProject: __t.unit(),
   Rejected: __t.unit(),
@@ -273,6 +295,16 @@ export const MessageType = __t.enum("MessageType", {
 });
 export type MessageType = __Infer<typeof MessageType>;
 
+// The tagged union or sum type for the algebraic type `PlanReviewStatus`.
+export const PlanReviewStatus = __t.enum("PlanReviewStatus", {
+  NotSubmitted: __t.unit(),
+  PendingReview: __t.unit(),
+  Approved: __t.unit(),
+  ChangesRequested: __t.unit(),
+  Rejected: __t.unit(),
+});
+export type PlanReviewStatus = __Infer<typeof PlanReviewStatus>;
+
 export const Project = __t.object("Project", {
   id: __t.u64(),
   sourceIdeaId: __t.u64(),
@@ -284,6 +316,14 @@ export const Project = __t.object("Project", {
   },
   createdAt: __t.timestamp(),
   createdBy: __t.string(),
+  planRefPath: __t.option(__t.string()),
+  planRefCommit: __t.option(__t.string()),
+  get planReviewStatus() {
+    return PlanReviewStatus;
+  },
+  approvedPlanRefCommit: __t.option(__t.string()),
+  planReviewedBy: __t.option(__t.string()),
+  planReviewedAt: __t.option(__t.timestamp()),
 });
 export type Project = __Infer<typeof Project>;
 
@@ -306,12 +346,33 @@ export const ProjectMessage = __t.object("ProjectMessage", {
 });
 export type ProjectMessage = __Infer<typeof ProjectMessage>;
 
+export const ProjectPlanFeedback = __t.object("ProjectPlanFeedback", {
+  id: __t.u64(),
+  projectId: __t.u64(),
+  reviewerId: __t.string(),
+  get decision() {
+    return ReviewDecision;
+  },
+  reasonCode: __t.string(),
+  comment: __t.string(),
+  createdAt: __t.timestamp(),
+});
+export type ProjectPlanFeedback = __Infer<typeof ProjectPlanFeedback>;
+
 // The tagged union or sum type for the algebraic type `ProjectStatus`.
 export const ProjectStatus = __t.enum("ProjectStatus", {
   Active: __t.unit(),
   Paused: __t.unit(),
 });
 export type ProjectStatus = __Infer<typeof ProjectStatus>;
+
+// The tagged union or sum type for the algebraic type `ReviewDecision`.
+export const ReviewDecision = __t.enum("ReviewDecision", {
+  Approved: __t.unit(),
+  Rejected: __t.unit(),
+  ChangesRequested: __t.unit(),
+});
+export type ReviewDecision = __Infer<typeof ReviewDecision>;
 
 export const Task = __t.object("Task", {
   id: __t.u64(),

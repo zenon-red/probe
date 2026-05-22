@@ -9,7 +9,7 @@ import {
   type AlgebraicTypeType as __AlgebraicTypeType,
   type Infer as __Infer,
 } from "spacetimedb";
-import { ProjectStatus } from "./types";
+import { ProjectStatus, PlanReviewStatus } from "./types";
 
 export default __t.row({
   id: __t.u64().primaryKey(),
@@ -22,4 +22,12 @@ export default __t.row({
   },
   createdAt: __t.timestamp().name("created_at"),
   createdBy: __t.string().name("created_by"),
+  planRefPath: __t.option(__t.string()).name("plan_ref_path"),
+  planRefCommit: __t.option(__t.string()).name("plan_ref_commit"),
+  get planReviewStatus() {
+    return PlanReviewStatus.name("plan_review_status");
+  },
+  approvedPlanRefCommit: __t.option(__t.string()).name("approved_plan_ref_commit"),
+  planReviewedBy: __t.option(__t.string()).name("plan_reviewed_by"),
+  planReviewedAt: __t.option(__t.timestamp()).name("plan_reviewed_at"),
 });

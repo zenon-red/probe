@@ -201,6 +201,7 @@ export default defineCommand({
               name: args.name,
               githubRepo: args["github-repo"],
               sourceIdeaId: args["source-idea"],
+              hint: "Plan ref must be submitted and approved by human reviewer before tasks can be created",
             });
             if (!isJsonMode()) {
               console.log(

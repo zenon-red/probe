@@ -26,6 +26,7 @@ export default __t.row({
   identity: __t.identity(),
   lastHeartbeat: __t.timestamp().name("last_heartbeat"),
   currentTaskId: __t.option(__t.u64()).name("current_task_id"),
+  onboardedAt: __t.option(__t.timestamp()).name("onboarded_at"),
   createdAt: __t.timestamp().name("created_at"),
   lastActiveAt: __t.timestamp().name("last_active_at"),
 });

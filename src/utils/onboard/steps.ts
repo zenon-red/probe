@@ -450,15 +450,8 @@ export async function configureScheduler(state: OnboardState): Promise<void> {
 }
 
 export async function sendAnnouncement(state: OnboardState): Promise<void> {
-  const schedulerStep = state.steps.find((s) => s.step === "scheduler");
-  const schedulerOk = schedulerStep?.status === "pass";
-  const explicitManual = state.args.scheduler === "manual";
   if (state.args["dry-run"]) {
-    addStep(state, "announcement", "skip", "Would send general announcement (dry-run)");
-    return;
-  }
-  if (!schedulerOk && !explicitManual) {
-    addStep(state, "announcement", "skip", "Skipped until scheduler is confirmed");
+    addStep(state, "onboarding_event", "skip", "Would finalize onboarding event (dry-run)");
     return;
   }
   try {
@@ -470,20 +463,16 @@ export async function sendAnnouncement(state: OnboardState): Promise<void> {
         module: state.args.module,
       },
       async (ctx) => {
-        const channels = ctx.iter<{ id: bigint; name: string }>("channels");
-        const general = channels.find((c) => c.name === "general");
-        if (!general) return;
-        await callReducer(ctx, "sendMessage", {
-          channelId: general.id,
+        await callReducer(ctx, "finalizeOnboarding", {
           content: `Hi! I'm ${state.args.name}, ready to contribute.`,
-          messageType: { tag: "User" },
           contextId: `onboard:${state.agentId}`,
         });
       },
     );
-    addStep(state, "announcement", "pass", "One-time general announcement sent");
-  } catch {
-    addStep(state, "announcement", "warn", "Failed to send announcement");
+    addStep(state, "onboarding_event", "pass", "Onboarding event finalized");
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to finalize onboarding event";
+    addStep(state, "onboarding_event", "warn", message);
   }
 }
 

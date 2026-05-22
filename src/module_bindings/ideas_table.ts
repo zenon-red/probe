@@ -31,4 +31,8 @@ export default __t.row({
   createdAt: __t.timestamp().name("created_at"),
   updatedAt: __t.timestamp().name("updated_at"),
   computedScore: __t.f64().name("computed_score"),
+  revision: __t.u32(),
+  contentHash: __t.string().name("content_hash"),
+  approvedRevision: __t.option(__t.u32()).name("approved_revision"),
+  approvedContentHash: __t.option(__t.string()).name("approved_content_hash"),
 });
