@@ -3,7 +3,7 @@ import { defineCommand } from "citty";
 import { inferTableName, TABLE_DECODERS } from "~/generated/decoders.js";
 import { getConfig, resolveSpacetimeArgs } from "~/utils/config.js";
 import { printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, isJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import {
   executeSqlRequest,
   extractColumnNames,
@@ -16,19 +16,14 @@ import { getWalletInfo } from "~/utils/wallet.js";
 import { errorMessage } from "~/utils/errors.js";
 import { NETWORK_TIMEOUT } from "~/utils/timeouts.js";
 
-// Known tables derived from generated decoders
 const KNOWN_TABLES = Object.keys(TABLE_DECODERS);
 
-import { formatToon } from "~/utils/toon.js";
-
-// Helper to handle query errors with improved messages
 const handleQueryError = (err: unknown, timeoutMs: number): never => {
   if (err instanceof SqlRequestError) {
     if (err.status === 401) {
       error("AUTH_REQUIRED", "Authentication required. Run `probe auth <wallet> --save` first.");
     }
     const { message, suggestion } = parseSqlError(err.responseBody);
-    // Error parsed with potential suggestion
     if (err.status === 400) {
       error("SQL_INVALID", message, suggestion);
     }
@@ -50,7 +45,6 @@ const buildMeta = (results: SqlStatementResult[], durationMs: number) => ({
   row_count_total: results.reduce((sum, item) => sum + item.rows.length, 0),
 });
 
-// Build flat response structure for JSON mode
 interface QueryResult {
   columns: string[];
   rows: Record<string, unknown>[];
@@ -87,46 +81,6 @@ const buildFlatResponse = (
   }
 
   return response;
-};
-
-const formatStatementsToToon = (
-  results: SqlStatementResult[],
-  metaEnabled: boolean,
-  durationMs: number,
-  shouldDecode: boolean,
-  tableName?: string,
-): string => {
-  const payload: Record<string, unknown> = {};
-  const decoders = shouldDecode && tableName ? TABLE_DECODERS[tableName] : undefined;
-
-  for (let index = 0; index < results.length; index += 1) {
-    const statement = results[index];
-    const columns = extractColumnNames(statement);
-
-    const rowObjects = (statement.rows as unknown[][]).map((row) => {
-      const obj: Record<string, unknown> = {};
-      for (let i = 0; i < columns.length; i++) {
-        const colName = columns[i];
-        const value = row[i];
-        const decoder = decoders?.[colName];
-        obj[colName] = decoder ? decoder(value) : value;
-      }
-      return obj;
-    });
-
-    payload[`query_${index + 1}`] = rowObjects;
-  }
-
-  if (results.length === 0) {
-    payload.query_1 = [];
-  }
-
-  if (metaEnabled) {
-    const meta = buildMeta(results, durationMs);
-    payload.meta = [meta];
-  }
-
-  return formatToon(payload);
 };
 
 export default defineCommand({
@@ -191,17 +145,11 @@ export default defineCommand({
 
     const hasSql = args.sql || args.file;
 
-    // Handle --tables flag
     if (args.tables) {
-      if (isJsonMode()) {
-        success({ tables: KNOWN_TABLES });
-      } else {
-        console.log(formatToon({ tables: KNOWN_TABLES }));
-      }
+      success({ tables: KNOWN_TABLES });
       return;
     }
 
-    // Validate arguments
     if (!hasSql) {
       printHelp({
         command: "probe query",
@@ -239,7 +187,7 @@ export default defineCommand({
         ],
         notes: [
           "This command is read-only and intended for SQL queries against Nexus tables.",
-          'JSON mode returns keyed objects: {"query_1": {"columns": [...], "rows": [{"id": 1, ...}]}}',
+          'Output returns keyed objects: {"query_1": {"columns": [...], "rows": [{"id": 1, ...}]}}',
           "Use --raw to see raw SpacetimeDB algebraic type arrays.",
         ],
       });
@@ -273,7 +221,6 @@ export default defineCommand({
       error("SQL_REQUIRED", "SQL query is empty");
     }
 
-    // Determine if we should decode algebraic types
     const shouldDecode = args.raw ? false : (args.decode ?? true);
     const tableName = inferTableName(sql);
 
@@ -286,19 +233,12 @@ export default defineCommand({
         timeoutMs,
       });
 
-      if (isJsonMode()) {
-        const flatResponse = buildFlatResponse(results, shouldDecode, tableName);
-        if (args.meta) {
-          success({ ...flatResponse, meta: buildMeta(results, durationMs) });
-        } else {
-          success(flatResponse);
-        }
-        return;
+      const flatResponse = buildFlatResponse(results, shouldDecode, tableName);
+      if (args.meta) {
+        success({ ...flatResponse, meta: buildMeta(results, durationMs) });
+      } else {
+        success(flatResponse);
       }
-
-      console.log(
-        formatStatementsToToon(results, Boolean(args.meta), durationMs, shouldDecode, tableName),
-      );
     } catch (err) {
       handleQueryError(err, timeoutMs);
     }

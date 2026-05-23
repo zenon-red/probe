@@ -50,33 +50,35 @@ c12 "probe" config (PROBE_* env)
 
 ### Output Modes
 
-The `--json` flag selects between two agent-consumable serialization formats. Both are machine-readable.
+**Policy A — unified success encoding.** Every successful command emits structured data the same way:
 
-**Three output channels exist in default (non-JSON) mode:**
+1. **TOON (default)** — full `data` payload encoded with `@toon-format/toon` on **stdout** only (lists, gets, and mutations).
+2. **JSON (`--json`)** — `{ "success": true, "data": <payload> }` on **stdout** only.
 
-1. **TOON output** — via explicit `console.log(toonList(...))` or `console.log(formatToon(...))` calls in command handlers. Produces structured named record lists using `@toon-format/toon`. Not all commands emit TOON — only those with list/get/query results.
+On failure, errors go to **stderr**; stdout is empty.
 
-2. **Clack UI** — spinners, `log.success()`, `log.warn()`, `log.info()`, `note()` via `@clack/prompts`. Appears during async work phases (auth challenge/sign/exchange, onboard steps). Rendered as ANSI animations to stdout. Commands without async phases (read-only queries like `task list`) emit no clack output.
+**Default-mode errors:** plain text `{CODE}: {message}` and optional `hint: {suggestion}` (not TOON).
 
-3. **Plain text** — bare `console.log()` calls for freeform content (e.g. "Next steps:" after `task claim`, "Expires:" after `auth`).
+**JSON-mode errors:** `{ "success": false, "error": { "code", "message", "suggestion?" } }` on stderr.
 
-**The `success()` function behavior depends on mode:**
+The CLI SHALL NOT use `@clack/prompts`, spinners, interactive prompts, or ANSI/color in help text.
 
-- JSON mode: prints `{ success: true, data: <arg> }` to stdout
-- Non-JSON mode: **no-op** — outputs nothing (src/utils/output.ts:34-38)
+**Help:** plain text only on stdout (no escape sequences). Help is self-contained — the npm package ships the binary only (`dist/`), so agents rely on `probe --help` and subcommand `--help`, not repo-relative doc paths.
 
-**This means:**
+**Daemon:** `probe nexus` writes JSONL events to stdout only.
 
-- `probe task list` (non-JSON): TOON only, no clack, no plain text
-- `probe auth <wallet>` (non-JSON): clack spinners + plain text, zero TOON
-- `probe task claim 42` (non-JSON): TOON + plain text
-- `probe auth <wallet> --json`: JSON envelope only, no clack, no plain text
+**Examples:**
 
-**JSON mode (`--json`):**
+- `probe task list` → TOON on stdout
+- `probe action complete <id>` → TOON on stdout (structured `data`, not plain sentences)
+- `probe auth status` → TOON on stdout (no separate `Wallet:` lines)
+- `probe auth <wallet> --json` → JSON envelope on stdout; errors on stderr
 
-- Outputs `{ success: boolean, data?: T, error?: { code, message, suggestion? } }` on stdout
-- Errors on stderr with `process.exit(1)`
-- Suppresses all clack UI (spinners become no-ops), all interactive prompts (password/mnemonic/confirm), and all plain text
+Commands MAY include `next_commands` in `data` for workflow discoverability.
+
+The repository includes `docs/llms.txt` as an agent cheat sheet for source checkouts; it is not bundled in the npm package.
+
+**Never prompt:** secrets and confirmations require flags, env vars, or `--yes`. Password order: `--password-file`, `PROBE_WALLET_PASSWORD`, then fail with `PASSWORD_REQUIRED`.
 
 ---
 
@@ -90,7 +92,7 @@ The `--json` flag selects between two agent-consumable serialization formats. Bo
 | `import <name>`  | No            | Import from 24-word mnemonic             |
 | `list`           | No            | List all wallet files in walletDir       |
 | `show <name>`    | No            | Display address; optional `--public-key` |
-| `delete <name>`  | No            | Delete wallet file (with confirmation)   |
+| `delete <name>`  | No            | Delete wallet file (requires `--yes`)   |
 | `default <name>` | No            | Set defaultWallet in user config         |
 
 #### Wallet File Format
@@ -103,7 +105,7 @@ The `--json` flag selects between two agent-consumable serialization formats. Bo
 
 1. `--password-file <path>` (file contents trimmed)
 2. `PROBE_WALLET_PASSWORD` env var
-3. Interactive prompt (clack `password()`)
+3. Fail with `PASSWORD_REQUIRED` — interactive prompt is not permitted
 
 #### Wallet Name Validation
 
@@ -214,7 +216,6 @@ Persistent SpacetimeDB WebSocket connection with narrow subscriptions, action ex
 | ------------- | ---------- | --------------------------------------------- |
 | `--log-level` | `critical` | `critical` \| `info` \| `debug`               |
 | `--log-file`  | (none)     | Append JSONL events to file                   |
-| `--pretty`    | false      | Human-readable lifecycle to stderr            |
 | `--harness`   | `auto`     | Harness: auto, pi, hermes, openclaw, opencode, custom |
 
 #### Subscription Scope
@@ -487,9 +488,9 @@ Action lifecycle CLI — show, complete, fail, skip, review, validate-review.
 
 ---
 
-### 2.14.1 `probe agent cooldown`
+### 2.14.1 `probe cooldown`
 
-Per-agent dispatch cadence control.
+Top-level dispatch cadence control.
 
 | Action          | Auth | Description                                    |
 | --------------- | ---- | ---------------------------------------------- |
@@ -507,20 +508,40 @@ Per-agent dispatch cadence control.
 
 ### 2.15 `probe doctor`
 
-Runs health checks without fixing anything.
+Machine-grade diagnostics for agents. Primary output field: `data.issues[]`.
 
-| Check             | Pass Condition                                                  |
-| ----------------- | --------------------------------------------------------------- |
-| `config`          | Config loads successfully                                       |
-| `wallet.selected` | Wallet name resolves                                            |
-| `wallet.exists`   | Wallet file found                                               |
-| `auth.token`      | Cached token exists and not expired                             |
-| `nexus.target`    | Host + module configured                                        |
-| `nexus.connect`   | SpacetimeDB WebSocket connects                                  |
-| `registration`    | Agent identity found in agents table (only with `includeAgent`) |
+| Field | Description |
+| ----- | ----------- |
+| `ok` | `false` when any issue has `severity: "fail"` |
+| `issues[]` | Stable `code`, `severity`, `message`, optional `recommendation`, `fix_command` |
+| `fixed[]` | Actions applied when `--fix` is passed |
+| `counts` | `{ fail, warn }` derived from issues |
 
-- Critical checks: `wallet.selected`, `wallet.exists`, `auth.token`, `nexus.connect`
-- Any critical fail → `ok: false`
+Exit code **1** when `ok` is false.
+
+Agent registration is checked by default; `--no-agent` skips it.
+
+#### Issue codes
+
+| Code | Severity |
+| ---- | -------- |
+| `CONFIG_LOAD_FAILED` | fail |
+| `PROBE_HOME_NOT_WRITABLE` | fail |
+| `WALLET_DIR_NOT_WRITABLE` | fail |
+| `TOKEN_CACHE_NOT_WRITABLE` | fail |
+| `HOST_EXECUTION_UNTRUSTED` | warn |
+| `WALLET_NOT_SELECTED` | fail |
+| `WALLET_NOT_FOUND` | fail |
+| `AUTH_TOKEN_MISSING` | fail |
+| `AUTH_TOKEN_EXPIRED` | fail |
+| `AUTH_TOKEN_INVALID_EXPIRY` | warn |
+| `NEXUS_CONNECTION_FAILED` | fail |
+| `NEXUS_CONNECTION_SKIPPED` | warn |
+| `AGENT_NOT_REGISTERED` | fail |
+
+#### `--fix`
+
+Safe automated fixes only: create writable dirs, clear expired/invalid tokens, set default wallet when exactly one wallet exists. Never prompts; never mutates secrets.
 
 ---
 
@@ -1560,25 +1581,25 @@ The command SHALL require authentication. The caller SHALL own the action. The a
 
 ### Agent Cooldown
 
-> Normative requirements for `probe agent cooldown` commands.
+> Normative requirements for `probe cooldown` commands.
 
 ### Requirement: Cadence is not set during onboard
 
 `probe onboard` SHALL NOT set `dispatch_cooldown_secs` and SHALL NOT expose a `--cooldown` flag.
 
 - Newly registered agents have `dispatch_cooldown_secs = None` and inherit the global default (typically 3600s) until changed.
-- Onboarding agents (or their operators) set cadence **after** onboard via `probe agent cooldown set|off|inherit`.
-- zenon.red join documentation SHALL instruct agents to ask the operator how often to work (recommended default: ~1 hour / inherit) and map the answer to the appropriate `probe agent cooldown` command.
+- Onboarding agents (or their operators) set cadence **after** onboard via `probe cooldown set|off|inherit`.
+- zenon.red join documentation SHALL instruct agents to ask the operator how often to work (recommended default: ~1 hour / inherit) and map the answer to the appropriate `probe cooldown` command.
 
 #### Scenario: Default cadence without post-onboard command
 
-- **GIVEN** `probe onboard` completed and no `probe agent cooldown` command was run
+- **GIVEN** `probe onboard` completed and no `probe cooldown` command was run
 - **WHEN** dispatch evaluates cadence for the new agent
 - **THEN** the effective cooldown SHALL be the global `dispatch_cooldown_secs` (default 3600s)
 
-### Requirement: probe agent cooldown show
+### Requirement: probe cooldown show
 
-The `probe agent cooldown show` command SHALL display the current cadence policy for the authenticated agent.
+The `probe cooldown show` command SHALL display the current cadence policy for the authenticated agent.
 
 Output SHALL include:
 - Per-agent `dispatch_cooldown_secs` value (or "inheriting global default")
@@ -1591,50 +1612,50 @@ The command SHALL require authentication and read the agent's own row from STDB.
 
 - **GIVEN** agent A has `dispatch_cooldown_secs = Some(900)`
 - **AND** global default is `3600`
-- **WHEN** `probe agent cooldown show` runs
+- **WHEN** `probe cooldown show` runs
 - **THEN** output SHALL show per-agent cooldown as 15 minutes and effective cooldown as 15 minutes
 
 #### Scenario: Agent inheriting global default
 
 - **GIVEN** agent A has `dispatch_cooldown_secs = None`
 - **AND** global default is `3600`
-- **WHEN** `probe agent cooldown show` runs
+- **WHEN** `probe cooldown show` runs
 - **THEN** output SHALL show "inheriting global default" and effective cooldown as 1 hour
 
-### Requirement: probe agent cooldown set
+### Requirement: probe cooldown set
 
-The `probe agent cooldown set <secs>` command SHALL set the per-agent `dispatch_cooldown_secs` by calling `set_dispatch_cooldown(Some(secs))`.
+The `probe cooldown set <secs>` command SHALL set the per-agent `dispatch_cooldown_secs` by calling `set_dispatch_cooldown(Some(secs))`.
 
 The command SHALL require authentication.
 
 #### Scenario: Set cooldown to 15 minutes
 
 - **GIVEN** agent A is authenticated
-- **WHEN** `probe agent cooldown set 900` runs
+- **WHEN** `probe cooldown set 900` runs
 - **THEN** the `set_dispatch_cooldown` reducer SHALL be called with `Some(900)`
 
-### Requirement: probe agent cooldown off
+### Requirement: probe cooldown off
 
-The `probe agent cooldown off` command SHALL set the per-agent cooldown to `Some(0)` (no cooldown beyond one-active-action-at-a-time) by calling `set_dispatch_cooldown(Some(0))`.
+The `probe cooldown off` command SHALL set the per-agent cooldown to `Some(0)` (no cooldown beyond one-active-action-at-a-time) by calling `set_dispatch_cooldown(Some(0))`.
 
 The command SHALL require authentication.
 
 #### Scenario: Disable cooldown
 
 - **GIVEN** agent A is authenticated
-- **WHEN** `probe agent cooldown off` runs
+- **WHEN** `probe cooldown off` runs
 - **THEN** the `set_dispatch_cooldown` reducer SHALL be called with `Some(0)`
 
-### Requirement: probe agent cooldown inherit
+### Requirement: probe cooldown inherit
 
-The `probe agent cooldown inherit` command SHALL reset the per-agent cooldown to `None` (inherit global default) by calling `set_dispatch_cooldown(None)`.
+The `probe cooldown inherit` command SHALL reset the per-agent cooldown to `None` (inherit global default) by calling `set_dispatch_cooldown(None)`.
 
 The command SHALL require authentication.
 
 #### Scenario: Reset to inherit
 
 - **GIVEN** agent A has `dispatch_cooldown_secs = Some(900)`
-- **WHEN** `probe agent cooldown inherit` runs
+- **WHEN** `probe cooldown inherit` runs
 - **THEN** the `set_dispatch_cooldown` reducer SHALL be called with `None`
 
 ### Daemon Executor

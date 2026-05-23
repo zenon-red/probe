@@ -1,5 +1,3 @@
-import { blue, bold, cyan, dim, gray, green, white } from "kolorist";
-
 interface HelpSectionItem {
   name: string;
   detail: string;
@@ -23,6 +21,42 @@ export const JSON_FLAG_ARG_DESCRIPTION =
 export const JSON_FLAG_HELP_DETAIL =
   "JSON output (default is TOON — preferred for agents, more token-efficient)";
 
+const levenshtein = (a: string, b: string): number => {
+  const rows = a.length + 1;
+  const cols = b.length + 1;
+  const matrix = Array.from({ length: rows }, () => Array<number>(cols).fill(0));
+
+  for (let i = 0; i < rows; i += 1) matrix[i][0] = i;
+  for (let j = 0; j < cols; j += 1) matrix[0][j] = j;
+
+  for (let i = 1; i < rows; i += 1) {
+    for (let j = 1; j < cols; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost,
+      );
+    }
+  }
+
+  return matrix[a.length][b.length];
+};
+
+export const suggestCommand = (unknown: string, candidates: string[]): string | undefined => {
+  let best: { command: string; distance: number } | undefined;
+
+  for (const command of candidates) {
+    const distance = levenshtein(unknown.toLowerCase(), command.toLowerCase());
+    if (distance > 2) continue;
+    if (!best || distance < best.distance) {
+      best = { command, distance };
+    }
+  }
+
+  return best?.command;
+};
+
 const actionHelpCommands = new Set([
   "agent",
   "task",
@@ -39,6 +73,7 @@ const directHelpCommands = new Set([
   "token",
   "nexus",
   "query",
+  "cooldown",
   "doctor",
   "upgrade",
 ]);
@@ -46,13 +81,9 @@ const walletSubcommands = new Set(["create", "import", "list", "show", "delete",
 
 let forceHelpFlag = false;
 
-const neonBadge = (text: string): string =>
-  `\u001b[48;2;120;239;93m\u001b[38;2;12;28;16m ${text} \u001b[0m`;
-const section = (label: string): string => neonBadge(label.toUpperCase());
-
-const renderItems = (items: HelpSectionItem[], nameColor: (value: string) => string): string => {
+const renderItems = (items: HelpSectionItem[]): string => {
   const width = Math.max(...items.map((i) => i.name.length), 0);
-  return items.map((i) => `  ${nameColor(i.name.padEnd(width))}  ${i.detail}`).join("\n");
+  return items.map((i) => `  ${i.name.padEnd(width)}  ${i.detail}`).join("\n");
 };
 
 export const printHelp = (spec: HelpSpec): void => {
@@ -70,42 +101,56 @@ export const printHelp = (spec: HelpSpec): void => {
   }
 
   const lines: string[] = [];
-  lines.push(`${bold(white(spec.command))} ${dim("•")} ${gray(spec.description)}`);
+  lines.push(`${spec.command} • ${spec.description}`);
 
   lines.push("");
-  lines.push(section("Usage"));
+  lines.push("USAGE");
   for (const entry of spec.usage) {
-    lines.push(`  ${white(entry)}`);
+    lines.push(`  ${entry}`);
   }
 
   if (spec.actions && spec.actions.length > 0) {
     lines.push("");
-    lines.push(section("Actions"));
-    lines.push(renderItems(spec.actions, green));
+    lines.push("ACTIONS");
+    lines.push(renderItems(spec.actions));
   }
 
   if (spec.options && spec.options.length > 0) {
     lines.push("");
-    lines.push(section("Options"));
-    lines.push(renderItems(spec.options, blue));
+    lines.push("OPTIONS");
+    lines.push(renderItems(spec.options));
   }
 
   if (spec.examples && spec.examples.length > 0) {
     lines.push("");
-    lines.push(section("Examples"));
+    lines.push("EXAMPLES");
     for (const example of spec.examples) {
-      lines.push(`  ${cyan(example)}`);
+      lines.push(`  ${example}`);
     }
   }
 
   if (notes.length > 0) {
     lines.push("");
-    lines.push(section("Notes"));
+    lines.push("NOTES");
     for (const note of notes) {
-      lines.push(`  ${dim("-")} ${note}`);
+      lines.push(`  - ${note}`);
     }
   }
 
+  console.log(lines.join("\n"));
+};
+
+export const printConciseRootHelp = (description: string): void => {
+  const lines = [
+    `probe • ${description}`,
+    "",
+    "USAGE",
+    "  probe <command> [positionals] [options]",
+    "  probe task list",
+    "  probe action show <id>",
+    "",
+    "Run probe --help for the full command list.",
+  ];
   console.log(lines.join("\n"));
 };
 

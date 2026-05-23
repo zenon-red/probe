@@ -1,6 +1,5 @@
-import { log } from "@clack/prompts";
 import { getConfig } from "~/utils/config.js";
-import { isJsonMode } from "~/utils/output.js";
+import { isJsonMode } from "~/utils/output-mode.js";
 import {
   type InstallMethod,
   detectMethod,
@@ -75,7 +74,9 @@ export async function checkAutoUpdate(): Promise<void> {
 
   if (autoUpdate === "notify") {
     if (lastNotifiedVersion !== latest && !isJsonMode()) {
-      log.warn(`Update available: probe ${current} -> ${latest}. Run \`probe upgrade\` to update.`);
+      console.error(
+        `UPDATE_AVAILABLE: probe ${current} -> ${latest}. Run \`probe upgrade --yes\` to update.`,
+      );
       lastNotifiedVersion = latest;
     }
     return;
@@ -84,12 +85,12 @@ export async function checkAutoUpdate(): Promise<void> {
   try {
     await performAutoUpgrade(method, latest);
     if (!isJsonMode()) {
-      log.success(`Probe auto-updated to ${latest}`);
+      console.error(`AUTO_UPDATE: Probe auto-updated to ${latest}`);
     }
     lastNotifiedVersion = "";
   } catch {
     if (!isJsonMode()) {
-      log.warn(`Probe auto-update failed; run \`probe upgrade\` manually.`);
+      console.error("AUTO_UPDATE_FAILED: Run `probe upgrade --yes` manually.");
     }
   }
 }

@@ -1,7 +1,6 @@
-import { confirm } from "@clack/prompts";
 import { defineCommand } from "citty";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, info, isJsonMode, success, successMessage } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import { deleteWallet, walletExists } from "~/utils/wallet.js";
 import { errorMessage } from "~/utils/errors.js";
 
@@ -18,7 +17,7 @@ export default defineCommand({
     },
     yes: {
       type: "boolean",
-      description: "Skip confirmation prompt",
+      description: "Confirm wallet deletion (required)",
       default: false,
     },
     json: {
@@ -38,9 +37,13 @@ export default defineCommand({
         description: "Delete a wallet from local storage",
         usage: ["probe wallet delete <name> [options]", "probe wallet delete old-wallet --yes"],
         options: [
-          { name: "--yes", detail: "Skip interactive confirmation prompt" },
+          {
+            name: "--yes",
+            detail: "Required — confirm destructive deletion (no interactive prompt)",
+          },
           { name: "--json", detail: "JSON output for agents" },
         ],
+        notes: ["Interactive confirmation is not supported. Pass --yes to delete."],
       });
       return;
     }
@@ -54,25 +57,17 @@ export default defineCommand({
       );
     }
 
-    if (!isJsonMode() && !args.yes) {
-      const shouldDelete = await confirm({
-        message: `Are you sure you want to delete wallet "${name}"? This cannot be undone.`,
-      });
-
-      if (!shouldDelete) {
-        info("Deletion cancelled");
-        process.exit(0);
-      }
+    if (!args.yes) {
+      error(
+        "CONFIRMATION_REQUIRED",
+        `Deleting wallet "${name}" requires --yes`,
+        `Run: probe wallet delete ${name} --yes`,
+      );
     }
 
     try {
       await deleteWallet(name);
-
       success({ deleted: name });
-
-      if (!isJsonMode()) {
-        successMessage(`Wallet "${name}" deleted successfully`);
-      }
     } catch (err) {
       error("WALLET_DELETE_ERROR", errorMessage(err, "Failed to delete wallet"));
     }

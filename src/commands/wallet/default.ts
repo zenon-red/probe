@@ -1,6 +1,6 @@
 import { defineCommand } from "citty";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, isJsonMode, success, successMessage } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import { loadUserConfig, saveUserConfig } from "~/utils/user-config.js";
 import { walletExists } from "~/utils/wallet.js";
 
@@ -46,9 +46,5 @@ export default defineCommand({
     await saveUserConfig(userConfig);
 
     success({ defaultWallet: name });
-
-    if (!isJsonMode()) {
-      successMessage(`Default wallet set to '${name}'`);
-    }
   },
 });

@@ -3,8 +3,7 @@ import { defineCommand } from "citty";
 import { callReducer, withAuth } from "~/utils/context.js";
 import type { DispatchRoute as DispatchRouteType } from "~/module_bindings/types.js";
 import { DispatchRoute, enumName, identityHex } from "~/utils/enums.js";
-import { applyJsonMode, error, isJsonMode, success } from "~/utils/output.js";
-import { toonList } from "~/utils/toon.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 
 /**
  * Action row shape including new central dispatch fields.
@@ -184,19 +183,7 @@ export const actionShowCommand = defineCommand({
         const contextCommands = buildContextCommands(action);
         const row = formatActionRow(action);
 
-        if (isJsonMode()) {
-          success({ action: row, context_commands: contextCommands });
-        } else {
-          success(row);
-          if (contextCommands.length > 0) {
-            console.log(
-              toonList(
-                "context_commands",
-                contextCommands.map((cmd) => ({ command: cmd })),
-              ),
-            );
-          }
-        }
+        success({ action: row }, contextCommands);
       },
     );
   },
@@ -232,11 +219,7 @@ export const actionCompleteCommand = defineCommand({
           note: undefined,
         });
 
-        if (isJsonMode()) {
-          success({ action_id: actionId, status: "completed" });
-        } else {
-          success(`Action ${actionId} completed.`);
-        }
+        success({ action_id: actionId, status: "completed" });
       },
     );
   },
@@ -272,11 +255,7 @@ export const actionFailCommand = defineCommand({
           note: args.reason ?? undefined,
         });
 
-        if (isJsonMode()) {
-          success({ action_id: actionId, status: "failed", reason: args.reason });
-        } else {
-          success(`Action ${actionId} failed.${args.reason ? ` Reason: ${args.reason}` : ""}`);
-        }
+        success({ action_id: actionId, status: "failed", reason: args.reason });
       },
     );
   },
@@ -312,11 +291,7 @@ export const actionSkipCommand = defineCommand({
           note: args.reason ?? undefined,
         });
 
-        if (isJsonMode()) {
-          success({ action_id: actionId, status: "skipped", reason: args.reason });
-        } else {
-          success(`Action ${actionId} skipped.${args.reason ? ` Reason: ${args.reason}` : ""}`);
-        }
+        success({ action_id: actionId, status: "skipped", reason: args.reason });
       },
     );
   },
@@ -370,11 +345,7 @@ export const actionReviewCommand = defineCommand({
           summary: args.summary,
         });
 
-        if (isJsonMode()) {
-          success({ action_id: actionId, status: "completed", review_outcome: args.outcome });
-        } else {
-          success(`Action ${actionId} review completed with outcome: ${args.outcome}.`);
-        }
+        success({ action_id: actionId, status: "completed", review_outcome: args.outcome });
       },
     );
   },
@@ -428,11 +399,7 @@ export const actionValidateReviewCommand = defineCommand({
           summary: args.summary,
         });
 
-        if (isJsonMode()) {
-          success({ action_id: actionId, status: "completed", validation_outcome: args.outcome });
-        } else {
-          success(`Action ${actionId} validation completed with outcome: ${args.outcome}.`);
-        }
+        success({ action_id: actionId, status: "completed", validation_outcome: args.outcome });
       },
     );
   },
@@ -458,6 +425,10 @@ export default defineCommand({
     json: { type: "boolean", description: "JSON output", default: false },
   },
   run() {
-    console.log("Usage: probe action <show|complete|fail|skip|review|validate-review> [args]");
+    error(
+      "SUBCOMMAND_REQUIRED",
+      "Usage: probe action <show|complete|fail|skip|review|validate-review> [args]",
+      "Run: probe action --help",
+    );
   },
 });

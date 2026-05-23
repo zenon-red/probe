@@ -1,7 +1,7 @@
 import { defineCommand } from "citty";
 import { clearConfigCache, getConfig } from "~/utils/config.js";
 import { printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, isJsonMode, success, successMessage } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import { loadUserConfig, saveUserConfig } from "~/utils/user-config.js";
 import { errorMessage } from "~/utils/errors.js";
 
@@ -113,10 +113,6 @@ export default defineCommand({
           const value = getNestedValue(config as unknown as Record<string, unknown>, args.key);
 
           success({ [args.key]: value });
-
-          if (!isJsonMode()) {
-            console.log(`${args.key}: ${value}`);
-          }
           break;
         }
 
@@ -154,10 +150,6 @@ export default defineCommand({
           clearConfigCache();
 
           success({ [args.key]: parsedValue });
-
-          if (!isJsonMode()) {
-            successMessage(`Set ${args.key} = ${parsedValue}`);
-          }
           break;
         }
 
@@ -169,26 +161,6 @@ export default defineCommand({
             ...config,
             userConfig,
           });
-
-          if (!isJsonMode()) {
-            console.log("Configuration:");
-            console.log(`  issuer: ${config.issuer}`);
-            console.log(`  walletDir: ${config.walletDir}`);
-            console.log(`  defaultWallet: ${config.defaultWallet || "(not set)"}`);
-            console.log(`  autoUpdate: ${config.autoUpdate}`);
-            console.log(`  passwordMinLength: ${config.passwordMinLength}`);
-            console.log(`  tokenCacheDir: ${config.tokenCacheDir}`);
-            console.log(`  requestTimeout: ${config.requestTimeout}`);
-            console.log(`  spacetime.host: ${config.spacetime.host}`);
-            console.log(`  spacetime.module: ${config.spacetime.module}`);
-
-            if (Object.keys(userConfig).length > 0) {
-              console.log("\nUser overrides:");
-              for (const [key, value] of Object.entries(userConfig)) {
-                console.log(`  ${key}: ${JSON.stringify(value)}`);
-              }
-            }
-          }
           break;
         }
 

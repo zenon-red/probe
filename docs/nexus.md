@@ -5,13 +5,13 @@
 ## Usage
 
 ```bash
-probe nexus [--wallet <name>] [--log-level critical|info|debug] [--log-file <path>] [--pretty]
+probe nexus [--wallet <name>] [--log-level critical|info|debug] [--log-file <path>]
 ```
 
 ## Output Contract
 
 - `stdout`: structured JSONL events only (one JSON object per line)
-- `stderr`: optional human-readable logs when `--pretty` is enabled
+- `stderr`: errors only (no colored lifecycle mode)
 
 This split is intentional so agents can parse `stdout` safely.
 

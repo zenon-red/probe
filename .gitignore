@@ -9,13 +9,14 @@ coverage/
 tmp/
 temp/
 *.tmp
-.opencode/
 
 # local env and secrets
 .env
 .env.local
 wallets/
 tokens/
+.cursor/
+.opencode/
 
 # misc
 .vscode/

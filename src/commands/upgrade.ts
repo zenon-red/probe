@@ -1,8 +1,6 @@
 import { defineCommand } from "citty";
-import { confirm } from "@clack/prompts";
 import { printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, info, isJsonMode, success } from "~/utils/output.js";
-import { toonList } from "~/utils/toon.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import {
   type InstallMethod,
   type InstallMethodArg,
@@ -18,34 +16,6 @@ import {
 import { errorMessage } from "~/utils/errors.js";
 
 const VALID_METHODS = new Set<InstallMethodArg>(["auto", "npm", "binary"]);
-
-const printUpgradeResult = (data: {
-  method: InstallMethod;
-  currentVersion: string;
-  targetVersion: string;
-  latestVersion: string;
-  updateAvailable: boolean;
-  updated: boolean;
-  checkOnly: boolean;
-}): void => {
-  success(data);
-  if (isJsonMode()) {
-    return;
-  }
-
-  console.log(
-    toonList("upgrade_result", [
-      {
-        method: data.method,
-        currentVersion: data.currentVersion,
-        targetVersion: data.targetVersion,
-        latestVersion: data.latestVersion,
-        updated: data.updated,
-        checkOnly: data.checkOnly,
-      },
-    ]),
-  );
-};
 
 export default defineCommand({
   meta: {
@@ -69,7 +39,7 @@ export default defineCommand({
     },
     yes: {
       type: "boolean",
-      description: "Skip confirmation prompts",
+      description: "Confirm upgrade (required when upgrade would proceed)",
       default: false,
     },
     json: {
@@ -99,9 +69,10 @@ export default defineCommand({
             detail: "Check for updates without upgrading",
           },
           { name: "--method", detail: "Force install method: auto, npm, binary" },
-          { name: "--yes", detail: "Skip confirmation prompts" },
+          { name: "--yes", detail: "Required — confirm upgrade (no interactive prompt)" },
           { name: "--json", detail: "JSON output" },
         ],
+        notes: ["Interactive confirmation is not supported. Pass --yes to upgrade."],
       });
       return;
     }
@@ -118,7 +89,6 @@ export default defineCommand({
     const currentVersion = getCurrentVersion();
     const method = detectMethod(methodArg);
 
-    // Resolve target version
     let targetVersion: string | undefined;
     let latestVersion: string | undefined;
     let targetRelease: Awaited<ReturnType<typeof fetchGitHubReleaseByVersion>> | undefined;
@@ -156,17 +126,18 @@ export default defineCommand({
 
     const updateAvailable = targetVersion !== currentVersion;
 
-    // Check-only mode
+    const upgradeResult = (updated: boolean, checkOnly: boolean) => ({
+      method,
+      currentVersion,
+      targetVersion,
+      latestVersion: latestVersion || targetVersion,
+      updateAvailable,
+      updated,
+      checkOnly,
+    });
+
     if (args.check) {
-      printUpgradeResult({
-        method,
-        currentVersion,
-        targetVersion: targetVersion,
-        latestVersion: latestVersion || targetVersion,
-        updateAvailable,
-        updated: false,
-        checkOnly: true,
-      });
+      success(upgradeResult(false, true));
       return;
     }
 
@@ -179,29 +150,19 @@ export default defineCommand({
     }
 
     if (!updateAvailable) {
-      printUpgradeResult({
-        method,
-        currentVersion,
-        targetVersion: targetVersion,
-        latestVersion: latestVersion || targetVersion,
-        updateAvailable: false,
-        updated: false,
-        checkOnly: false,
-      });
+      success(upgradeResult(false, false));
       return;
     }
 
-    if (!isJsonMode() && !args.yes) {
-      const shouldUpgrade = await confirm({
-        message: `Upgrade Probe from ${currentVersion} to ${targetVersion}?`,
-      });
-      if (!shouldUpgrade) {
-        info("Upgrade cancelled");
-        process.exit(0);
-      }
+    if (!args.yes) {
+      const targetArg = args.target ? ` ${args.target}` : "";
+      error(
+        "CONFIRMATION_REQUIRED",
+        `Upgrade from ${currentVersion} to ${targetVersion} requires --yes`,
+        `Run: probe upgrade${targetArg} --yes`,
+      );
     }
 
-    // Perform upgrade
     try {
       if (method === "npm") {
         await upgradeViaNpm(targetVersion);
@@ -221,14 +182,6 @@ export default defineCommand({
       error(code, message);
     }
 
-    printUpgradeResult({
-      method,
-      currentVersion,
-      targetVersion: targetVersion,
-      latestVersion: latestVersion || targetVersion,
-      updateAvailable: true,
-      updated: true,
-      checkOnly: false,
-    });
+    success(upgradeResult(true, false));
   },
 });

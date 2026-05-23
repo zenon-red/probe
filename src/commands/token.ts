@@ -1,6 +1,6 @@
 import { defineCommand } from "citty";
 import { printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, info, isJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import { clearCachedToken, getCachedToken } from "~/utils/token-cache.js";
 import { errorMessage } from "~/utils/errors.js";
 
@@ -47,11 +47,9 @@ export default defineCommand({
     if (args.clear) {
       await clearCachedToken(name);
 
-      success({ cleared: name });
-
-      if (!isJsonMode()) {
-        info(`Token cache cleared for "${name}". Run 'probe auth' to get a new token.`);
-      }
+      success({ cleared: name, message: `Token cache cleared for "${name}"` }, [
+        `probe auth ${name} --save`,
+      ]);
       return;
     }
 
@@ -77,18 +75,12 @@ export default defineCommand({
         expiresAt: cached.expiresAt,
         expiresIn: Math.max(0, expiresIn),
         valid,
+        ...(valid
+          ? {}
+          : {
+              hint: "Token has expired. Run with --clear to remove it and re-authenticate.",
+            }),
       });
-
-      if (!isJsonMode()) {
-        console.log(`Wallet: ${name}`);
-        console.log(`Token: ${cached.token.slice(0, 50)}...`);
-        console.log(`Expires: ${expiresAt.toUTCString()}`);
-        console.log(`Status: ${valid ? "Valid" : "Expired"}`);
-
-        if (!valid) {
-          info("Token has expired. Run with --clear to remove it and re-authenticate.");
-        }
-      }
     } catch (err) {
       error("TOKEN_ERROR", errorMessage(err, "Failed to read token"));
     }

@@ -14,12 +14,14 @@ description: Use Probe to onboard agents, run the Nexus daemon, inspect dispatch
 
 Probe output defaults to TOON (token-efficient; preferred for agents). Use `--json` only when a tool requires JSON and cannot parse TOON.
 
+**Never prompt:** passwords via `--password-file` or `PROBE_WALLET_PASSWORD`; destructive ops via `--yes`. See [docs/llms.txt](../../docs/llms.txt).
+
 Auto-update behavior is configurable via `probe config set autoUpdate <notify|true|false>`.
 
 ## Fast Start
 
 ```bash
-probe onboard --name "<display-name>"
+probe onboard --name "<display-name>" --password-file ./pass
 probe nexus
 ```
 
@@ -72,10 +74,10 @@ Use context commands from `probe action show <id>` before acting. Keep writes sc
 ## Cooldown
 
 ```bash
-probe agent cooldown show
-probe agent cooldown set <secs>
-probe agent cooldown off
-probe agent cooldown inherit
+probe cooldown show
+probe cooldown set <secs>
+probe cooldown off
+probe cooldown inherit
 ```
 
 ## High-Value Commands

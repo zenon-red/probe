@@ -8,9 +8,8 @@ import {
 } from "~/utils/context.js";
 import { errorMessage, failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { TaskStatus } from "~/utils/enums.js";
-import { error, isJsonMode, success } from "~/utils/output.js";
+import { error, success } from "~/utils/output.js";
 import { toMicros } from "~/utils/time.js";
-import { toonList } from "~/utils/toon.js";
 
 export interface TaskCommandArgs {
   action?: string;
@@ -93,21 +92,6 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
         if (limit !== undefined) tasks = tasks.slice(0, limit);
 
         success({ tasks, count: tasks.length });
-        if (!isJsonMode()) {
-          console.log(
-            toonList(
-              "tasks",
-              tasks.map((t) => ({
-                id: t.id.toString(),
-                title: t.title,
-                status: TaskStatus.display(t.status),
-                priority: t.priority,
-                assignedTo: t.assignedTo || "",
-                projectId: t.projectId,
-              })),
-            ),
-          );
-        }
         break;
       }
 
@@ -168,21 +152,6 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
         }));
 
         success({ tasks: readyTasks, count: readyTasks.length });
-        if (!isJsonMode()) {
-          console.log(
-            toonList(
-              "tasks",
-              readyTasks.map((t) => ({
-                id: t.id,
-                title: t.title,
-                status: t.status,
-                priority: t.priority,
-                assignedTo: t.assignedTo,
-                projectId: t.projectId,
-              })),
-            ),
-          );
-        }
         break;
       }
 
@@ -195,23 +164,6 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
         if (!task) error("TASK_NOT_FOUND", `Task not found: ${taskId}`);
 
         success(task);
-        if (!isJsonMode()) {
-          console.log(
-            toonList("task", [
-              {
-                id: task.id.toString(),
-                title: task.title,
-                status: TaskStatus.display(task.status),
-                priority: task.priority,
-                assignedTo: task.assignedTo || "",
-                projectId: task.projectId.toString(),
-                githubIssueUrl: task.githubIssueUrl || "",
-                githubPrUrl: task.githubPrUrl || "",
-                description: task.description,
-              },
-            ]),
-          );
-        }
         break;
       }
 
@@ -238,17 +190,6 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
             title: args.title,
             issue: args["github-issue-url"],
           });
-          if (!isJsonMode()) {
-            console.log(
-              toonList("task_created", [
-                {
-                  projectId: args.project,
-                  title: args.title,
-                  githubIssueUrl: args["github-issue-url"] || "",
-                },
-              ]),
-            );
-          }
         } catch (err) {
           error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
@@ -284,48 +225,15 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
               }
             },
           );
-          success({
-            claimed: true,
-            taskId,
-            repositoryUrl,
-            contributingUrl,
-            nextSteps: [
-              repositoryUrl
-                ? `Fork the target repository: ${repositoryUrl}`
-                : "Fork the target repository to your GitHub account using gh cli",
-              contributingUrl
-                ? `Read CONTRIBUTING.md before starting: ${contributingUrl}`
-                : "Read CONTRIBUTING.md in the target repository before starting",
-              "Verify behavior independently by tracing relevant code flow and runtime path before implementing changes.",
-            ],
-          });
-
-          if (!isJsonMode()) {
-            console.log(
-              toonList("task_claimed", [
-                {
-                  taskId,
-                  repositoryUrl: repositoryUrl || "",
-                  contributingUrl: contributingUrl || "",
-                },
-              ]),
-            );
-            console.log("");
-            console.log("Next steps:");
-            if (repositoryUrl) {
-              console.log(`1. Fork the target repository: ${repositoryUrl}`);
-            } else {
-              console.log("1. Fork the target repository to your GitHub account");
-            }
-            if (contributingUrl) {
-              console.log(`2. Read CONTRIBUTING.md before starting: ${contributingUrl}`);
-            } else {
-              console.log("2. Read CONTRIBUTING.md in the target repository before starting");
-            }
-            console.log(
-              "3. Verify behavior independently by tracing relevant code flow and runtime path before implementing changes.",
-            );
-          }
+          success(
+            {
+              claimed: true,
+              taskId,
+              repositoryUrl,
+              contributingUrl,
+            },
+            [`probe task get ${taskId}`],
+          );
         } catch (err) {
           error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
@@ -353,17 +261,6 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
             status: args.status,
             pr: args["github-pr-url"],
           });
-          if (!isJsonMode()) {
-            console.log(
-              toonList("task_updated", [
-                {
-                  taskId,
-                  status: args.status || "",
-                  githubPrUrl: args["github-pr-url"] || "",
-                },
-              ]),
-            );
-          }
         } catch (err) {
           error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
@@ -389,17 +286,6 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
             status: "review",
             pr: args["github-pr-url"],
           });
-          if (!isJsonMode()) {
-            console.log(
-              toonList("task_review", [
-                {
-                  taskId,
-                  status: "review",
-                  githubPrUrl: args["github-pr-url"] || "",
-                },
-              ]),
-            );
-          }
         } catch (err) {
           error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
@@ -421,17 +307,6 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
               });
             });
             success({ added: true, taskId, dependsOn: args["add-dep"] });
-            if (!isJsonMode()) {
-              console.log(
-                toonList("dependency_added", [
-                  {
-                    taskId,
-                    dependsOnId: args["add-dep"],
-                    dependencyType: "blocks",
-                  },
-                ]),
-              );
-            }
           } catch (err) {
             error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }
@@ -445,19 +320,6 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
           );
 
           success({ dependencies: taskDeps });
-          if (!isJsonMode()) {
-            console.log(
-              toonList(
-                "task_dependencies",
-                taskDeps.map((dep) => ({
-                  id: dep.id.toString(),
-                  taskId: dep.taskId.toString(),
-                  dependsOnId: dep.dependsOnId.toString(),
-                  dependencyType: dep.dependencyType,
-                })),
-              ),
-            );
-          }
         } else {
           error(
             "DEPS_ACTION_REQUIRED",
@@ -477,16 +339,11 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
             subscribe: ["SELECT * FROM tasks"],
           },
           async (ctx) => {
-            if (!isJsonMode()) {
-              console.log(
-                toonList("task_watch", [
-                  {
-                    timeoutSeconds: timeout,
-                    statusFilter: args.status || "",
-                  },
-                ]),
-              );
-            }
+            success({
+              watching: true,
+              timeoutSeconds: timeout,
+              statusFilter: args.status || null,
+            });
 
             const waitForStop = new Promise<void>((resolve) => {
               const timer = setTimeout(() => {
@@ -508,29 +365,21 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
 
             ctx.db.tasks.onInsert((_ctx, task) => {
               if (!args.status || TaskStatus.matches(task.status, args.status)) {
-                console.log(
-                  toonList("tasks", [
-                    {
-                      id: task.id.toString(),
-                      title: task.title,
-                      change_type: "created",
-                    },
-                  ]),
-                );
+                success({
+                  id: task.id.toString(),
+                  title: task.title,
+                  change_type: "created",
+                });
               }
             });
 
             ctx.db.tasks.onUpdate((_ctx, _old, newTask) => {
               if (!args.status || TaskStatus.matches(newTask.status, args.status)) {
-                console.log(
-                  toonList("tasks", [
-                    {
-                      id: newTask.id.toString(),
-                      title: newTask.title,
-                      change_type: "updated",
-                    },
-                  ]),
-                );
+                success({
+                  id: newTask.id.toString(),
+                  title: newTask.title,
+                  change_type: "updated",
+                });
               }
             });
 

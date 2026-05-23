@@ -1,10 +1,8 @@
-import { AsyncLocalStorage } from "node:async_hooks";
-import { spinner as clackSpinner, log, note as clackNote } from "@clack/prompts";
-import { dim } from "kolorist";
 import type { OutputResult } from "~/types/index.js";
+import { emit, exitCodeFor } from "./emit.js";
+import { isJsonMode } from "./output-mode.js";
 
-const outputModeStorage = new AsyncLocalStorage<{ jsonMode: boolean }>();
-let jsonModeFallback = false;
+export { applyJsonMode, isJsonMode, setJsonMode } from "./output-mode.js";
 
 const jsonReplacer = (_key: string, value: unknown): unknown => {
   if (typeof value === "bigint") {
@@ -22,26 +20,18 @@ const printJson = (value: unknown, stderr = false): void => {
   console.log(serialized);
 };
 
-export function setJsonMode(enabled: boolean) {
-  jsonModeFallback = enabled;
-  outputModeStorage.enterWith({ jsonMode: enabled });
+export function success<T>(data: T, next_commands?: string[]): void {
+  emit({ data, next_commands });
 }
 
-export function applyJsonMode(args: { json?: boolean }): void {
-  if (args.json) setJsonMode(true);
-}
+export function error(
+  code: string,
+  message: string,
+  suggestion?: string,
+  exitCode?: number,
+): never {
+  const resolvedExitCode = exitCode ?? exitCodeFor(code);
 
-export function isJsonMode(): boolean {
-  return outputModeStorage.getStore()?.jsonMode === true || jsonModeFallback;
-}
-
-export function success<T>(data: T): void {
-  if (isJsonMode()) {
-    printJson({ success: true, data });
-  }
-}
-
-export function error(code: string, message: string, suggestion?: string, exitCode = 1): never {
   if (isJsonMode()) {
     const output: OutputResult<never> = {
       success: false,
@@ -52,72 +42,12 @@ export function error(code: string, message: string, suggestion?: string, exitCo
       },
     };
     printJson(output, true);
-    process.exit(exitCode);
-  } else {
-    log.error(message);
-    if (suggestion) {
-      console.error(`${dim("hint:")} ${suggestion}`);
-    }
-    process.exit(exitCode);
-  }
-}
-
-export function info(message: string): void {
-  if (!isJsonMode()) {
-    log.info(message);
-  }
-}
-
-export function successMessage(message: string): void {
-  if (!isJsonMode()) {
-    log.success(message);
-  }
-}
-
-export function warning(message: string): void {
-  if (!isJsonMode()) {
-    log.warn(message);
-  }
-}
-
-export function note(message: string, title?: string): void {
-  if (!isJsonMode()) {
-    clackNote(message, title);
-  }
-}
-
-export function spinner(message: string) {
-  if (isJsonMode()) {
-    return {
-      start: () => {},
-      stop: () => {},
-      succeed: () => {},
-      fail: () => {},
-    };
+    process.exit(resolvedExitCode);
   }
 
-  const clack = clackSpinner();
-
-  const start = () => {
-    clack.start(message);
-  };
-
-  const stop = () => {
-    clack.stop();
-  };
-
-  const succeed = (msg?: string) => {
-    clack.stop(msg || message);
-  };
-
-  const fail = (msg?: string) => {
-    clack.stop(msg || message);
-  };
-
-  return {
-    start,
-    stop,
-    succeed,
-    fail,
-  };
+  console.error(`${code}: ${message}`);
+  if (suggestion) {
+    console.error(`hint: ${suggestion}`);
+  }
+  process.exit(resolvedExitCode);
 }

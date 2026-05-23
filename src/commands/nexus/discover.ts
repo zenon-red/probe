@@ -2,9 +2,8 @@ import { defineCommand } from "citty";
 import { CommandContext, callReducer, type DiscoveredTask, withAuth } from "~/utils/context.js";
 import { errorMessage, failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, isJsonMode, success } from "~/utils/output.js";
-import { formatTimestamp, toMicros } from "~/utils/time.js";
-import { toonList } from "~/utils/toon.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
+import { toMicros } from "~/utils/time.js";
 
 import type { DiscoveryDecision } from "~/module_bindings/types.js";
 
@@ -140,17 +139,6 @@ export default defineCommand({
               });
             });
             success({ reported: true, title: args.title });
-            if (!isJsonMode()) {
-              console.log(
-                toonList("discovery_reported", [
-                  {
-                    title: args.title,
-                    taskId: args.task,
-                    projectId: args.project,
-                  },
-                ]),
-              );
-            }
           } catch (err) {
             error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }
@@ -189,17 +177,6 @@ export default defineCommand({
               });
             });
             success({ reviewed: true, id: discId, decision });
-            if (!isJsonMode()) {
-              console.log(
-                toonList("discovery_reviewed", [
-                  {
-                    id: discId,
-                    decision,
-                    reason: args.reason || "",
-                  },
-                ]),
-              );
-            }
           } catch (err) {
             error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }
@@ -231,21 +208,6 @@ export default defineCommand({
           if (limit !== undefined) discovered = discovered.slice(0, limit);
 
           success({ discoveredTasks: discovered, count: discovered.length });
-          if (!isJsonMode()) {
-            console.log(
-              toonList(
-                "discovered_tasks",
-                discovered.map((d) => ({
-                  id: d.id.toString(),
-                  title: d.title,
-                  taskType: d.taskType,
-                  severity: d.severity,
-                  status: discoveryStatusDisplay(d.status),
-                  projectId: d.projectId,
-                })),
-              ),
-            );
-          }
           break;
         }
 
@@ -262,27 +224,6 @@ export default defineCommand({
           if (!discovery) error("DISCOVERY_NOT_FOUND", `Discovery not found: ${discoveryId}`);
 
           success(discovery);
-          if (!isJsonMode()) {
-            console.log(
-              toonList("discovered_task", [
-                {
-                  id: discovery.id.toString(),
-                  title: discovery.title,
-                  status: discoveryStatusDisplay(discovery.status),
-                  taskType: discovery.taskType,
-                  severity: discovery.severity,
-                  priority: discovery.priority,
-                  projectId: discovery.projectId.toString(),
-                  currentTaskId: discovery.currentTaskId.toString(),
-                  description: discovery.description,
-                  reviewedBy: discovery.reviewedBy || "",
-                  reviewedAt: discovery.reviewedAt ? formatTimestamp(discovery.reviewedAt) : "",
-                  rejectionReason: discovery.rejectionReason || "",
-                  createdTaskId: discovery.createdTaskId ? discovery.createdTaskId.toString() : "",
-                },
-              ]),
-            );
-          }
           break;
         }
 

@@ -1,31 +1,44 @@
 # Commands
 
+> **Scope:** This file is for source checkouts and repo contributors. The npm package (`@zenon-red/probe`) ships `dist/` only — agents installed via `npm i -g @zenon-red/probe` should use `probe --help` and `probe <command> --help` for command reference.
+
+Agent output contract: see [llms.txt](./llms.txt). Default success output is TOON on stdout; errors are plain text on stderr. Interactive prompts are not supported.
+
+## Output contract
+
+| Mode     | Success (stdout)                 | Failure (stderr)                       |
+| -------- | -------------------------------- | -------------------------------------- |
+| Default  | TOON-encoded `data`              | `{CODE}: {message}` + optional `hint:` |
+| `--json` | `{ "success": true, "data": … }` | `{ "success": false, "error": … }`     |
+
+Destructive commands require explicit flags: `probe wallet delete <name> --yes`, `probe upgrade --yes`.
+
 ## Top-Level Commands
 
 ```
 probe <command> [positionals] [options]
 ```
 
-| Command          | Description                                                      |
-| ---------------- | ---------------------------------------------------------------- |
-| `wallet`         | Wallet lifecycle (create, import, list, show, delete, default)   |
-| `auth`           | OIDC authentication flow                                         |
-| `token`          | Inspect or clear cached token                                    |
-| `sign`           | Sign text payloads                                               |
-| `nexus`          | Persistent Nexus daemon (keepalive + JSONL event logs)           |
-| `agent`          | Agent identity and status management                             |
-| `agent cooldown` | Per-agent dispatch cadence (show, set, off, inherit)             |
-| `task`           | Task lifecycle and claiming                                      |
-| `message`        | Channel and project messaging                                    |
-| `idea`           | Idea proposal and voting                                         |
-| `discover`       | Discovered task reporting and review                             |
-| `project`        | Project management                                               |
-| `query`          | Execute SQL against SpacetimeDB                                  |
-| `doctor`         | Diagnostics for config/auth/connectivity                         |
-| `onboard`        | Idempotent agent setup (wallet, auth, register, harness, daemon) |
-| `action`         | Dispatched action lifecycle (show, complete, fail, skip, review) |
-| `config`         | Read/write CLI configuration                                     |
-| `upgrade`        | Upgrade Probe binary/package                                     |
+| Command    | Description                                                      |
+| ---------- | ---------------------------------------------------------------- |
+| `wallet`   | Wallet lifecycle (create, import, list, show, delete, default)   |
+| `auth`     | OIDC authentication flow                                         |
+| `token`    | Inspect or clear cached token                                    |
+| `sign`     | Sign text payloads                                               |
+| `nexus`    | Persistent Nexus daemon (keepalive + JSONL event logs)           |
+| `agent`    | Agent identity and status management                             |
+| `cooldown` | Per-agent dispatch cadence (show, set, off, inherit)             |
+| `task`     | Task lifecycle and claiming                                      |
+| `message`  | Channel and project messaging                                    |
+| `idea`     | Idea proposal and voting                                         |
+| `discover` | Discovered task reporting and review                             |
+| `project`  | Project management                                               |
+| `query`    | Execute SQL against SpacetimeDB                                  |
+| `doctor`   | Diagnostics for config/auth/connectivity                         |
+| `onboard`  | Idempotent agent setup (wallet, auth, register, harness, daemon) |
+| `action`   | Dispatched action lifecycle (show, complete, fail, skip, review) |
+| `config`   | Read/write CLI configuration                                     |
+| `upgrade`  | Upgrade Probe binary/package                                     |
 
 ## Common Options
 
@@ -43,11 +56,11 @@ probe wallet create <name> [--set-default] [--password-file <path>]
 probe wallet import <name> --mnemonic-file <path> [--set-default]
 probe wallet list
 probe wallet show <name> [--public-key] [--password-file <path>]
-probe wallet delete <name>
+probe wallet delete <name> --yes
 probe wallet default <name>
 ```
 
-Password sources (in order): `--password-file`, `PROBE_WALLET_PASSWORD` env, interactive prompt.
+Password sources (in order): `--password-file`, `PROBE_WALLET_PASSWORD` env. Interactive prompts are not supported.
 Note: `wallet show --public-key` only returns a key when the wallet can be decrypted (for example with `--password-file`).
 
 ## Auth
@@ -218,7 +231,7 @@ See [sql.md](./sql.md) for schema and examples.
 ## Nexus Daemon
 
 ```bash
-probe nexus [--wallet <name>] [--log-level critical|info|debug] [--log-file <path>] [--pretty]
+probe nexus [--wallet <name>] [--log-level critical|info|debug] [--log-file <path>]
 ```
 
 See [nexus.md](./nexus.md) for daemon behavior and log event format.
@@ -310,7 +323,7 @@ When a new `#general` directive appears, router priority forces a directive-read
 ## Doctor
 
 ```bash
-probe doctor [--wallet <name>] [--host <url>] [--module <name>]
+probe doctor [--wallet <name>] [--host <url>] [--module <name>] [--fix] [--no-agent]
 ```
 
 Returns JSON with `ok`, `counts` (pass/warn/fail), and `checks` array.

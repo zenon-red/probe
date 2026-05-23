@@ -10,9 +10,8 @@ import {
 } from "~/utils/context.js";
 import { MessageType } from "~/utils/enums.js";
 import { errorMessage, failWithConnectionOrUnexpected } from "~/utils/errors.js";
-import { error, isJsonMode, success } from "~/utils/output.js";
-import { formatTimestamp, toMicros } from "~/utils/time.js";
-import { toonList } from "~/utils/toon.js";
+import { error, success } from "~/utils/output.js";
+import { toMicros } from "~/utils/time.js";
 
 export interface MessageCommandArgs {
   action?: string;
@@ -205,33 +204,7 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
 
         messages = messages.slice(0, limit);
 
-        const channelMap = new Map(channels.map((c) => [c.id.toString(), c.name]));
-        const projectMap = new Map(projects.map((p) => [p.id.toString(), p.name]));
-
         success({ messages, count: messages.length, target: targetLabel });
-        if (!isJsonMode()) {
-          console.log(
-            toonList(
-              "messages",
-              messages.map((m) => {
-                const isProject = "_type" in m && m._type === "project";
-                const location = isProject
-                  ? `project:${projectMap.get((m as ProjectMessage).projectId.toString()) || (m as ProjectMessage).projectId}`
-                  : `#${channelMap.get((m as Message).channelId.toString()) || (m as Message).channelId}`;
-
-                return {
-                  id: m.id.toString(),
-                  location,
-                  senderId: m.senderId,
-                  content: m.content,
-                  messageType: MessageType.display(m.messageType),
-                  contextId: m.contextId || null,
-                  createdAt: formatTimestamp(m.createdAt),
-                };
-              }),
-            ),
-          );
-        }
         break;
       }
 
@@ -305,33 +278,7 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
 
         messages = messages.slice(0, limit);
 
-        const channelMap = new Map(channels.map((c) => [c.id.toString(), c.name]));
-        const projectMap = new Map(projects.map((p) => [p.id.toString(), p.name]));
-
         success({ messages, count: messages.length, target: targetLabel });
-        if (!isJsonMode()) {
-          console.log(
-            toonList(
-              "directives",
-              messages.map((m) => {
-                const isProject = "_type" in m && m._type === "project";
-                const location = isProject
-                  ? `project:${projectMap.get((m as ProjectMessage).projectId.toString()) || (m as ProjectMessage).projectId}`
-                  : `#${channelMap.get((m as Message).channelId.toString()) || (m as Message).channelId}`;
-
-                return {
-                  id: m.id.toString(),
-                  location,
-                  senderId: m.senderId,
-                  content: m.content,
-                  messageType: MessageType.display(m.messageType),
-                  contextId: m.contextId || null,
-                  createdAt: formatTimestamp(m.createdAt),
-                };
-              }),
-            ),
-          );
-        }
         break;
       }
 
@@ -389,16 +336,6 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
                   projectName: project.name,
                   messageType: "directive",
                 });
-                if (!isJsonMode()) {
-                  console.log(
-                    toonList("directive_sent", [
-                      {
-                        target: `project:${project.name}`,
-                        contextId: args.context || null,
-                      },
-                    ]),
-                  );
-                }
               } else {
                 const channels = ctx.iter<Channel>("channels");
                 const channel = channels.find(
@@ -424,16 +361,6 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
                   channelName: channel.name,
                   messageType: "directive",
                 });
-                if (!isJsonMode()) {
-                  console.log(
-                    toonList("directive_sent", [
-                      {
-                        target: `#${channel.name}`,
-                        contextId: args.context || null,
-                      },
-                    ]),
-                  );
-                }
               }
             },
           );
@@ -503,17 +430,6 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
                   projectId: projectId.toString(),
                   projectName: project.name,
                 });
-                if (!isJsonMode()) {
-                  console.log(
-                    toonList("message_sent", [
-                      {
-                        target: `project:${project.name}`,
-                        messageType: args.type || "user",
-                        contextId: args.context || null,
-                      },
-                    ]),
-                  );
-                }
               } else {
                 const channels = ctx.iter<Channel>("channels");
                 const channel = channels.find(
@@ -538,17 +454,6 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
                   channelId: channel.id.toString(),
                   channelName: channel.name,
                 });
-                if (!isJsonMode()) {
-                  console.log(
-                    toonList("message_sent", [
-                      {
-                        target: `#${channel.name}`,
-                        messageType: args.type || "user",
-                        contextId: args.context || null,
-                      },
-                    ]),
-                  );
-                }
               }
             },
           );
@@ -573,28 +478,6 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
           channelCount: channels.length,
           projectCount: projectsWithChannels.length,
         });
-        if (!isJsonMode()) {
-          console.log(
-            toonList(
-              "channels",
-              channels.map((c) => ({
-                id: c.id.toString(),
-                name: c.name,
-                createdBy: c.createdBy,
-              })),
-            ),
-          );
-          console.log(
-            toonList(
-              "projects",
-              projectsWithChannels.map((p) => ({
-                id: p.id.toString(),
-                name: p.name,
-                repo: p.githubRepo,
-              })),
-            ),
-          );
-        }
         break;
       }
 

@@ -1,29 +1,21 @@
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { getConfig } from "~/utils/config.js";
 import { CommandContext, type Agent } from "~/utils/context.js";
-import { AgentRole } from "~/utils/enums.js";
+import { countIssues, doctorOk, type DoctorIssue } from "~/utils/doctor-issues.js";
+import { isPathWritable } from "~/utils/path-writable.js";
 import { getCachedToken } from "~/utils/token-cache.js";
 import { getWalletInfo } from "~/utils/wallet.js";
 import { errorMessage } from "~/utils/errors.js";
 
-export type HealthStatus = "pass" | "warn" | "fail" | "manual_required";
-
-export interface HealthCheck {
-  check: string;
-  status: HealthStatus;
-  detail: string;
-}
-
 export interface HealthResult {
   ok: boolean;
-  checks: HealthCheck[];
-  counts: {
-    pass: number;
-    warn: number;
-    fail: number;
-    manual_required: number;
-  };
+  counts: { fail: number; warn: number };
+  issues: DoctorIssue[];
   walletName?: string;
   walletAddress?: string;
+  walletDir?: string;
+  tokenCacheDir?: string;
   tokenValid?: boolean;
   tokenExpiresAt?: string;
   identity?: string;
@@ -36,24 +28,76 @@ export async function runHealthChecks(options: {
   module?: string;
   includeAgent?: boolean;
 }): Promise<HealthResult> {
-  const checks: HealthCheck[] = [];
-  const addCheck = (check: string, status: HealthStatus, detail: string) => {
-    checks.push({ check, status, detail });
+  const issues: DoctorIssue[] = [];
+  const addIssue = (issue: DoctorIssue) => {
+    issues.push(issue);
   };
+
+  const probeHome = join(homedir(), ".probe");
+  const probeHomeWritable = await isPathWritable(probeHome);
+  if (!probeHomeWritable) {
+    addIssue({
+      code: "PROBE_HOME_NOT_WRITABLE",
+      severity: "fail",
+      message: `${probeHome} is not writable`,
+      recommendation: "Ensure the Probe config directory exists and is writable",
+    });
+  }
 
   let config: Awaited<ReturnType<typeof getConfig>> | null = null;
   try {
     config = await getConfig();
-    addCheck("config", "pass", "Loaded Probe configuration");
   } catch (err) {
-    addCheck("config", "fail", errorMessage(err, "Failed to load configuration"));
+    addIssue({
+      code: "CONFIG_LOAD_FAILED",
+      severity: "fail",
+      message: errorMessage(err, "Failed to load configuration"),
+      recommendation: "Check ~/.probe/config.json and PROBE_* environment variables",
+    });
+  }
+
+  let walletDirWritable = true;
+  let tokenCacheWritable = true;
+  if (config) {
+    walletDirWritable = await isPathWritable(config.walletDir);
+    if (!walletDirWritable) {
+      addIssue({
+        code: "WALLET_DIR_NOT_WRITABLE",
+        severity: "fail",
+        message: `${config.walletDir} is not writable`,
+        recommendation: "Ensure the wallet directory exists and is writable",
+      });
+    }
+
+    tokenCacheWritable = await isPathWritable(config.tokenCacheDir);
+    if (!tokenCacheWritable) {
+      addIssue({
+        code: "TOKEN_CACHE_NOT_WRITABLE",
+        severity: "fail",
+        message: `${config.tokenCacheDir} is not writable`,
+        recommendation: "Ensure the token cache directory exists and is writable",
+      });
+    }
+  }
+
+  if (!probeHomeWritable || !walletDirWritable || !tokenCacheWritable) {
+    addIssue({
+      code: "HOST_EXECUTION_UNTRUSTED",
+      severity: "warn",
+      message: "Probe home or data paths are not writable — execution may be sandboxed",
+      recommendation: "Run outside a restricted sandbox or mount a writable home directory",
+    });
   }
 
   const walletName = options.wallet || config?.defaultWallet;
   if (!walletName) {
-    addCheck("wallet.selected", "fail", "No wallet selected (set --wallet or defaultWallet)");
-  } else {
-    addCheck("wallet.selected", "pass", `Using wallet '${walletName}'`);
+    addIssue({
+      code: "WALLET_NOT_SELECTED",
+      severity: "fail",
+      message: "No wallet selected (set --wallet or defaultWallet)",
+      recommendation: "Create a wallet and set it as default",
+      fix_command: "probe wallet create <name> --set-default --password-file <path>",
+    });
   }
 
   let hasWallet = false;
@@ -63,9 +107,14 @@ export async function runHealthChecks(options: {
     if (wallet) {
       hasWallet = true;
       walletAddress = wallet.address;
-      addCheck("wallet.exists", "pass", `Address ${wallet.address}`);
     } else {
-      addCheck("wallet.exists", "fail", `Wallet '${walletName}' not found`);
+      addIssue({
+        code: "WALLET_NOT_FOUND",
+        severity: "fail",
+        message: `Wallet '${walletName}' not found`,
+        recommendation: "Create or import the wallet, or pick an existing wallet",
+        fix_command: `probe wallet create ${walletName} --password-file <path>`,
+      });
     }
   }
 
@@ -75,28 +124,46 @@ export async function runHealthChecks(options: {
   if (walletName && hasWallet) {
     const cached = await getCachedToken(walletName);
     if (!cached) {
-      addCheck("auth.token", "fail", "No cached token (run probe auth)");
+      addIssue({
+        code: "AUTH_TOKEN_MISSING",
+        severity: "fail",
+        message: "No cached authentication token",
+        recommendation: "Authenticate and save a token to the cache",
+        fix_command: `probe auth ${walletName} --password-file <path> --save`,
+      });
     } else {
       token = cached.token;
       const expires = new Date(cached.expiresAt);
       if (Number.isNaN(expires.getTime())) {
-        addCheck("auth.token", "warn", "Token exists but expiry is invalid");
+        addIssue({
+          code: "AUTH_TOKEN_INVALID_EXPIRY",
+          severity: "warn",
+          message: "Cached token has an invalid expiry timestamp",
+          recommendation: "Clear the cached token and authenticate again",
+          fix_command: `probe token ${walletName} --clear`,
+        });
       } else if (expires.getTime() <= Date.now()) {
-        addCheck("auth.token", "fail", `Token expired at ${expires.toISOString()}`);
+        addIssue({
+          code: "AUTH_TOKEN_EXPIRED",
+          severity: "fail",
+          message: `Token expired at ${expires.toISOString()}`,
+          recommendation: "Clear the expired token and authenticate again",
+          fix_command: `probe token ${walletName} --clear`,
+        });
       } else {
         tokenValid = true;
         tokenExpiresAt = cached.expiresAt;
-        addCheck("auth.token", "pass", `Token valid until ${expires.toISOString()}`);
       }
     }
   }
 
   let identity: string | undefined;
   let agent: Agent | null = null;
+  const includeAgent = options.includeAgent !== false;
+
   if (config && token) {
     const host = options.host || config.spacetime.host;
     const moduleName = options.module || config.spacetime.module;
-    addCheck("nexus.target", "pass", `${host} / ${moduleName}`);
 
     if (tokenValid) {
       try {
@@ -105,57 +172,55 @@ export async function runHealthChecks(options: {
           module: moduleName,
           wallet: walletName,
           token,
-          subscribe: options.includeAgent ? ["SELECT * FROM agents", "SELECT * FROM config"] : [],
+          subscribe: includeAgent ? ["SELECT * FROM agents", "SELECT * FROM config"] : [],
         });
         identity = ctx.identity?.toHexString() || "unknown";
-        addCheck("nexus.connect", "pass", `Connected as ${identity}`);
 
-        if (options.includeAgent && ctx.identity) {
+        if (includeAgent && ctx.identity) {
           agent =
             ctx
               .iter<Agent>("agents")
               .find((a) => a.identity.toHexString() === ctx.identity?.toHexString()) || null;
-          if (agent) {
-            addCheck(
-              "registration",
-              "pass",
-              `Agent ${agent.id} registered as ${AgentRole.display(agent.role)}`,
-            );
-          } else {
-            addCheck("registration", "fail", "Agent not registered");
+          if (!agent) {
+            addIssue({
+              code: "AGENT_NOT_REGISTERED",
+              severity: "fail",
+              message: "Agent identity is not registered in Nexus",
+              recommendation: "Register the agent or run onboard",
+              fix_command: "probe onboard --name <name> --password-file <path>",
+            });
           }
         }
       } catch (err) {
-        addCheck("nexus.connect", "fail", errorMessage(err, "Connection failed"));
+        addIssue({
+          code: "NEXUS_CONNECTION_FAILED",
+          severity: "fail",
+          message: errorMessage(err, "Connection failed"),
+          recommendation: "Verify host, module, token, and network connectivity",
+          fix_command: `probe doctor --host ${host} --module ${moduleName}`,
+        });
       }
     } else {
-      addCheck("nexus.connect", "warn", "Skipped connection check (no valid token)");
+      addIssue({
+        code: "NEXUS_CONNECTION_SKIPPED",
+        severity: "warn",
+        message: "Skipped Nexus connection check (no valid token)",
+        recommendation: "Authenticate before testing Nexus connectivity",
+        fix_command: walletName
+          ? `probe auth ${walletName} --password-file <path> --save`
+          : undefined,
+      });
     }
   }
 
-  const counts = checks.reduce(
-    (acc, item) => {
-      if (item.status === "pass") acc.pass += 1;
-      else if (item.status === "warn") acc.warn += 1;
-      else if (item.status === "fail") acc.fail += 1;
-      else acc.manual_required += 1;
-      return acc;
-    },
-    { pass: 0, warn: 0, fail: 0, manual_required: 0 },
-  );
-
-  const criticalFail = checks.some(
-    (c) =>
-      c.status === "fail" &&
-      ["wallet.selected", "wallet.exists", "auth.token", "nexus.connect"].includes(c.check),
-  );
-
   return {
-    ok: !criticalFail,
-    checks,
-    counts,
+    ok: doctorOk(issues),
+    counts: countIssues(issues),
+    issues,
     walletName,
     walletAddress,
+    walletDir: config?.walletDir,
+    tokenCacheDir: config?.tokenCacheDir,
     tokenValid,
     tokenExpiresAt,
     identity,

@@ -1,6 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { password, text } from "@clack/prompts";
-import { error, isJsonMode } from "./output.js";
+import { error } from "./output.js";
 
 const readTrimmedFile = async (filePath: string, label: string): Promise<string> => {
   try {
@@ -13,7 +12,7 @@ const readTrimmedFile = async (filePath: string, label: string): Promise<string>
 export interface ResolvePasswordInput {
   passwordFile?: string;
   envVar?: string;
-  promptMessage: string;
+  promptMessage?: string;
   jsonModeError: string;
   minLength?: number;
   confirmPromptMessage?: string;
@@ -30,37 +29,11 @@ export const resolvePasswordInput = async (options: ResolvePasswordInput): Promi
     return fromEnv;
   }
 
-  if (isJsonMode() || !process.stdin.isTTY || !process.stdout.isTTY) {
-    error("PASSWORD_REQUIRED", options.jsonModeError);
-  }
-
-  const first = await password({
-    message: options.promptMessage,
-    validate: (value) => {
-      if (!value) return;
-      if (options.minLength && value.length < options.minLength) {
-        return `Password must be at least ${options.minLength} characters`;
-      }
-    },
-  });
-
-  if (typeof first !== "string") {
-    process.exit(130);
-  }
-
-  if (!options.confirmPromptMessage) {
-    return first;
-  }
-
-  const second = await password({
-    message: options.confirmPromptMessage,
-    validate: (value) => (value === first ? undefined : "Passwords do not match"),
-  });
-  if (typeof second !== "string") {
-    process.exit(130);
-  }
-
-  return first;
+  error(
+    "PASSWORD_REQUIRED",
+    options.jsonModeError,
+    "Pass --password-file or set PROBE_WALLET_PASSWORD",
+  );
 };
 
 export interface ResolveMnemonicInput {
@@ -85,21 +58,9 @@ export const resolveMnemonicInput = async (options: ResolveMnemonicInput): Promi
     return fromEnv;
   }
 
-  if (isJsonMode() || !process.stdin.isTTY || !process.stdout.isTTY) {
-    error("MNEMONIC_REQUIRED", options.jsonModeError);
-  }
-
-  const input = await text({
-    message: "Enter mnemonic phrase:",
-    validate: (value) =>
-      !value
-        ? "Mnemonic must be 24 words"
-        : value.trim().split(/\s+/).length === 24
-          ? undefined
-          : "Mnemonic must be 24 words",
-  });
-  if (typeof input !== "string") {
-    process.exit(130);
-  }
-  return input;
+  error(
+    "MNEMONIC_REQUIRED",
+    options.jsonModeError,
+    "Pass --mnemonic, --mnemonic-file, or set PROBE_WALLET_MNEMONIC",
+  );
 };

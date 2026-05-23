@@ -1,15 +1,7 @@
 import { defineCommand } from "citty";
-import { getConfig } from "~/utils/config.js";
 import { resolvePasswordInput } from "~/utils/credentials.js";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import {
-  error,
-  isJsonMode,
-  applyJsonMode,
-  success,
-  successMessage,
-  warning,
-} from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import { loadUserConfig, saveUserConfig } from "~/utils/user-config.js";
 import { createWallet as createWalletUtil, listWallets } from "~/utils/wallet.js";
 import { errorMessage } from "~/utils/errors.js";
@@ -59,7 +51,7 @@ export default defineCommand({
           { name: "--json", detail: "JSON output for agents" },
         ],
         notes: [
-          "Password source order: --password-file, PROBE_WALLET_PASSWORD, interactive prompt.",
+          "Password source order: --password-file, PROBE_WALLET_PASSWORD. Interactive prompts are not supported.",
         ],
       });
       return;
@@ -69,14 +61,9 @@ export default defineCommand({
       error("INVALID_NAME", "Wallet name must be alphanumeric with hyphens or underscores only");
     }
 
-    const config = await getConfig();
     const walletPassword = await resolvePasswordInput({
       passwordFile: args["password-file"],
-      promptMessage: "Enter password to encrypt wallet:",
-      confirmPromptMessage: "Confirm password:",
-      minLength: config.passwordMinLength,
-      jsonModeError:
-        "Password required via PROBE_WALLET_PASSWORD env, --password-file, or interactive prompt",
+      jsonModeError: "Password required via --password-file or PROBE_WALLET_PASSWORD",
     });
 
     try {
@@ -102,17 +89,8 @@ export default defineCommand({
         publicKey: result.publicKey,
         mnemonic: result.mnemonic,
         default: setAsDefault,
+        warning: "Save this mnemonic securely - it cannot be recovered!",
       });
-
-      if (!isJsonMode()) {
-        successMessage(`Wallet "${result.name}" created successfully`);
-        console.log(`Address: ${result.address}`);
-        console.log(`\nMnemonic: ${result.mnemonic}`);
-        warning("Save this mnemonic securely - it cannot be recovered!");
-        if (setAsDefault) {
-          console.log(`\nSet as default wallet`);
-        }
-      }
     } catch (err) {
       error("WALLET_CREATE_ERROR", errorMessage(err, "Failed to create wallet"));
     }

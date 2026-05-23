@@ -39,12 +39,9 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@clack/prompts": "^1.3.0",
     "@toon-format/toon": "^2.1.0",
     "c12": "^2.0.0",
     "citty": "^0.2.2",
-    "consola": "^3.4.2",
-    "kolorist": "^1.8.0",
     "spacetimedb": "^2.0.1",
     "znn-typescript-sdk": "https://codeload.github.com/PlasmaKing/znn-typescript-sdk/tar.gz/865bc8866d798893ed364f6db4f14162efe0b396"
   },

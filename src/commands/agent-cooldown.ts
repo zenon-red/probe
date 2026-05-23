@@ -1,7 +1,7 @@
 import { defineCommand } from "citty";
 import { callReducer, withAuth } from "~/utils/context.js";
 import { identityHex } from "~/utils/enums.js";
-import { applyJsonMode, error, isJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 
 function getAgentRow(ctx: {
   db: unknown;
@@ -48,8 +48,6 @@ export const agentCooldownShowCommand = defineCommand({
         const globalDefault = configs.find((c) => c.key === "dispatch_cooldown_secs");
         const globalDefaultSecs = globalDefault ? Number(globalDefault.value) : 3600;
 
-        // Per-agent cooldown: null = inherit, Some(0) = off, Some(N) = N seconds
-        // The field may not exist yet if STDB hasn't been updated
         const perAgentCooldown = (agent as Record<string, unknown>).dispatchCooldownSecs as
           | number
           | null
@@ -69,29 +67,12 @@ export const agentCooldownShowCommand = defineCommand({
           source = "per-agent override";
         }
 
-        const formatDuration = (secs: number): string => {
-          if (secs === 0) return "No cooldown";
-          if (secs < 60) return `${secs}s`;
-          if (secs < 3600) return `${Math.floor(secs / 60)}m ${secs % 60}s`;
-          const h = Math.floor(secs / 3600);
-          const m = Math.floor((secs % 3600) / 60);
-          return m > 0 ? `${h}h ${m}m` : `${h}h`;
-        };
-
-        if (isJsonMode()) {
-          success({
-            per_agent_cooldown_secs: perAgentCooldown ?? null,
-            global_default_secs: globalDefaultSecs,
-            effective_secs: effectiveSecs,
-            source,
-          });
-        } else {
-          console.log(
-            `Per-agent: ${perAgentCooldown !== null && perAgentCooldown !== undefined ? formatDuration(perAgentCooldown) : "inheriting global default"}`,
-          );
-          console.log(`Global default: ${formatDuration(globalDefaultSecs)}`);
-          console.log(`Effective: ${formatDuration(effectiveSecs)} (${source})`);
-        }
+        success({
+          per_agent_cooldown_secs: perAgentCooldown ?? null,
+          global_default_secs: globalDefaultSecs,
+          effective_secs: effectiveSecs,
+          source,
+        });
       },
     );
   },
@@ -119,11 +100,7 @@ export const agentCooldownSetCommand = defineCommand({
         cooldownSecs: secs,
       });
 
-      if (isJsonMode()) {
-        success({ cooldown_secs: secs });
-      } else {
-        success(`Cooldown set to ${secs}s.`);
-      }
+      success({ cooldown_secs: secs, message: `Cooldown set to ${secs}s` });
     });
   },
 });
@@ -144,11 +121,7 @@ export const agentCooldownOffCommand = defineCommand({
         cooldownSecs: 0,
       });
 
-      if (isJsonMode()) {
-        success({ cooldown_secs: 0, status: "off" });
-      } else {
-        success("Cooldown disabled.");
-      }
+      success({ cooldown_secs: 0, status: "off", message: "Cooldown disabled" });
     });
   },
 });
@@ -169,11 +142,7 @@ export const agentCooldownInheritCommand = defineCommand({
         cooldownSecs: undefined,
       });
 
-      if (isJsonMode()) {
-        success({ status: "inheriting" });
-      } else {
-        success("Cooldown reset to inherit global default.");
-      }
+      success({ status: "inheriting", message: "Cooldown reset to inherit global default" });
     });
   },
 });
@@ -196,6 +165,10 @@ export default defineCommand({
     json: { type: "boolean", description: "JSON output", default: false },
   },
   run() {
-    console.log("Usage: probe agent cooldown <show|set|off|inherit> [args]");
+    error(
+      "SUBCOMMAND_REQUIRED",
+      "Usage: probe cooldown <show|set|off|inherit> [args]",
+      "Try: probe cooldown show",
+    );
   },
 });

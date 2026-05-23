@@ -1,7 +1,6 @@
 import { defineCommand } from "citty";
-import { log } from "@clack/prompts";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, info, isJsonMode, note, success, warning } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import type { OnboardStep } from "~/utils/onboard/types.js";
 import {
   authenticateStep,
@@ -156,61 +155,37 @@ export default defineCommand({
       steps,
     };
 
-    // 1. Verify writable home
     if (!(await verifyHome(state))) {
       finish(state);
       return;
     }
 
-    // 2-3. GitHub CLI + identity + role
     if (!(await resolveIdentity(state))) {
       finish(state);
       return;
     }
 
-    // 4. Wallet
     await createWalletStep(state);
-
-    // 5. Password file
     await verifyPasswordFile(state);
-
-    // 6. Default wallet
     await setDefaultWallet(state);
 
-    // 7. Auth
     if (!(await authenticateStep(state))) {
       finish(state);
       return;
     }
 
-    // 8. Registration
     if (!(await registerAgentStep(state))) {
       finish(state);
       return;
     }
 
-    // 9. Bio
     await setBioStep(state);
-
-    // 10. Capabilities
     await setCapabilitiesStep(state);
-
-    // 11. ZR.md
     await createWorkspace(state);
-
-    // 12. Skills
     await installSkillsStep(state);
-
-    // 13. Daemon
     await configureDaemon(state);
-
-    // 14. Harness (replaces scheduler)
     await configureHarness(state);
-
-    // 15. Announcement
     await sendAnnouncement(state);
-
-    // 16. Verification
     await runVerification(state);
 
     finish(state);
@@ -222,42 +197,44 @@ export default defineCommand({
       const passCount = s.steps.filter((st) => st.status === "pass").length;
       const warnCount = s.steps.filter((st) => st.status === "warn").length;
       const failCount = s.steps.filter((st) => st.status === "fail").length;
+      const failedSteps = s.steps.filter((st) => st.status === "fail");
 
-      const summary = {
+      const data: Record<string, unknown> = {
         ok,
         agentId: s.agentId,
         name: args.name,
         role: s.role,
         wallet: s.walletName,
+        walletAddress: s.walletAddress,
+        steps: s.steps,
+        summary: {
+          passed: passCount,
+          failed: failCount,
+          warnings: warnCount,
+        },
         next: ok
           ? "Run probe nexus to start the daemon (dispatch is automatic)"
           : hasManualRequired
             ? "Complete manual-required steps and rerun probe onboard"
             : "Fix failed steps and rerun probe onboard",
       };
-      success(summary);
 
-      if (!isJsonMode()) {
-        const lines = [
-          `Agent: ${s.agentId}`,
-          `Name:  ${args.name}`,
-          `Role:  ${s.role}`,
-          `Wallet: ${s.walletName}`,
-          `Steps: ${passCount} passed, ${failCount} failed, ${warnCount} warnings`,
-        ];
-        note(lines.join("\n"), ok ? "Onboard Complete" : "Onboard Incomplete");
+      if (failedSteps.length > 0) {
+        data.failedSteps = failedSteps.map((step) => ({
+          step: step.step,
+          detail: step.detail,
+        }));
+      }
 
-        const failedSteps = s.steps.filter((st) => st.status === "fail");
-        if (failedSteps.length > 0) {
-          for (const step of failedSteps) {
-            log.error(`${step.step}: ${step.detail}`);
-          }
-        }
+      if (s.mnemonic) {
+        data.mnemonic = s.mnemonic;
+        data.mnemonicWarning = "Save this mnemonic securely — it will not be shown again";
+      }
 
-        if (s.mnemonic) {
-          warning("Save this mnemonic securely — it will not be shown again");
-          info(s.mnemonic);
-        }
+      if (ok) {
+        success(data, ["probe nexus", "probe cooldown show"]);
+      } else {
+        success(data);
       }
     }
   },

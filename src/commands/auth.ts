@@ -5,14 +5,7 @@ import { getConfig } from "~/utils/config.js";
 import { resolvePasswordInput } from "~/utils/credentials.js";
 import { printHelp } from "~/utils/help.js";
 import { exchangeToken, requestChallenge } from "~/utils/oidc.js";
-import {
-  error,
-  isJsonMode,
-  applyJsonMode,
-  spinner,
-  success,
-  successMessage,
-} from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import { cacheToken, getCachedToken } from "~/utils/token-cache.js";
 import { loadWallet } from "~/utils/wallet.js";
 import { errorMessage } from "~/utils/errors.js";
@@ -68,7 +61,7 @@ export default defineCommand({
         usage: [
           "probe auth <wallet-name> [options]",
           "probe auth status [--wallet my-wallet]",
-          "probe auth my-wallet --save",
+          "probe auth my-wallet --password-file ./pass --save",
           "probe auth my-wallet --expect-address z1q... --save",
         ],
         options: [
@@ -89,7 +82,7 @@ export default defineCommand({
           { name: "--json", detail: "JSON output for agents" },
         ],
         notes: [
-          "Password source order: --password-file, PROBE_WALLET_PASSWORD, interactive prompt.",
+          "Password source order: --password-file, PROBE_WALLET_PASSWORD. Interactive prompts are not supported.",
           "Most users should omit --expect-address; it is for safety checks in external workflows.",
           "Use --issuer only when authenticating against a non-default OIDC server (for example local/dev environments).",
         ],
@@ -106,17 +99,15 @@ export default defineCommand({
 
       const cached = await getCachedToken(walletName);
       if (!cached) {
-        success({
-          wallet: walletName,
-          authenticated: false,
-          valid: false,
-          reason: "no_cached_token",
-        });
-        if (!isJsonMode()) {
-          console.log(`Wallet: ${walletName}`);
-          console.log("Status: Not authenticated (no cached token)");
-          console.log(`Next: probe auth ${walletName} --save`);
-        }
+        success(
+          {
+            wallet: walletName,
+            authenticated: false,
+            valid: false,
+            reason: "no_cached_token",
+          },
+          [`probe auth ${walletName} --password-file <path> --save`],
+        );
         return;
       }
 
@@ -130,19 +121,12 @@ export default defineCommand({
         expiresAt: cached.expiresAt,
         expiresIn: Math.max(0, expiresIn),
       });
-      if (!isJsonMode()) {
-        console.log(`Wallet: ${walletName}`);
-        console.log(`Status: ${valid ? "Authenticated" : "Token expired"}`);
-        console.log(`Expires: ${expiresAt.toUTCString()}`);
-      }
       return;
     }
 
     const walletPassword = await resolvePasswordInput({
       passwordFile: args["password-file"],
-      promptMessage: "Enter wallet password:",
-      jsonModeError:
-        "Password required via PROBE_WALLET_PASSWORD env, --password-file, or interactive prompt in a TTY session",
+      jsonModeError: "Password required via --password-file or PROBE_WALLET_PASSWORD",
     });
 
     let keyPair: KeyPair | undefined;
@@ -167,22 +151,9 @@ export default defineCommand({
     }
 
     try {
-      const challengeSpinner = spinner("Requesting challenge from OIDC provider...");
-      challengeSpinner.start();
-
       const challenge = await requestChallenge(address, args.issuer);
-      challengeSpinner.succeed();
-
-      const signSpinner = spinner("Signing challenge...");
-      signSpinner.start();
-
       const signature = keyPair.sign(Buffer.from(challenge.challenge));
       const publicKey = keyPair.getPublicKey();
-      signSpinner.succeed();
-
-      const exchangeSpinner = spinner("Exchanging for token...");
-      exchangeSpinner.start();
-
       const tokenResponse = await exchangeToken(
         address,
         publicKey.toString("hex"),
@@ -190,7 +161,6 @@ export default defineCommand({
         challenge.nonce,
         args.issuer,
       );
-      exchangeSpinner.succeed();
 
       const expiresAt = new Date(Date.now() + tokenResponse.expiresIn * 1000).toISOString();
 
@@ -204,17 +174,8 @@ export default defineCommand({
         token: tokenResponse.accessToken,
         expiresAt,
         expiresIn: tokenResponse.expiresIn,
+        tokenSaved: args.save,
       });
-
-      if (!isJsonMode()) {
-        successMessage("Authentication successful");
-        if (args.save) {
-          console.log("Token saved to wallet cache.");
-        }
-        console.log(
-          `Expires: ${new Date(expiresAt).toUTCString()} (${Math.floor(tokenResponse.expiresIn / 86400)} days)`,
-        );
-      }
     } catch (err) {
       error("AUTH_ERROR", errorMessage(err, "Authentication failed"), undefined, 2);
     }

@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { defineCommand } from "citty";
 import { resolvePasswordInput } from "~/utils/credentials.js";
 import { printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, isJsonMode, success, successMessage } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import { loadWallet } from "~/utils/wallet.js";
 import { errorMessage } from "~/utils/errors.js";
 
@@ -55,6 +55,9 @@ export default defineCommand({
           { name: "--password-file", detail: "Read wallet password from file" },
           { name: "--json", detail: "JSON output for agents" },
         ],
+        notes: [
+          "Password source order: --password-file, PROBE_WALLET_PASSWORD. Interactive prompts are not supported.",
+        ],
       });
       return;
     }
@@ -75,8 +78,7 @@ export default defineCommand({
 
     const walletPassword = await resolvePasswordInput({
       passwordFile: args["password-file"],
-      promptMessage: "Enter wallet password:",
-      jsonModeError: "Password file required in JSON mode or provide PROBE_WALLET_PASSWORD",
+      jsonModeError: "Password required via --password-file or PROBE_WALLET_PASSWORD",
     });
 
     try {
@@ -94,11 +96,6 @@ export default defineCommand({
         publicKey: publicKey.toString("hex"),
         address: address.toString(),
       });
-
-      if (!isJsonMode()) {
-        successMessage("Message signed successfully");
-        console.log(`Signature: ${signature.toString("hex")}`);
-      }
     } catch (err) {
       error("SIGN_ERROR", errorMessage(err, "Failed to sign message"));
     }

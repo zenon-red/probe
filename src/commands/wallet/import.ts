@@ -1,7 +1,7 @@
 import { defineCommand } from "citty";
 import { resolveMnemonicInput, resolvePasswordInput } from "~/utils/credentials.js";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, isJsonMode, success, successMessage } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import { loadUserConfig, saveUserConfig } from "~/utils/user-config.js";
 import { importWallet, listWallets } from "~/utils/wallet.js";
 import { errorMessage } from "~/utils/errors.js";
@@ -61,7 +61,8 @@ export default defineCommand({
           { name: "--json", detail: "JSON output for agents" },
         ],
         notes: [
-          "Mnemonic source order: --mnemonic, --mnemonic-file, PROBE_WALLET_MNEMONIC, interactive prompt.",
+          "Mnemonic source order: --mnemonic, --mnemonic-file, PROBE_WALLET_MNEMONIC. Interactive prompts are not supported.",
+          "Password source order: --password-file, PROBE_WALLET_PASSWORD. Interactive prompts are not supported.",
         ],
       });
       return;
@@ -74,15 +75,12 @@ export default defineCommand({
     const mnemonicPhrase = await resolveMnemonicInput({
       mnemonic: args.mnemonic,
       mnemonicFile: args["mnemonic-file"],
-      jsonModeError:
-        "Mnemonic required via --mnemonic, --mnemonic-file, or PROBE_WALLET_MNEMONIC env",
+      jsonModeError: "Mnemonic required via --mnemonic, --mnemonic-file, or PROBE_WALLET_MNEMONIC",
     });
 
     const walletPassword = await resolvePasswordInput({
       passwordFile: args["password-file"],
-      promptMessage: "Enter password to encrypt wallet:",
-      jsonModeError:
-        "Password required via PROBE_WALLET_PASSWORD env, --password-file, or interactive prompt",
+      jsonModeError: "Password required via --password-file or PROBE_WALLET_PASSWORD",
     });
 
     try {
@@ -107,14 +105,6 @@ export default defineCommand({
         address: result.address,
         default: setAsDefault,
       });
-
-      if (!isJsonMode()) {
-        successMessage(`Wallet "${result.name}" imported successfully`);
-        console.log(`Address: ${result.address}`);
-        if (setAsDefault) {
-          console.log(`\nSet as default wallet`);
-        }
-      }
     } catch (err) {
       error("WALLET_IMPORT_ERROR", errorMessage(err, "Failed to import wallet"));
     }

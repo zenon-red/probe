@@ -4,7 +4,6 @@ import { mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { spawn, type ChildProcess } from "node:child_process";
 import { defineCommand } from "citty";
-import { createConsola } from "consola";
 import { callReducer, withAuth } from "~/utils/context.js";
 import { enumName } from "~/utils/enums.js";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
@@ -173,11 +172,6 @@ export const nexusDaemonArgs = {
     description: "critical, info, or debug",
     default: "critical",
   },
-  pretty: {
-    type: "boolean",
-    description: "Human-readable lifecycle logs to stderr",
-    default: false,
-  },
   harness: {
     type: "string",
     description: "Harness override: auto, pi, hermes, openclaw, opencode, custom",
@@ -191,10 +185,6 @@ export const nexusDaemonArgs = {
 
 export async function runNexusDaemon(args: Record<string, unknown>): Promise<void> {
   const logLevel = resolveLogLevel(args["log-level"]);
-  const pretty = !!args.pretty;
-  const prettyLogger = pretty
-    ? createConsola({ stdout: process.stderr, stderr: process.stderr })
-    : null;
 
   // Resolve harness and connection args upfront
   const config = await getConfig();
@@ -245,22 +235,6 @@ export async function runNexusDaemon(args: Record<string, unknown>): Promise<voi
     if (!shouldEmit(event.type, logLevel)) return;
     const fullEvent: DaemonEvent = { source: "nexus", at: nowIso(), ...event };
     writeEvent(fullEvent);
-
-    if (!prettyLogger) return;
-    const type = String(event.type);
-    if (type === "connected") prettyLogger.info("Connected to Nexus");
-    else if (type === "reconnected") prettyLogger.success("Reconnected to Nexus");
-    else if (type === "disconnected") prettyLogger.warn("Disconnected from Nexus");
-    else if (type === "reconnecting") prettyLogger.info("Reconnecting to Nexus");
-    else if (type === "auth_failed") prettyLogger.error("Authentication failed");
-    else if (type === "action_received") prettyLogger.info(`Action received: #${event.action_id}`);
-    else if (type === "action_started")
-      prettyLogger.info(`Action started: #${event.action_id} (${event.harness})`);
-    else if (type === "action_completed")
-      prettyLogger.success(`Action completed: #${event.action_id} (${String(event.outcome)})`);
-    else if (type === "action_failed_infra")
-      prettyLogger.error(`Action infra failure: #${event.action_id} (${String(event.outcome)})`);
-    else if (type === "shutdown") prettyLogger.info("Nexus daemon shutting down");
   };
 
   let stopping = false;
@@ -594,7 +568,7 @@ export default defineCommand({
           "probe nexus [options]",
           "probe nexus --wallet agent-wallet",
           "probe nexus --wallet agent-wallet --log-file ./logs/nexus-events.jsonl",
-          "probe nexus --harness opencode --pretty",
+          "probe nexus --harness opencode",
         ],
         options: [
           { name: "--wallet", detail: "Wallet for authenticated persistent connection" },
@@ -605,10 +579,9 @@ export default defineCommand({
           },
           { name: "--log-level", detail: "critical (default), info, or debug" },
           { name: "--log-file", detail: "Optional JSONL file path for daemon events" },
-          { name: "--pretty", detail: "Human-readable lifecycle logs to stderr" },
         ],
         notes: [
-          "stdout is always structured JSONL for machine parsing.",
+          "stdout is JSONL only — structured daemon events for agents.",
           "The daemon subscribes to own agent + own issued actions only (narrow subscriptions).",
           "Heartbeat runs every 5 minutes. Actions are executed one at a time.",
         ],

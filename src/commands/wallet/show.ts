@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { defineCommand } from "citty";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, isJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import { getWalletInfo, loadWallet } from "~/utils/wallet.js";
 import { errorMessage } from "~/utils/errors.js";
 
@@ -96,17 +96,6 @@ export default defineCommand({
       }
 
       success(result);
-
-      if (!isJsonMode()) {
-        console.log(`Name: ${walletInfo.name}`);
-        console.log(`Address: ${walletInfo.address}`);
-        if (walletInfo.createdAt) {
-          console.log(`Created: ${new Date(walletInfo.createdAt).toLocaleString()}`);
-        }
-        if (publicKey) {
-          console.log(`Public Key: ${publicKey}`);
-        }
-      }
     } catch (err) {
       error("WALLET_LOAD_ERROR", errorMessage(err, "Failed to load wallet"));
     }

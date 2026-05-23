@@ -3,9 +3,8 @@ import { CommandContext, callReducer, type Project, withAuth } from "~/utils/con
 import { ProjectStatus } from "~/utils/enums.js";
 import { errorMessage, failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, isJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import { toMicros } from "~/utils/time.js";
-import { toonList } from "~/utils/toon.js";
 
 export default defineCommand({
   meta: { name: "project", description: "Project commands" },
@@ -105,19 +104,6 @@ export default defineCommand({
           if (limit !== undefined) projects = projects.slice(0, limit);
 
           success({ projects, count: projects.length });
-          if (!isJsonMode()) {
-            console.log(
-              toonList(
-                "projects",
-                projects.map((p) => ({
-                  id: p.id,
-                  name: p.name,
-                  status: ProjectStatus.display(p.status),
-                  githubRepo: p.githubRepo,
-                })),
-              ),
-            );
-          }
           break;
         }
 
@@ -132,19 +118,6 @@ export default defineCommand({
           if (!project) error("PROJECT_NOT_FOUND", `Project not found: ${projectId}`);
 
           success(project);
-          if (!isJsonMode()) {
-            console.log(
-              toonList("project", [
-                {
-                  id: project.id.toString(),
-                  name: project.name,
-                  status: ProjectStatus.display(project.status),
-                  githubRepo: project.githubRepo,
-                  description: project.description,
-                },
-              ]),
-            );
-          }
           break;
         }
 
@@ -160,17 +133,6 @@ export default defineCommand({
 
           const status = ProjectStatus.display(project.status);
           success({ projectId, status });
-          if (!isJsonMode()) {
-            console.log(
-              toonList("project_status", [
-                {
-                  id: project.id.toString(),
-                  name: project.name,
-                  status,
-                },
-              ]),
-            );
-          }
           break;
         }
 
@@ -195,17 +157,6 @@ export default defineCommand({
               sourceIdeaId: args["source-idea"],
               hint: "Plan ref must be submitted and approved by human reviewer before tasks can be created",
             });
-            if (!isJsonMode()) {
-              console.log(
-                toonList("project_created", [
-                  {
-                    name: args.name,
-                    githubRepo: args["github-repo"],
-                    sourceIdeaId: args["source-idea"],
-                  },
-                ]),
-              );
-            }
           } catch (err) {
             error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }
@@ -236,16 +187,6 @@ export default defineCommand({
             });
 
             success({ updated: true, projectId, status: normalized });
-            if (!isJsonMode()) {
-              console.log(
-                toonList("project_status_updated", [
-                  {
-                    projectId,
-                    status: normalized,
-                  },
-                ]),
-              );
-            }
           } catch (err) {
             error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }

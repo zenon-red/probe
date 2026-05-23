@@ -11,9 +11,8 @@ import { IdeaStatus } from "~/utils/enums.js";
 import { currentAgentForIdentity } from "~/commands/nexus/agent-handlers.js";
 import { printHelp } from "~/utils/help.js";
 import { errorMessage, failWithConnectionOrUnexpected } from "~/utils/errors.js";
-import { applyJsonMode, error, isJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import { toMicros } from "~/utils/time.js";
-import { toonList } from "~/utils/toon.js";
 
 const SCORE_FLAGS = [
   ["ecosystem-impact", "ecosystem_impact"],
@@ -35,18 +34,6 @@ const sortIdeasNewest = (ideas: Idea[]): Idea[] => {
     if (a.id === b.id) return 0;
     return b.id > a.id ? 1 : -1;
   });
-};
-
-const renderIdeaList = (ideas: Idea[]) => {
-  return ideas.map((i) => ({
-    id: i.id.toString(),
-    title: i.title,
-    category: i.category,
-    status: IdeaStatus.display(i.status),
-    votes: `${i.totalVotes}/${i.quorum}`,
-    up: i.upVotes,
-    veto: i.vetoCount,
-  }));
 };
 
 function normalizeScore(rawScore: unknown, label: string): number {
@@ -276,9 +263,6 @@ export default defineCommand({
           if (limit !== undefined) ideas = ideas.slice(0, limit);
 
           success({ ideas, count: ideas.length });
-          if (!isJsonMode()) {
-            console.log(toonList("ideas", renderIdeaList(ideas)));
-          }
           break;
         }
 
@@ -317,9 +301,6 @@ export default defineCommand({
               if (limit !== undefined) ideas = ideas.slice(0, limit);
 
               success({ ideas, count: ideas.length });
-              if (!isJsonMode()) {
-                console.log(toonList("ideas", renderIdeaList(ideas)));
-              }
             },
           );
           break;
@@ -336,27 +317,6 @@ export default defineCommand({
           if (!idea) error("IDEA_NOT_FOUND", `Idea not found: ${ideaId}`);
 
           success(idea);
-          if (!isJsonMode()) {
-            console.log(
-              toonList("idea", [
-                {
-                  id: idea.id.toString(),
-                  title: idea.title,
-                  category: idea.category,
-                  status: IdeaStatus.display(idea.status),
-                  totalVotes: idea.totalVotes,
-                  quorum: idea.quorum,
-                  upVotes: idea.upVotes,
-                  downVotes: idea.downVotes,
-                  vetoCount: idea.vetoCount,
-                  approvalThreshold: idea.approvalThreshold,
-                  vetoThreshold: idea.vetoThreshold,
-                  computedScore: idea.computedScore,
-                  description: idea.description,
-                },
-              ]),
-            );
-          }
           break;
         }
 
@@ -370,20 +330,6 @@ export default defineCommand({
             .sort((a, b) => a.sortOrder - b.sortOrder);
 
           success({ dimensions, count: dimensions.length });
-          if (!isJsonMode()) {
-            console.log(
-              toonList(
-                "evaluation_dimensions",
-                dimensions.map((dimension) => ({
-                  name: dimension.name,
-                  label: dimension.label,
-                  weight: dimension.weight,
-                  range: `${dimension.minScore}-${dimension.maxScore}`,
-                  description: dimension.description,
-                })),
-              ),
-            );
-          }
           break;
         }
 
@@ -437,20 +383,6 @@ export default defineCommand({
                     descriptionLength: description.length,
                   },
             });
-            if (!isJsonMode()) {
-              console.log(
-                toonList("idea_proposed", [
-                  {
-                    id: published?.id.toString() || "",
-                    title,
-                    category,
-                    descriptionLength: published
-                      ? published.description.length
-                      : description.length,
-                  },
-                ]),
-              );
-            }
           } catch (err) {
             error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }
@@ -479,16 +411,6 @@ export default defineCommand({
               },
             );
             success({ voted: true, ideaId, scores: dimensionScores });
-            if (!isJsonMode()) {
-              console.log(
-                toonList("idea_voted", [
-                  {
-                    ideaId,
-                    scores: JSON.stringify(dimensionScores),
-                  },
-                ]),
-              );
-            }
           } catch (err) {
             error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }

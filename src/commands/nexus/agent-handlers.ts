@@ -9,9 +9,8 @@ import {
 } from "~/utils/context.js";
 import { AgentRole, AgentStatus } from "~/utils/enums.js";
 import { errorMessage, failWithConnectionOrUnexpected } from "~/utils/errors.js";
-import { error, isJsonMode, success } from "~/utils/output.js";
-import { formatTimestamp, toMicros } from "~/utils/time.js";
-import { toonList } from "~/utils/toon.js";
+import { error, success } from "~/utils/output.js";
+import { toMicros } from "~/utils/time.js";
 import { getWalletInfo } from "~/utils/wallet.js";
 import type { GenerateVoiceResult } from "~/module_bindings/types.js";
 
@@ -55,27 +54,33 @@ export const currentAgentForIdentity = (ctx: CommandContext): Agent | undefined 
     .find((a) => a.identity.toHexString() === ctx.identity?.toHexString());
 };
 
-const renderAgent = (agent: Agent, identity?: string) => ({
-  id: agent.id,
-  name: agent.name,
-  role: AgentRole.display(agent.role),
-  status: AgentStatus.display(agent.status),
-  lastHeartbeat: formatTimestamp(agent.lastHeartbeat),
-  currentTaskId: agent.currentTaskId ? agent.currentTaskId.toString() : "",
-  capabilities: agent.capabilities.join(","),
-  identity: identity || "",
-});
-
 const renderAgentBio = (agent: Agent) => ({
   agentId: agent.id,
   name: agent.name,
   bio: agent.bio,
 });
 
+const cooldownMovedHint = (sub?: string, setSecs?: string): string => {
+  const validSubs = new Set(["show", "set", "off", "inherit"]);
+  if (sub && validSubs.has(sub)) {
+    const secs = sub === "set" && setSecs ? ` ${setSecs}` : "";
+    return `Use: probe cooldown ${sub}${secs}`;
+  }
+  return "Did you mean: probe cooldown";
+};
+
 export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
   const action = args.action;
   if (!action) {
     error("ACTION_REQUIRED", "Agent action required");
+  }
+
+  if (action === "cooldown") {
+    error(
+      "INVALID_ACTION",
+      "`probe agent cooldown` was removed",
+      cooldownMovedHint(args.agentId, args.name),
+    );
   }
 
   try {
@@ -138,19 +143,6 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
             address,
             capabilities,
           });
-          if (!isJsonMode()) {
-            console.log(
-              toonList("agent_registered", [
-                {
-                  agentId,
-                  name,
-                  role,
-                  address,
-                  capabilities: capabilities.join(","),
-                },
-              ]),
-            );
-          }
         } catch (err) {
           error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
@@ -176,9 +168,6 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
               error("NOT_REGISTERED", "Agent not registered. Run `probe agent register` first.");
 
             success(myAgent);
-            if (!isJsonMode()) {
-              console.log(toonList("agent", [renderAgent(myAgent, ctx.identity?.toHexString())]));
-            }
           },
         );
         break;
@@ -233,16 +222,6 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
             status: normalized,
             taskId: args.task || null,
           });
-          if (!isJsonMode()) {
-            console.log(
-              toonList("agent_status_updated", [
-                {
-                  status: normalized,
-                  taskId: args.task || "",
-                },
-              ]),
-            );
-          }
         } catch (err) {
           error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
@@ -265,16 +244,6 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
               });
               const myAgent = currentAgentForIdentity(ctx);
               success({ updated: true, agentId: myAgent?.id, capabilities });
-              if (!isJsonMode()) {
-                console.log(
-                  toonList("agent_capabilities_updated", [
-                    {
-                      agentId: myAgent?.id || "",
-                      capabilities: capabilities.join(","),
-                    },
-                  ]),
-                );
-              }
             },
           );
         } catch (err) {
@@ -295,9 +264,6 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
               error("NOT_REGISTERED", "Agent not registered. Run `probe agent register` first.");
 
             success(myAgent);
-            if (!isJsonMode()) {
-              console.log(toonList("agent", [renderAgent(myAgent, ctx.identity?.toHexString())]));
-            }
           },
         );
         break;
@@ -344,9 +310,6 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
                   agentId: myAgent?.id,
                   bio,
                 });
-                if (!isJsonMode()) {
-                  console.log(toonList("agent_bio_updated", [{ agentId: myAgent?.id || "", bio }]));
-                }
               },
             );
           } catch (err) {
@@ -364,9 +327,6 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
             error("AGENT_NOT_FOUND", `Agent not found: ${targetAgentId}`);
           }
           success(renderAgentBio(agent));
-          if (!isJsonMode()) {
-            console.log(toonList("agent_bio", [renderAgentBio(agent)]));
-          }
           break;
         }
 
@@ -381,9 +341,6 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
               error("NOT_REGISTERED", "Agent not registered. Run `probe agent register` first.");
 
             success(renderAgentBio(myAgent));
-            if (!isJsonMode()) {
-              console.log(toonList("agent_bio", [renderAgentBio(myAgent)]));
-            }
           },
         );
         break;
@@ -404,16 +361,6 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
                 agentId: myAgent.id,
               });
               success({ heartbeat: true });
-              if (!isJsonMode()) {
-                console.log(
-                  toonList("agent_heartbeat", [
-                    {
-                      agentId: myAgent.id,
-                      status: AgentStatus.display(myAgent.status),
-                    },
-                  ]),
-                );
-              }
             },
           );
         } catch (err) {
@@ -441,21 +388,6 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
         if (limit !== undefined) onlineAgents = onlineAgents.slice(0, limit);
 
         success({ agents: onlineAgents, count: onlineAgents.length });
-        if (!isJsonMode()) {
-          console.log(
-            toonList(
-              "agents",
-              onlineAgents.map((a) => ({
-                id: a.id,
-                name: a.name,
-                role: AgentRole.display(a.role),
-                status: AgentStatus.display(a.status),
-                last_heartbeat: formatTimestamp(a.lastHeartbeat),
-                capabilities: a.capabilities.join(","),
-              })),
-            ),
-          );
-        }
         break;
       }
 
@@ -468,16 +400,6 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
           async (ctx) => {
             const identityHex = ctx.identity?.toHexString();
             success({ identity: identityHex, wallet: args.wallet });
-            if (!isJsonMode()) {
-              console.log(
-                toonList("identity", [
-                  {
-                    identity: identityHex || "",
-                    wallet: args.wallet || "",
-                  },
-                ]),
-              );
-            }
           },
         );
         break;
@@ -530,19 +452,6 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
               };
 
               success(data);
-              if (!isJsonMode()) {
-                console.log(
-                  toonList("voice_announcement", [
-                    {
-                      id: result.id,
-                      seq: result.seq,
-                      agentName: result.agentName,
-                      keyPrefix: result.keyPrefix,
-                      audioUrl: args.audioUrl || "",
-                    },
-                  ]),
-                );
-              }
             },
           );
         } catch (err) {

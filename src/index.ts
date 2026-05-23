@@ -22,11 +22,14 @@ import whoami from "./commands/whoami.js";
 import {
   JSON_FLAG_ARG_DESCRIPTION,
   JSON_FLAG_HELP_DETAIL,
+  forceHelpRequested,
   normalizeHelpArgv,
+  printConciseRootHelp,
   printHelp,
   setForceHelpRequested,
+  suggestCommand,
 } from "./utils/help.js";
-import { isJsonMode } from "./utils/output.js";
+import { error, isJsonMode } from "./utils/output.js";
 import { errorMessage } from "./utils/errors.js";
 
 const topLevelCommands = new Set([
@@ -43,6 +46,7 @@ const topLevelCommands = new Set([
   "discover",
   "project",
   "query",
+  "cooldown",
   "doctor",
   "whoami",
   "upgrade",
@@ -65,53 +69,58 @@ const main = defineCommand({
     json: { type: "boolean", description: JSON_FLAG_ARG_DESCRIPTION, default: false },
   },
   run() {
-    const firstPositional = process.argv.slice(2).find((arg) => !arg.startsWith("-"));
+    const argv = process.argv.slice(2);
+    const firstPositional = argv.find((arg) => !arg.startsWith("-"));
     if (firstPositional && topLevelCommands.has(firstPositional)) {
       return;
     }
 
-    printHelp({
-      command: "probe",
-      description,
-      usage: [
-        "probe <command> [positionals] [options]",
-        'probe idea propose --title "Better task scoring" --category planning',
-        "probe task claim 42 --wallet agent-wallet",
-      ],
-      actions: [
-        { name: "wallet", detail: "Wallet lifecycle commands" },
-        { name: "auth", detail: "Authenticate wallet and cache token" },
-        { name: "token", detail: "Inspect or clear cached token" },
-        { name: "sign", detail: "Sign text payloads" },
-        {
-          name: "nexus",
-          detail: "Run persistent Nexus daemon (action executor + heartbeat)",
-        },
-        { name: "agent", detail: "Agent identity and status" },
-        {
-          name: "agent cooldown",
-          detail: "Dispatch cadence after onboard: show, set, off, inherit",
-        },
-        {
-          name: "task, idea, discover, message, project",
-          detail: "Nexus workspace commands",
-        },
-        {
-          name: "action",
-          detail: "Action lifecycle: show, complete, fail, skip, review, validate-review",
-        },
-        { name: "query", detail: "Execute SQL queries against Nexus" },
-        { name: "doctor", detail: "Run setup and connectivity diagnostics" },
-        { name: "onboard", detail: "Idempotent agent setup for autonomous participation" },
-        { name: "upgrade", detail: "Upgrade Probe to the latest version" },
-        { name: "config", detail: "Read/write CLI configuration" },
-      ],
-      options: [{ name: "--json", detail: JSON_FLAG_HELP_DETAIL }],
-      notes: [
-        "Command output defaults to TOON (token-efficient; preferred for agents). Use --json only when a tool requires JSON.",
-        "Nexus commands connect to SpacetimeDB (the realtime database backing Nexus).",
-      ],
-    });
+    if (forceHelpRequested() || argv.includes("--help") || argv.includes("-h")) {
+      printHelp({
+        command: "probe",
+        description,
+        usage: [
+          "probe <command> [positionals] [options]",
+          'probe idea propose --title "Better task scoring" --category planning',
+          "probe task claim 42 --wallet agent-wallet",
+        ],
+        actions: [
+          { name: "wallet", detail: "Wallet lifecycle commands" },
+          { name: "auth", detail: "Authenticate wallet and cache token" },
+          { name: "token", detail: "Inspect or clear cached token" },
+          { name: "sign", detail: "Sign text payloads" },
+          {
+            name: "nexus",
+            detail: "Run persistent Nexus daemon (action executor + heartbeat)",
+          },
+          { name: "agent", detail: "Agent identity and status" },
+          { name: "cooldown", detail: "Dispatch cadence: show, set, off, inherit" },
+          { name: "task", detail: "Task lifecycle and claiming" },
+          { name: "idea", detail: "Idea proposal and voting" },
+          { name: "discover", detail: "Discovery reporting and review" },
+          { name: "message", detail: "Channel and project messaging" },
+          { name: "project", detail: "Project management" },
+          {
+            name: "action",
+            detail: "Action lifecycle: show, complete, fail, skip, review, validate-review",
+          },
+          { name: "query", detail: "Execute SQL queries against Nexus" },
+          { name: "doctor", detail: "Run setup and connectivity diagnostics" },
+          { name: "onboard", detail: "Idempotent agent setup for autonomous participation" },
+          { name: "whoami", detail: "Show current authenticated agent profile" },
+          { name: "upgrade", detail: "Upgrade Probe to the latest version" },
+          { name: "config", detail: "Read/write CLI configuration" },
+        ],
+        options: [{ name: "--json", detail: JSON_FLAG_HELP_DETAIL }],
+        notes: [
+          "Secrets and confirmations require flags or env vars — interactive prompts are not supported.",
+          "Nexus commands connect to SpacetimeDB (the realtime database backing Nexus).",
+        ],
+      });
+      return;
+    }
+
+    printConciseRootHelp(description);
   },
   subCommands: {
     wallet,
@@ -120,7 +129,7 @@ const main = defineCommand({
     token,
     config,
     nexus: nexusDaemon,
-    agent: { ...agent, subCommands: { ...agent.subCommands, cooldown: agentCooldown } },
+    agent,
     task,
     message,
     idea,
@@ -128,6 +137,7 @@ const main = defineCommand({
     project,
     query,
     doctor,
+    cooldown: agentCooldown,
     onboard,
     action,
     upgrade,
@@ -173,4 +183,16 @@ process.on("unhandledRejection", (err: unknown) => {
 });
 
 applyHelpNormalization();
+
+const argv = process.argv.slice(2);
+const firstPositional = argv.find((arg) => !arg.startsWith("-"));
+if (firstPositional && !topLevelCommands.has(firstPositional)) {
+  const suggestion = suggestCommand(firstPositional, [...topLevelCommands]);
+  error(
+    "UNKNOWN_COMMAND",
+    `Unknown command: ${firstPositional}`,
+    suggestion ? `Did you mean: probe ${suggestion}` : undefined,
+  );
+}
+
 runMain(main);

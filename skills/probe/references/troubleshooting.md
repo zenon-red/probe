@@ -98,10 +98,10 @@ probe task list --json
 
 ### Daemon stdout contains mixed content
 
-Daemon writes structured JSONL to `stdout` only. Use `--pretty` to send human logs to `stderr`:
+Daemon writes structured JSONL to `stdout` only:
 
 ```bash
-probe nexus --pretty
+probe nexus --wallet <name>
 ```
 
 Parse stdout safely:

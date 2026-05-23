@@ -1,7 +1,7 @@
 import { defineCommand } from "citty";
 import { getConfig } from "~/utils/config.js";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, info, isJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import { listWallets } from "~/utils/wallet.js";
 import { errorMessage } from "~/utils/errors.js";
 
@@ -40,26 +40,6 @@ export default defineCommand({
       }));
 
       success(walletsOutput);
-
-      if (!isJsonMode()) {
-        if (wallets.length === 0) {
-          info("No wallets found");
-        } else {
-          console.log("Wallets:");
-          for (const wallet of walletsOutput) {
-            const date = wallet.createdAt
-              ? new Date(wallet.createdAt).toLocaleDateString()
-              : "unknown";
-            const marker = wallet.default ? "*" : " ";
-            console.log(
-              `${marker} ${wallet.name.padEnd(12)} ${wallet.address.slice(0, 10)}...  created ${date}`,
-            );
-          }
-          if (config.defaultWallet) {
-            console.log(`\n* = default wallet`);
-          }
-        }
-      }
     } catch (err) {
       error("WALLET_LIST_ERROR", errorMessage(err, "Failed to list wallets"));
     }
