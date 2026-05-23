@@ -1,0 +1,414 @@
+openspec/specs/probe.md
+  s_873b787129db1a::t_7e4abae6f35f77 635-636,638,640
+  s_873b787129db1a::t_d2caf53c65ceaa 767-769
+  s_873b787129db1a::t_8586519625587a 458,460,462-469,471,473-474,476,478-479,481,483-486,488,490-492,494-499,501-504
+  s_08a24c99ce41de::t_12e3642094af77 626,628-629,632-634,637,639,641-642,645
+  s_873b787129db1a::t_7be9fb313fd641 44-47
+  s_873b787129db1a::t_ca2b2c2160738c 741
+  s_08a24c99ce41de::t_2d4646a69b87c5 766,773-1814
+  s_08a24c99ce41de::t_2cc25c91da762c 15
+  s_873b787129db1a::t_25c83fa0aa7bc5 196,201-208,213-218,220,222-225,229-251,255,257,259-261
+  s_873b787129db1a::t_0961c1586907c3 545,561,563-570
+src/commands/auth.ts
+  s_7d8122d55a2e14::t_fa23bc36070e65 11
+  s_7d8122d55a2e14::t_dae8848fb008a1 59
+  s_7d8122d55a2e14::t_c9c83722bcd09f 166
+  s_7d8122d55a2e14::t_bc59c9b87a098b 18
+src/utils/daemon.ts
+  s_7d8122d55a2e14::t_c1bc108b480a57 6
+  s_7d8122d55a2e14::t_dbfca27bf35aac 44,93,117,183,219
+  s_7d8122d55a2e14::t_b4f80b66987d83 68,72,76,158,162,166,244
+  s_7d8122d55a2e14::t_5fd60df16c2c67 5
+src/commands/action.ts
+  s_7d8122d55a2e14::t_c94bdd552ebb52 6
+  s_d7000956c62f0f::t_984df042ded154 364-365
+  s_15fde9706544a6::t_65d6864ca1806a 1
+  s_873b787129db1a::t_19e2d2c4f71d3c 3,17-19,21-23,25-26,41-45,53,55-56,70,89-91,93-99,104,106-107,109,177
+  s_d7000956c62f0f::t_4aca386b458a5c 112-156
+  s_ede2bc5638ff19::t_8b130d84bafca7 425
+  s_ede2bc5638ff19::t_56e8bf8f1afbcd 308,311-312
+  s_d7000956c62f0f::t_01489a020e6c8c 31
+  s_ede2bc5638ff19::t_94ce9f6dd732cc 268,271-272
+  s_c02885e19a03ad::t_7ee92c2cb6c2f9 20,24,32,36-40,46-52,73-74,82,85,100-101,103,105
+  s_d7000956c62f0f::t_7b0cfab080fb6d 422-423
+  s_d7000956c62f0f::t_feb784a94d59be 4-5
+  s_7d8122d55a2e14::t_bd8b3fb19b5934 173,221,262,302,360,418
+  s_873b787129db1a::t_f907703e7748b4 2,7-9,16,27-30,33-35,54,57-69,71-72,75-81,83-84,86-88,108,110-111,157-166,168-172,175-176,178-214,216-220,223-224,227,229-230,233-248,250-255,257-261,264-267,269-270,273-288,290-295,297-301,304-307,309-310,313-346,348-359,362-363,366,368-404,406-417,420-421,424,426-463
+  s_ede2bc5638ff19::t_f8c47daa672826 228,231-232
+  s_ede2bc5638ff19::t_33ae2210cbbf1b 367
+  s_c02885e19a03ad::t_e7eef182530dab 249,289
+  s_7d8122d55a2e14::t_6c6f8b63c7d13e 167,215,256,296,347,405
+  s_15fde9706544a6::t_646f652803a50f 10-15
+  s_d7000956c62f0f::t_05dd563a547ee4 225-226
+src/commands/wallet/list.ts
+  s_7d8122d55a2e14::t_baebca578716f3 31
+  s_7d8122d55a2e14::t_0d4136cfea9508 4
+  s_7d8122d55a2e14::t_32e031851fccf4 6
+  s_7d8122d55a2e14::t_d508ec9bd15f9a 64
+src/commands/wallet/show.ts
+  s_7d8122d55a2e14::t_d8aee9c2dae8a1 35
+  s_7d8122d55a2e14::t_4d5b829c70ca7e 6
+  s_7d8122d55a2e14::t_c4c5d5f3082389 111
+  s_7d8122d55a2e14::t_5e637ff8e327a7 4
+.prettierignore
+  s_15fde9706544a6::t_d8d46705593fb7 1-2
+src/utils/wallet.ts
+  s_7d8122d55a2e14::t_b4a6d07171c737 6
+src/commands/nexus/agent-handlers.ts
+  s_15fde9706544a6::t_ca3054ecac3025 171,290,376,466
+  s_ede2bc5638ff19::t_c0cf43bbd322b9 512-515
+  s_ede2bc5638ff19::t_f16503bbcadb01 118
+  s_7d8122d55a2e14::t_583cdec02f6fec 562
+  s_15fde9706544a6::t_373b746a93b181 107,221,260,337,397,508
+  s_ede2bc5638ff19::t_468bc0b911c8bd 340
+  s_ede2bc5638ff19::t_905e1780925c45 110
+  s_7d8122d55a2e14::t_da7e0fe620e76f 549
+  s_7d8122d55a2e14::t_67a277a24fa457 11
+  s_7d8122d55a2e14::t_6406b9a0fce17e 155,247,281,353,420
+  s_15fde9706544a6::t_67a0bcc7151ccb 360
+  s_15fde9706544a6::t_d39a8de657303e 3
+  s_ede2bc5638ff19::t_f357d1c3b820e4 224
+  s_ede2bc5638ff19::t_01b1990e0402cc 263
+  s_ede2bc5638ff19::t_25d57b8a7f9870 403
+  s_7d8122d55a2e14::t_a8973a4de7fe82 426
+src/commands/nexus/idea.ts
+  s_ede2bc5638ff19::t_99a1ea6fe8824b 408
+  s_7d8122d55a2e14::t_6d949edd673067 193
+  s_ede2bc5638ff19::t_cfbd5225b54319 475
+  s_7d8122d55a2e14::t_eb9ac0594755b7 506
+  s_7d8122d55a2e14::t_09152f098024ea 13
+  s_7d8122d55a2e14::t_d6e5b53c15014c 14
+  s_7d8122d55a2e14::t_29104e9551b0ba 455,493
+src/commands/nexus/agent.ts
+  s_7d8122d55a2e14::t_ca20805697b898 47
+  s_7d8122d55a2e14::t_f567574a037865 3
+src/utils/harness-detection.ts
+  s_7d8122d55a2e14::t_bc753152112f62 70
+  s_873b787129db1a::t_7a9ae97b183b30 2,4-25,27-69,71-103
+  s_7d8122d55a2e14::t_e122ae485e9013 3
+  s_15fde9706544a6::t_1876d3febd8a39 1
+  s_664966e98a8830::t_c0eae6e261b230 26
+openspec/config.yaml
+  s_08a24c99ce41de::t_188140505dcf3a 5
+  s_08a24c99ce41de::t_9e72e0152d02d1 3-4
+src/utils/help.ts
+  s_d7000956c62f0f::t_bf3283e16b1626 18-25
+src/types/config.ts
+  s_873b787129db1a::t_1a36a13a10cfd2 1-2,11-14
+  s_873b787129db1a::t_58939e0c4558f0 28-29
+src/utils/upgrade.ts
+  s_7d8122d55a2e14::t_a134aaf3f7cdd7 9
+  s_7d8122d55a2e14::t_97403b19fe494f 19
+  s_7d8122d55a2e14::t_6f15f44f3e4ed0 63
+  s_7d8122d55a2e14::t_b83568ea437f7a 97,262
+  s_7d8122d55a2e14::t_65cf7852f30e16 10
+  s_7d8122d55a2e14::t_423bcaef80ec6f 222
+  s_7d8122d55a2e14::t_c681e6c12a5cdd 148
+src/commands/onboard.ts
+  s_873b787129db1a::t_46ec71f43a7922 9,27,73,75,78-81,96-97,99-101,105-108,115,127-129,131,207-208,233
+  s_7d8122d55a2e14::t_c718a76a8237ca 4
+  s_7d8122d55a2e14::t_d0b32e25bcd0e5 94
+src/utils/onboard/steps.ts
+  s_7d8122d55a2e14::t_dbde74be11b689 484
+  s_ede2bc5638ff19::t_4782b8373322dc 476
+  s_7d8122d55a2e14::t_903e8ca6915400 210
+  s_15fde9706544a6::t_6365b645fcef3e 5
+  s_ede2bc5638ff19::t_94883f112dd43c 335
+  s_7d8122d55a2e14::t_65216a23f0f326 94
+  s_7d8122d55a2e14::t_cdc3b03a5a8fac 105,129
+  s_ede2bc5638ff19::t_ed9ffc5a4ade50 244
+  s_15fde9706544a6::t_0d70bcfc1e25e0 234
+  s_7d8122d55a2e14::t_cbeae6971e3374 19
+  s_7d8122d55a2e14::t_bbd22b3cd9b8c2 18
+  s_ede2bc5638ff19::t_2375040801ee19 299
+skills/probe/references/commands.md
+  s_d7000956c62f0f::t_05cc4450f2cf34 36
+  s_d7000956c62f0f::t_cc86f309901a5e 19
+  s_d7000956c62f0f::t_416d4be9da1952 28
+  s_c02885e19a03ad::t_9642069c7ccfc6 192,196,199-204,207-216
+src/utils/system.ts
+  s_7d8122d55a2e14::t_30d12cadad4e7f 1,3-5,7-11
+  s_7d8122d55a2e14::t_4507b6c4d64ad7 2,6
+src/utils/enums.ts
+  s_87d178a24745fa::t_62400c984bba0e 236-238
+  s_87d178a24745fa::t_d6d6b5910d07f8 152-154
+  s_87d178a24745fa::t_12998d0600978d 71-79,82-84,89-90,97-102,106,118-120,126-128
+  s_87d178a24745fa::t_6fdd8c37144efb 205-207
+  s_87d178a24745fa::t_c26d0b9bf46fd4 110-112
+  s_87d178a24745fa::t_9907a1e8c4cdb0 179-181
+  s_d7000956c62f0f::t_94510aba2f4086 215-221
+  s_d7000956c62f0f::t_f45132c9a9774e 4
+  s_87d178a24745fa::t_132f627c8477cd 134,140,142,150
+  s_87d178a24745fa::t_b217a64eebb99f 53-55
+src/commands/wallet/default.ts
+  s_7d8122d55a2e14::t_c917deb4d9aee0 25
+  s_7d8122d55a2e14::t_9628764a9c1e94 3
+src/commands/nexus/message-handlers.ts
+  s_7d8122d55a2e14::t_96ce33ec8616b3 12
+  s_7d8122d55a2e14::t_da72ac4b39be9d 441,556
+  s_ede2bc5638ff19::t_c433b3ac6bddde 414,529
+  s_7d8122d55a2e14::t_abac287df4b4cd 609
+  s_ede2bc5638ff19::t_83dbfa5da038ce 379,494
+src/index.ts
+  s_7d8122d55a2e14::t_53001240fd3b98 30
+  s_d7000956c62f0f::t_2f14dd8062dce4 65
+  s_d7000956c62f0f::t_b8ad400643c398 22-28
+  s_873b787129db1a::t_eab040d0ea2e87 123,132
+  s_7d8122d55a2e14::t_4a1d27342113a4 165
+  s_7d8122d55a2e14::t_256ce50fd022ab 170
+  s_d7000956c62f0f::t_bb70e79e15ad00 90,92-96,109-112
+  s_873b787129db1a::t_7121d6681035ac 6-7,50
+  s_873b787129db1a::t_a8dfc3ed0d622f 88,99-100,102
+src/commands/nexus/project.ts
+  s_ede2bc5638ff19::t_cf9e2bad9b9474 186-187
+  s_7d8122d55a2e14::t_60ac89dcca5735 231
+  s_7d8122d55a2e14::t_c393e08837d802 263
+  s_7d8122d55a2e14::t_f501288ac44af0 36
+  s_7d8122d55a2e14::t_c35db7fa7e732d 4
+  s_7d8122d55a2e14::t_51774ff5c1b99b 183
+  s_ede2bc5638ff19::t_a1033e0a070a04 184
+  s_7d8122d55a2e14::t_9ef09b26a77980 210,250
+  s_7d8122d55a2e14::t_2db87b6b67992b 6
+  s_ede2bc5638ff19::t_4bfdade024c2f1 232
+docs/commands.md
+  s_d7000956c62f0f::t_b8e8a3ad8dda8e 17
+  s_d7000956c62f0f::t_19560724190c55 34
+  s_c02885e19a03ad::t_9642069c7ccfc6 231,272
+  s_d7000956c62f0f::t_dbf3c1cb2317e2 25-28
+src/utils/timeouts.ts
+  s_7d8122d55a2e14::t_71418a073c92cb 1-28
+src/utils/context.ts
+  s_ede2bc5638ff19::t_29d4f4b40e31e4 250,254,259
+  s_ede2bc5638ff19::t_dde3cb49da6fc1 255-258,260-266
+  s_873b787129db1a::t_d1d63ef390d3b9 33
+  s_7d8122d55a2e14::t_fd1055dce227ad 100-101
+  s_ede2bc5638ff19::t_96276f867100bb 232,234-235,240,243
+  s_873b787129db1a::t_8b3eefb04d43a0 34-35
+  s_ede2bc5638ff19::t_bcfe2d07888249 252-253
+  s_873b787129db1a::t_b07145395abc73 167
+  s_7d8122d55a2e14::t_f0b974d512e842 21
+  s_15fde9706544a6::t_cbf961c5711e67 47-48
+src/utils/config.ts
+  s_7d8122d55a2e14::t_f7ac49bd8e23cf 55-64
+src/commands/config.ts
+  s_7d8122d55a2e14::t_6774a7215486f9 4
+  s_7d8122d55a2e14::t_92a7efc4ce6d50 6
+  s_7d8122d55a2e14::t_4db8b948a9f52c 199
+  s_7d8122d55a2e14::t_58867a2f59e9e6 62
+src/commands/wallet/import.ts
+  s_7d8122d55a2e14::t_a72b3aab1f8495 4
+  s_7d8122d55a2e14::t_c9fefba5cdfe7c 7
+  s_7d8122d55a2e14::t_0214e0ef2dbffa 119
+  s_7d8122d55a2e14::t_7ea9cd10cee917 44
+src/utils/output.ts
+  s_7d8122d55a2e14::t_749194c5024ade 30-33
+src/utils/errors.ts
+  s_7d8122d55a2e14::t_78bb158d33e292 26-31
+docs/getting-started.md
+  s_c02885e19a03ad::t_9642069c7ccfc6 9,136
+  s_d7000956c62f0f::t_33540c30752fc7 152
+  s_d7000956c62f0f::t_64455427209859 143-144,146
+src/commands/nexus/discover.ts
+  s_7d8122d55a2e14::t_a791372189c8f5 131
+  s_7d8122d55a2e14::t_9827652a5a4d37 76
+  s_ede2bc5638ff19::t_e53017425ca880 132
+  s_ede2bc5638ff19::t_20b67d281426c3 135
+  s_7d8122d55a2e14::t_57787aca29a9ff 3
+  s_7d8122d55a2e14::t_e0279be7db9ccb 5
+  s_7d8122d55a2e14::t_9c0c41e25f7c59 155,204
+  s_7d8122d55a2e14::t_6ab0743ad2610f 184
+  s_ede2bc5638ff19::t_f5a42ed13c1331 185
+  s_7d8122d55a2e14::t_1383ad90ed59b0 293
+  s_ede2bc5638ff19::t_5b2a0a42e906cc 9-11
+src/utils/prompt-builder.ts
+  s_873b787129db1a::t_c0f5c6d3b94314 1-35,37-39,41-45
+src/commands/wallet/create.ts
+  s_7d8122d55a2e14::t_99267541f45e6a 117
+  s_7d8122d55a2e14::t_a7adf63daad460 15
+  s_7d8122d55a2e14::t_a2976d03bf71f7 8
+  s_7d8122d55a2e14::t_b04d5bcf55578c 44
+skills/probe/SKILL.md
+  s_d7000956c62f0f::t_a6281f6cb1e3d9 15
+  s_c02885e19a03ad::t_9642069c7ccfc6 3,10-13,23,30,44-45,55,57,59,62-67,70,72,75-78,81,83-88
+src/commands/whoami.ts
+  s_15fde9706544a6::t_eefd9b4cebb9f8 3
+  s_7d8122d55a2e14::t_d02bbf9db02143 22
+  s_7d8122d55a2e14::t_71a2d28bb0315a 60
+  s_7d8122d55a2e14::t_6fe3dc1ddb317a 5
+  s_15fde9706544a6::t_f99edd3e2fcf5b 28
+  s_7d8122d55a2e14::t_4e32a7d0463e74 6
+src/commands/token.ts
+  s_7d8122d55a2e14::t_fe272b47e32d50 93
+  s_7d8122d55a2e14::t_f3bd2d6582b438 30
+  s_7d8122d55a2e14::t_48ef65554188d8 3
+  s_7d8122d55a2e14::t_ac135189a698e6 5
+src/utils/skills-install.ts
+  s_7d8122d55a2e14::t_e6980c12c86e0b 31
+  s_7d8122d55a2e14::t_ad2ad07a001062 2
+  s_7d8122d55a2e14::t_3cf99037e6a675 20,54
+  s_7d8122d55a2e14::t_066409c3276365 3
+src/commands/nexus-daemon.ts
+  s_ede2bc5638ff19::t_71cd472948b16a 496,499
+  s_7d8122d55a2e14::t_8961537feea245 438
+  s_7d8122d55a2e14::t_f55357f3d50a2a 18
+  s_7d8122d55a2e14::t_9f586fe2994180 19
+  s_c02885e19a03ad::t_c1062bae4e94ef 134,137,142,390,393,417,442,461,481-483
+  s_7d8122d55a2e14::t_b5536ecaedaa04 319-320
+  s_d7000956c62f0f::t_c153fb4594c5fc 486
+  s_664966e98a8830::t_fac65b1c9696ba 307
+  s_15fde9706544a6::t_2b1b001d99063a 549
+  s_15fde9706544a6::t_12e800e244e975 1
+  s_c02885e19a03ad::t_a0e0d056df5a0c 308,352-353,357-361,364-365,370-371
+  s_ede2bc5638ff19::t_0630167913a3a8 533
+  s_15fde9706544a6::t_148e3ac45ed7d6 550
+  s_664966e98a8830::t_b6659e9fa33a1f 354-356
+  s_87d178a24745fa::t_1988412cd52fc9 366-369
+  s_7d8122d55a2e14::t_f2de50c2c5fca9 70,75
+  s_7d8122d55a2e14::t_39e1aa9c1c66b0 538
+  s_873b787129db1a::t_bc6b4f00147cf3 5,8-9,11-13,15-16,29,53-57,61,80,85,91,93,102,107-109,114,129-133,135-136,138-141,143-153,181-184,196,206-213,215-222,224-229,234,241,245-246,249,251-263,271-274,278-281,301,304-306,336-351,372,377,382-389,391-392,394-398,401-410,412-413,418-421,423-424,426-427,429-437,439-441,443-460,462-470,472-476,479-480,484-485,487-495,497-498,501-512,514-519,525,529,531,534-535,537,541,543,548,560,563,566-568,572,578,584,591-592,597,600-601,603,607-608,612-613
+  s_7d8122d55a2e14::t_1da52ddb9be03b 199-205
+  s_c02885e19a03ad::t_4a3093fd2258fc 411,414-416
+  s_ede2bc5638ff19::t_7267da997b9e46 425
+src/commands/agent-cooldown.ts
+  s_ede2bc5638ff19::t_1f28040f888da2 143
+  s_7d8122d55a2e14::t_cbff95d635445b 117,142,167
+  s_ede2bc5638ff19::t_4c60978ae60d30 168-169
+  s_7d8122d55a2e14::t_2d831a734cbd09 38
+  s_7d8122d55a2e14::t_97a718dc704d10 4
+  s_ede2bc5638ff19::t_8c121ccf106aec 118
+  s_7d8122d55a2e14::t_cb5c3be1c69918 33,110,140,165
+  s_873b787129db1a::t_b3be4aa35984a8 1-2,5,10-13,15-32,34-37,40-53,55-89,91-109,111-116,120-126,128-139,141,145-151,153-164,166,170-176,178-201
+  s_c02885e19a03ad::t_88009f9ef1c15e 6-7,9,14,119,144
+src/commands/query.ts
+  s_7d8122d55a2e14::t_77f167e71751dc 190
+  s_7d8122d55a2e14::t_da1b09e18f86a8 270
+  s_7d8122d55a2e14::t_1beee9d27792c2 45
+  s_7d8122d55a2e14::t_216adcf4757dbc 42
+  s_7d8122d55a2e14::t_d3c99908ae0b1d 4
+  s_7d8122d55a2e14::t_65071c95fe471c 17
+  s_7d8122d55a2e14::t_bc7636690bc526 6
+  s_7d8122d55a2e14::t_a24a7c7e2f7417 16
+src/commands/nexus/task.ts
+  s_7d8122d55a2e14::t_585ca60551ce2c 3
+  s_7d8122d55a2e14::t_b39f52360fc487 37
+src/utils/health.ts
+  s_7d8122d55a2e14::t_9f7f2cf2dfdca2 129
+  s_7d8122d55a2e14::t_21027e5553b69b 6
+  s_664966e98a8830::t_5eb569ebf6b910 108
+  s_7d8122d55a2e14::t_c2fb89830a6b82 49
+src/commands/upgrade.ts
+  s_7d8122d55a2e14::t_54b60ad45011cc 142
+  s_7d8122d55a2e14::t_c0af8417b022a6 18
+  s_7d8122d55a2e14::t_4744bc22e7484b 4
+  s_7d8122d55a2e14::t_e957dbffbc6926 82
+  s_7d8122d55a2e14::t_2c420c90d6cb83 213
+src/commands/sign.ts
+  s_7d8122d55a2e14::t_ea53de6248b97e 41
+  s_7d8122d55a2e14::t_d312dcfcb7be70 6
+  s_7d8122d55a2e14::t_faf356304d7bcf 8
+  s_7d8122d55a2e14::t_1b3ee2eac10b44 103
+src/commands/nexus/task-handlers.ts
+  s_ede2bc5638ff19::t_45793d9e0d01f3 379
+  s_ede2bc5638ff19::t_d45cd5ad150631 417
+  s_ede2bc5638ff19::t_3b622927733797 226
+  s_ede2bc5638ff19::t_bf7129621aa0dd 272
+  s_7d8122d55a2e14::t_b00768a5f80ec6 253,330,368,404,436
+  s_7d8122d55a2e14::t_42872eb7ca0e0a 9
+  s_ede2bc5638ff19::t_949c4f28b8af1b 228
+  s_7d8122d55a2e14::t_03ee4aad989598 225,342,378,416
+  s_ede2bc5638ff19::t_017db9e8c0f853 343
+  s_7d8122d55a2e14::t_ac9b1a392ae8e6 551
+src/commands/wallet/delete.ts
+  s_7d8122d55a2e14::t_26c500ad9ff18f 77
+  s_7d8122d55a2e14::t_0dda5445c8b877 31
+  s_7d8122d55a2e14::t_64bff0225d7190 4
+  s_7d8122d55a2e14::t_c508e2eb84893e 6
+tests/unit/prompt-builder.test.ts
+  s_c02885e19a03ad::t_e82f202626c36c 1-42
+src/commands/nexus/message.ts
+  s_7d8122d55a2e14::t_b2e42a4e91e478 45
+  s_7d8122d55a2e14::t_ccd5002c090242 3
+src/commands/doctor.ts
+  s_7d8122d55a2e14::t_1789f4a3a91f3a 3
+  s_7d8122d55a2e14::t_5e88a1fa9fc8d8 32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "82aa5aeae59d9708f874c929b6c2bd57a4288a53",
+  "prompts": {},
+  "sessions": {
+    "s_08a24c99ce41de": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "2695ef4b-7cec-450b-9673-7a9cd13411be",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_15fde9706544a6": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1ae84b73affe2vrLv8Ibxf3Rka",
+        "model": "kimi-k2.6"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_664966e98a8830": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1ae83cd93ffeB4lSCTDWDfyTrJ",
+        "model": "glm-5.1"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_7d8122d55a2e14": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1add6bafcffedhpkWaRgQNFs5x",
+        "model": "kimi-k2.6"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_873b787129db1a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1af1889caffe8eV8sOfO33jUp5",
+        "model": "glm-5.1"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_87d178a24745fa": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1ae515beaffe574d3a1T6pQxRZ",
+        "model": "glm-5.1"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_c02885e19a03ad": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1aecc1869ffeIm7etzjGPOlfmQ",
+        "model": "gpt-5.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_d7000956c62f0f": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "7e082b4f-effe-4ad3-b846-03e460e24394",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_ede2bc5638ff19": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1ad8bb07bffeqobiRK4bnrKtz5",
+        "model": "glm-5.1"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
