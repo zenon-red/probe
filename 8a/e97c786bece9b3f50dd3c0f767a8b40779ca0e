@@ -1,0 +1,169 @@
+src/commands/wallet/delete.ts
+  s_39641ce99ec686::t_951320d2ae9c17 3,20,40-41,43,46,60-65
+src/commands/upgrade.ts
+  s_39641ce99ec686::t_fd9a3de663a792 3,42,72,75,129-138,140,153,157-163,185
+src/commands/nexus/agent-handlers.ts
+  s_39641ce99ec686::t_f1a91dd97700bd 12-13
+  s_39641ce99ec686::t_735f2e99ab28d8 63-71,78-83
+openspec/specs/probe.md
+  s_39641ce99ec686::t_9f57ea795881e3 1584
+  s_39641ce99ec686::t_5188916fa4e4b7 1591-1592,1596
+  s_39641ce99ec686::t_3e831c4b9fd81f 1600,1602,1615,1622,1625,1627,1634,1637,1639,1646,1649,1651,1658
+  s_39641ce99ec686::t_ebeda2ad13d8ac 64,68
+  s_39641ce99ec686::t_dac28a734ada13 493
+  s_39641ce99ec686::t_2531f3dcaddb05 108
+  s_39641ce99ec686::t_83f1c3f077577c 95
+  s_39641ce99ec686::t_5873d11bcf85cf 66,79-81
+  s_39641ce99ec686::t_0966e8e76dcb37 53,55-56,58,60,62,70,72-75,77
+  s_39641ce99ec686::t_02081e6f7d45cd 491
+  s_39641ce99ec686::t_9c6fbda40f23f7 511-540,542,544
+src/commands/doctor.ts
+  s_39641ce99ec686::t_73916ab1227e29 4
+  s_39641ce99ec686::t_ece9588ac5a52d 25-35,48,51,57-59,61-62,65-68,73-88,93,96-100,102-103
+src/commands/wallet/import.ts
+  s_39641ce99ec686::t_e5965395cff5ca 4,64-65,78,83
+skills/probe/SKILL.md
+  s_39641ce99ec686::t_bcdbad6f3b5c74 24
+  s_39641ce99ec686::t_cea67b61edf10f 17-18
+  s_39641ce99ec686::t_29bcc4a925c9c9 77-80
+src/commands/action.ts
+  s_39641ce99ec686::t_d7476f887a8814 6,186,222,258,294,348,402,428-432
+README.md
+  s_39641ce99ec686::t_487e6d2d814640 27
+  s_39641ce99ec686::t_aa3f1b0e12672e 22
+  s_39641ce99ec686::t_722d81b2ecf6a3 82,85
+  s_39641ce99ec686::t_824d01e1302771 96
+src/utils/health.ts
+  s_39641ce99ec686::t_73d968d1cbc743 1-2,6,13-14,17-18,31-33,36-46,51-89,94-100,111-117,127-133,138-144,146-152,162-163,175,179,184-191,195-201,204-212,217-219,222-223
+docs/commands.md
+  s_39641ce99ec686::t_50668fd1e5f3be 30
+  s_39641ce99ec686::t_2f074718976ece 59,63
+  s_39641ce99ec686::t_4ec35a02449a9a 234
+  s_39641ce99ec686::t_798de9a4230a70 326
+  s_39641ce99ec686::t_a3a6d652df5b77 3-4
+  s_39641ce99ec686::t_ad2c7fcd683be2 5-9,11-15
+tests/unit/doctor.test.ts
+  s_39641ce99ec686::t_9c92e779a616d7 1-47
+src/utils/output.ts
+  s_39641ce99ec686::t_0507d337ece359 3
+  s_39641ce99ec686::t_05acf0d387cf36 2,23-24,27-30,32-33,45,48-50,52
+  s_39641ce99ec686::t_0f8ad87909e3b9 5
+src/commands/onboard.ts
+  s_39641ce99ec686::t_42bccecc83c9c3 3,200,202,208-214,222-227,229-232,234,236-237
+  s_39641ce99ec686::t_56df83dbb167b9 235
+src/utils/auto-update.ts
+  s_39641ce99ec686::t_bf553393eba402 2,77-79,88,93
+src/commands/config.ts
+  s_39641ce99ec686::t_e157a4afcaa63b 4
+docs/nexus.md
+  s_39641ce99ec686::t_626a456acf1044 8,14
+docs/todo/prd-probe-codebase-quality-reset.md
+  s_7aa0bf544cf5b8::t_d1e39f5533f649 1-212,214-288,290-457
+src/commands/wallet/list.ts
+  s_39641ce99ec686::t_cc4abc0a5e0389 4
+src/utils/help.ts
+  s_39641ce99ec686::t_d1473cf4931a03 76
+  s_39641ce99ec686::t_6ee574abc53b12 24-59
+  s_39641ce99ec686::t_d3f8eacdb0067b 84,86,104,107,109,114-115,120-121,126,128,134,136,145,147-150,152
+  s_39641ce99ec686::t_abd720722b85c6 143-144,146,151,153
+src/commands/sign.ts
+  s_39641ce99ec686::t_9189ce9e5fd0df 6,58-60,81
+src/commands/whoami.ts
+  s_39641ce99ec686::t_4f8007242c1bda 5,36-39
+tests/unit/help.test.ts
+  s_39641ce99ec686::t_b241d6e3663ffe 1-38,41-42
+  s_39641ce99ec686::t_3886c78810e74d 39-40
+src/index.ts
+  s_39641ce99ec686::t_d56d66194842f8 97-102,110
+  s_39641ce99ec686::t_bffdc8cdf9506b 140
+  s_39641ce99ec686::t_bc413ae1f353bf 78
+  s_39641ce99ec686::t_d4674c4e3744f3 83
+  s_39641ce99ec686::t_643ba2b232e127 186-197
+  s_39641ce99ec686::t_dd12b77f76dab3 27,30,32
+  s_39641ce99ec686::t_88ca0377365590 49
+  s_39641ce99ec686::t_039886c7dd6edc 72-73,79-82,84-96,103-109,111-123
+  s_39641ce99ec686::t_383c8b3051551a 25
+  s_39641ce99ec686::t_5d7ddd2d40b5d8 132
+src/commands/nexus/task-handlers.ts
+  s_39641ce99ec686::t_3f06e70f08ce8a 11
+  s_39641ce99ec686::t_73a8b6ae52910b 368-372,378-382
+  s_39641ce99ec686::t_070b265d6bc6e2 228-236
+  s_39641ce99ec686::t_3f5993ef923e55 342-346
+src/commands/auth.ts
+  s_39641ce99ec686::t_9f03e902e74072 8,64,85,102-110,129,177
+skills/probe/references/commands.md
+  s_39641ce99ec686::t_c561c879ede472 19
+  s_39641ce99ec686::t_11cb1d75767686 174
+  s_39641ce99ec686::t_35fd7b4476c361 48,52
+  s_39641ce99ec686::t_821bec8f0f3581 3
+  s_39641ce99ec686::t_aa981abc8267be 209,212-215
+  s_39641ce99ec686::t_6130a8f0184155 180
+src/utils/path-writable.ts
+  s_39641ce99ec686::t_62381bc10dbd62 1-19
+src/commands/nexus-daemon.ts
+  s_39641ce99ec686::t_ebcedd03450434 571,584
+docs/llms.txt
+  s_39641ce99ec686::t_662aa0e9d4d600 1-11,14,16-36,38-39,41-45,80-84,86-101
+  s_39641ce99ec686::t_d09dc930121c8d 12-13,37,46-79,85
+  s_39641ce99ec686::t_5b9346af57083f 40
+  s_39641ce99ec686::t_0f3dc7d407a9d0 15
+src/commands/wallet/show.ts
+  s_39641ce99ec686::t_31359337136171 4
+src/utils/credentials.ts
+  s_39641ce99ec686::t_5a4d21a4f2b85d 2,15,32-36,61-65
+src/commands/agent-cooldown.ts
+  s_39641ce99ec686::t_2b17540aa3434f 4,70-75,103,124,145,168-169,172
+  s_39641ce99ec686::t_d3e29bda34ba46 170-171
+tests/unit/emit.test.ts
+  s_39641ce99ec686::t_2e430c18df0d70 1-5,8-10,13-17,22-24,26-31,36-38,40-68,70-71,75-83,86-88
+  s_39641ce99ec686::t_a88085c1cee154 6-7,11-12,18-21,25,32-35,39,69,72-74,84-85
+src/utils/doctor-issues.ts
+  s_39641ce99ec686::t_e02024417d9356 1-148
+skills/probe/references/troubleshooting.md
+  s_39641ce99ec686::t_e4c25a9766bf77 101,104
+src/commands/nexus/idea.ts
+  s_39641ce99ec686::t_dbc959452f7ca1 14
+src/commands/query.ts
+  s_39641ce99ec686::t_4d374390ccb2cc 6,149,190,236-240
+src/commands/nexus/discover.ts
+  s_39641ce99ec686::t_8e169520d35e10 5-6
+src/utils/emit.ts
+  s_39641ce99ec686::t_7b5937459c5c8b 1,3-88
+  s_39641ce99ec686::t_4443fe0ca9e6d7 2
+src/utils/output-mode.ts
+  s_39641ce99ec686::t_8f106eef397627 1-17
+src/commands/nexus/project.ts
+  s_39641ce99ec686::t_826913d45c84e9 6
+src/commands/token.ts
+  s_39641ce99ec686::t_3f1934e428b7df 3,50,78-82
+src/commands/wallet/create.ts
+  s_39641ce99ec686::t_56cde3446b653e 4,54,66,92
+src/commands/nexus/message-handlers.ts
+  s_39641ce99ec686::t_57e1f2a1a6198a 13-14
+src/commands/wallet/default.ts
+  s_39641ce99ec686::t_a8597dbc06265c 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "8ae97c786bece9b3f50dd3c0f767a8b40779ca0e",
+  "prompts": {},
+  "sessions": {
+    "s_39641ce99ec686": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c7d9a336-ba4b-462f-9ba7-d7ec53dfeaff",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_7aa0bf544cf5b8": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1aa397808ffe9qah1DoQYjaqot",
+        "model": "gpt-5.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
