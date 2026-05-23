@@ -1,20 +1,25 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { printConciseRootHelp, printHelp } from "../../src/utils/help.js";
+import task from "../../src/commands/nexus/task.js";
+import { printConciseRootHelp, printHelp, setForceHelpRequested } from "../../src/utils/help.js";
+
+const realConsoleLog = globalThis.console.log.bind(console);
 
 describe("help output", () => {
-  const originalLog = console.log;
-
   afterEach(() => {
-    console.log = originalLog;
+    setForceHelpRequested(false);
   });
 
   const captureHelp = (fn: () => void): string => {
     const logs: string[] = [];
-    console.log = (...args: unknown[]) => {
+    globalThis.console.log = (...args: unknown[]) => {
       logs.push(args.map(String).join(" "));
     };
-    fn();
-    return logs.join("\n");
+    try {
+      fn();
+      return logs.join("\n");
+    } finally {
+      globalThis.console.log = realConsoleLog;
+    }
   };
 
   it("prints concise root help without ANSI escapes", () => {
@@ -38,5 +43,16 @@ describe("help output", () => {
     expect(output).not.toMatch(/\x1b/);
     expect(output).not.toContain("docs/");
     expect(output).not.toContain("Documentation:");
+  });
+
+  it("prints task parent help without ANSI or positional action", () => {
+    setForceHelpRequested(true);
+    const output = captureHelp(() => {
+      void task.run?.({ args: { _: [] } } as never);
+    });
+    expect(output).toContain("probe task");
+    expect(output).toContain("list");
+    expect(output).not.toMatch(/\x1b/);
+    expect(output).not.toContain("<action>");
   });
 });

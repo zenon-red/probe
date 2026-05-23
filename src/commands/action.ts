@@ -1,8 +1,14 @@
-// TODO: add unit tests for ownership verification and reducer error paths
 import { defineCommand } from "citty";
-import { callReducer, withAuth } from "~/utils/context.js";
+import {
+  type AgentAction,
+  type CommandContext,
+  commandContextOptions,
+  withAuth,
+} from "~/utils/context.js";
 import type { DispatchRoute as DispatchRouteType } from "~/module_bindings/types.js";
 import { DispatchRoute, enumName, identityHex } from "~/utils/enums.js";
+import { runReducerCommand } from "~/utils/reducer-command.js";
+import { defineSubcommandParent } from "~/utils/subcommand.js";
 import { applyJsonMode, error, success } from "~/utils/output.js";
 
 /**
@@ -32,23 +38,10 @@ interface ActionRow {
   harness?: string;
 }
 
-interface AgentRow {
-  id: string;
-  identity: unknown;
-}
+const ACTION_SUBSCRIBE = ["SELECT * FROM agents", "SELECT * FROM agent_actions"];
 
-function getActionRows(ctx: { db: unknown }): ActionRow[] {
-  const db = ctx.db as Record<string, { iter?: () => IterableIterator<Record<string, unknown>> }>;
-  const table = db["agent_actions"];
-  if (!table?.iter) return [];
-  return Array.from(table.iter()) as unknown as ActionRow[];
-}
-
-function getAgentRows(ctx: { db: unknown }): AgentRow[] {
-  const db = ctx.db as Record<string, { iter?: () => IterableIterator<Record<string, unknown>> }>;
-  const table = db["agents"];
-  if (!table?.iter) return [];
-  return Array.from(table.iter()) as unknown as AgentRow[];
+function asActionRow(action: AgentAction): ActionRow {
+  return action as unknown as ActionRow;
 }
 
 function buildContextCommands(action: ActionRow): string[] {
@@ -86,18 +79,14 @@ function formatActionRow(action: ActionRow): Record<string, unknown> {
   };
 }
 
-function verifyOwnership(
-  ctx: { db: unknown; auth?: { identity: unknown } },
-  actionId: number,
-): ActionRow {
-  const actions = getActionRows(ctx);
-  const action = actions.find((a) => a.id === actionId);
+function verifyOwnership(ctx: CommandContext, actionId: number): ActionRow {
+  const action = ctx.agentActions.find((a) => Number(a.id) === actionId);
 
   if (!action) {
     error("ACTION_NOT_FOUND", `Action ${actionId} not found.`);
   }
 
-  const ownAgent = getAgentRows(ctx).find(
+  const ownAgent = ctx.agents.find(
     (agent) => identityHex(agent.identity) === identityHex(ctx.auth?.identity),
   );
 
@@ -105,7 +94,7 @@ function verifyOwnership(
     error("NOT_OWNER", `Action ${actionId} does not belong to you.`);
   }
 
-  return action;
+  return asActionRow(action);
 }
 
 function completionHintForRoute(route: DispatchRouteType | undefined, actionId: number): string {
@@ -153,6 +142,12 @@ function requireValidateReviewRoute(action: ActionRow): void {
   );
 }
 
+type ActionConnectionArgs = {
+  wallet?: string;
+  host?: string;
+  module?: string;
+};
+
 export const actionShowCommand = defineCommand({
   meta: { name: "show", description: "Show details of an action" },
   args: {
@@ -167,21 +162,16 @@ export const actionShowCommand = defineCommand({
     const actionId = Number(args.id);
 
     await withAuth(
-      {
-        wallet: args.wallet,
-
-        subscribe: ["SELECT * FROM agents", "SELECT * FROM agent_actions"],
-      },
+      commandContextOptions(args as ActionConnectionArgs, { subscribe: ACTION_SUBSCRIBE }),
       async (ctx) => {
-        const actions = getActionRows(ctx);
-        const action = actions.find((a) => a.id === actionId);
+        const action = ctx.agentActions.find((a) => Number(a.id) === actionId);
 
         if (!action) {
           error("ACTION_NOT_FOUND", `Action ${actionId} not found.`);
         }
 
-        const contextCommands = buildContextCommands(action);
-        const row = formatActionRow(action);
+        const contextCommands = buildContextCommands(asActionRow(action));
+        const row = formatActionRow(asActionRow(action));
 
         success({ action: row }, contextCommands);
       },
@@ -202,26 +192,22 @@ export const actionCompleteCommand = defineCommand({
     applyJsonMode(args);
     const actionId = Number(args.id);
 
-    await withAuth(
-      {
-        wallet: args.wallet,
-
-        subscribe: ["SELECT * FROM agents", "SELECT * FROM agent_actions"],
-      },
-      async (ctx) => {
+    await runReducerCommand(args as ActionConnectionArgs, {
+      subscribe: ACTION_SUBSCRIBE,
+      reducer: (ctx) => ctx.conn.reducers.updateAgentAction,
+      params: (ctx) => {
         const action = verifyOwnership(ctx, actionId);
         blockGenericCompleteOnReviewRoutes(action);
-
-        await callReducer(ctx, ctx.conn.reducers.updateAgentAction, {
+        return {
           actionId: BigInt(actionId),
-          eventType: { tag: "Completed" },
+          eventType: { tag: "Completed" as const },
           eventCode: undefined,
           note: undefined,
-        });
-
-        success({ action_id: actionId, status: "completed" });
+        };
       },
-    );
+    });
+
+    success({ action_id: actionId, status: "completed" });
   },
 });
 
@@ -239,25 +225,21 @@ export const actionFailCommand = defineCommand({
     applyJsonMode(args);
     const actionId = Number(args.id);
 
-    await withAuth(
-      {
-        wallet: args.wallet,
-
-        subscribe: ["SELECT * FROM agents", "SELECT * FROM agent_actions"],
-      },
-      async (ctx) => {
+    await runReducerCommand(args as ActionConnectionArgs, {
+      subscribe: ACTION_SUBSCRIBE,
+      reducer: (ctx) => ctx.conn.reducers.updateAgentAction,
+      params: (ctx) => {
         verifyOwnership(ctx, actionId);
-
-        await callReducer(ctx, ctx.conn.reducers.updateAgentAction, {
+        return {
           actionId: BigInt(actionId),
-          eventType: { tag: "Failed" },
+          eventType: { tag: "Failed" as const },
           eventCode: undefined,
           note: args.reason ?? undefined,
-        });
-
-        success({ action_id: actionId, status: "failed", reason: args.reason });
+        };
       },
-    );
+    });
+
+    success({ action_id: actionId, status: "failed", reason: args.reason });
   },
 });
 
@@ -275,25 +257,21 @@ export const actionSkipCommand = defineCommand({
     applyJsonMode(args);
     const actionId = Number(args.id);
 
-    await withAuth(
-      {
-        wallet: args.wallet,
-
-        subscribe: ["SELECT * FROM agents", "SELECT * FROM agent_actions"],
-      },
-      async (ctx) => {
+    await runReducerCommand(args as ActionConnectionArgs, {
+      subscribe: ACTION_SUBSCRIBE,
+      reducer: (ctx) => ctx.conn.reducers.updateAgentAction,
+      params: (ctx) => {
         verifyOwnership(ctx, actionId);
-
-        await callReducer(ctx, ctx.conn.reducers.updateAgentAction, {
+        return {
           actionId: BigInt(actionId),
-          eventType: { tag: "Skipped" },
+          eventType: { tag: "Skipped" as const },
           eventCode: undefined,
           note: args.reason ?? undefined,
-        });
-
-        success({ action_id: actionId, status: "skipped", reason: args.reason });
+        };
       },
-    );
+    });
+
+    success({ action_id: actionId, status: "skipped", reason: args.reason });
   },
 });
 
@@ -327,27 +305,24 @@ export const actionReviewCommand = defineCommand({
       error("INVALID_OUTCOME", `Outcome must be one of: ${validOutcomes.join(", ")}`);
     }
 
-    const outcomeTag = args.outcome === "approved" ? "Approved" : "ChangesRequested";
+    const outcomeTag =
+      args.outcome === "approved" ? ("Approved" as const) : ("ChangesRequested" as const);
 
-    await withAuth(
-      {
-        wallet: args.wallet,
-
-        subscribe: ["SELECT * FROM agents", "SELECT * FROM agent_actions"],
-      },
-      async (ctx) => {
+    await runReducerCommand(args as ActionConnectionArgs, {
+      subscribe: ACTION_SUBSCRIBE,
+      reducer: (ctx) => ctx.conn.reducers.completeReviewAction,
+      params: (ctx) => {
         const action = verifyOwnership(ctx, actionId);
         requireReviewTaskRoute(action);
-
-        await callReducer(ctx, ctx.conn.reducers.completeReviewAction, {
+        return {
           actionId: BigInt(actionId),
           outcome: { tag: outcomeTag },
           summary: args.summary,
-        });
-
-        success({ action_id: actionId, status: "completed", review_outcome: args.outcome });
+        };
       },
-    );
+    });
+
+    success({ action_id: actionId, status: "completed", review_outcome: args.outcome });
   },
 });
 
@@ -381,34 +356,51 @@ export const actionValidateReviewCommand = defineCommand({
       error("INVALID_OUTCOME", `Outcome must be one of: ${validOutcomes.join(", ")}`);
     }
 
-    const outcomeTag = args.outcome === "valid" ? "Valid" : "Invalid";
+    const outcomeTag = args.outcome === "valid" ? ("Valid" as const) : ("Invalid" as const);
 
-    await withAuth(
-      {
-        wallet: args.wallet,
-
-        subscribe: ["SELECT * FROM agents", "SELECT * FROM agent_actions"],
-      },
-      async (ctx) => {
+    await runReducerCommand(args as ActionConnectionArgs, {
+      subscribe: ACTION_SUBSCRIBE,
+      reducer: (ctx) => ctx.conn.reducers.completeValidateReviewAction,
+      params: (ctx) => {
         const action = verifyOwnership(ctx, actionId);
         requireValidateReviewRoute(action);
-
-        await callReducer(ctx, ctx.conn.reducers.completeValidateReviewAction, {
+        return {
           actionId: BigInt(actionId),
           outcome: { tag: outcomeTag },
           summary: args.summary,
-        });
-
-        success({ action_id: actionId, status: "completed", validation_outcome: args.outcome });
+        };
       },
-    );
+    });
+
+    success({ action_id: actionId, status: "completed", validation_outcome: args.outcome });
   },
 });
 
-export default defineCommand({
-  meta: {
-    name: "action",
-    description: "Manage action lifecycle — show, complete, fail, skip, review, validate-review",
+export default defineSubcommandParent({
+  name: "action",
+  description: "Manage action lifecycle — show, complete, fail, skip, review, validate-review",
+  args: {
+    wallet: { type: "string", description: "Wallet name" },
+    host: { type: "string", description: "SpacetimeDB host" },
+    module: { type: "string", description: "Module name" },
+    json: { type: "boolean", description: "JSON output", default: false },
+  },
+  help: {
+    command: "probe action",
+    description: "Action lifecycle: show, complete, fail, skip, review, validate-review",
+    usage: [
+      "probe action <subcommand> [positionals] [options]",
+      "probe action show 42",
+      "probe action complete 42",
+    ],
+    actions: [
+      { name: "show <id>", detail: "Show one action" },
+      { name: "complete <id>", detail: "Mark an action completed" },
+      { name: "fail <id>", detail: "Mark an action failed" },
+      { name: "skip <id>", detail: "Skip an action" },
+      { name: "review <id>", detail: "Complete a review action" },
+      { name: "validate-review <id>", detail: "Complete a review validation action" },
+    ],
   },
   subCommands: {
     show: actionShowCommand,
@@ -417,18 +409,5 @@ export default defineCommand({
     skip: actionSkipCommand,
     review: actionReviewCommand,
     "validate-review": actionValidateReviewCommand,
-  },
-  args: {
-    wallet: { type: "string", description: "Wallet name" },
-    host: { type: "string", description: "SpacetimeDB host" },
-    module: { type: "string", description: "Module name" },
-    json: { type: "boolean", description: "JSON output", default: false },
-  },
-  run() {
-    error(
-      "SUBCOMMAND_REQUIRED",
-      "Usage: probe action <show|complete|fail|skip|review|validate-review> [args]",
-      "Run: probe action --help",
-    );
   },
 });

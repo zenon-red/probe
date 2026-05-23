@@ -1,26 +1,30 @@
 import { afterEach, describe, expect, it } from "bun:test";
+import { renderProbeError } from "../../src/utils/boundary.js";
 import { emit, exitCodeFor, EXIT_CODES } from "../../src/utils/emit.js";
+import { ProbeError, clearProbeErrorForExit } from "../../src/utils/errors.js";
 import { setJsonMode } from "../../src/utils/output-mode.js";
 
+const realConsoleLog = globalThis.console.log.bind(console);
+const realConsoleError = globalThis.console.error.bind(console);
+
+afterEach(() => {
+  globalThis.console.log = realConsoleLog;
+  globalThis.console.error = realConsoleError;
+  clearProbeErrorForExit();
+  setJsonMode(false);
+});
+
 describe("emit", () => {
-  const originalLog = console.log;
-  const originalError = console.error;
-  const originalExit = process.exit;
-
-  afterEach(() => {
-    console.log = originalLog;
-    console.error = originalError;
-    process.exit = originalExit;
-    setJsonMode(false);
-  });
-
   it("writes TOON to stdout in default mode", () => {
     const logs: string[] = [];
-    console.log = (...args: unknown[]) => {
+    globalThis.console.log = (...args: unknown[]) => {
       logs.push(args.map(String).join(" "));
     };
-
-    emit({ data: { tasks: [{ id: 1, title: "Test" }], count: 1 } });
+    try {
+      emit({ data: { tasks: [{ id: 1, title: "Test" }], count: 1 } });
+    } finally {
+      globalThis.console.log = realConsoleLog;
+    }
 
     const output = logs.join("\n");
     expect(output).toContain("tasks");
@@ -30,11 +34,14 @@ describe("emit", () => {
   it("writes JSON envelope with --json mode", () => {
     setJsonMode(true);
     const logs: string[] = [];
-    console.log = (...args: unknown[]) => {
+    globalThis.console.log = (...args: unknown[]) => {
       logs.push(args.map(String).join(" "));
     };
-
-    emit({ data: { ok: true }, next_commands: ["probe doctor"] });
+    try {
+      emit({ data: { ok: true }, next_commands: ["probe doctor"] });
+    } finally {
+      globalThis.console.log = realConsoleLog;
+    }
 
     const parsed = JSON.parse(logs.join("\n").trim());
     expect(parsed.success).toBe(true);
@@ -64,25 +71,41 @@ describe("exitCodeFor", () => {
 });
 
 describe("error output format", () => {
-  it("writes CODE: message and hint to stderr in default mode", async () => {
-    const { error } = await import("../../src/utils/output.js");
+  it("writes CODE: message and hint to stderr in default mode", () => {
     const errors: string[] = [];
-    let exitCode = 0;
-
-    console.error = (...args: unknown[]) => {
+    globalThis.console.error = (...args: unknown[]) => {
       errors.push(args.map(String).join(" "));
     };
+    try {
+      renderProbeError(
+        ProbeError.of("PASSWORD_REQUIRED", "Password required", "Use --password-file"),
+      );
+    } finally {
+      globalThis.console.error = realConsoleError;
+    }
 
-    process.exit = ((code?: number) => {
-      exitCode = code ?? 0;
-      throw new Error("exit");
-    }) as typeof process.exit;
-
-    expect(() => error("PASSWORD_REQUIRED", "Password required", "Use --password-file")).toThrow(
-      "exit",
-    );
     expect(errors.join("\n")).toContain("PASSWORD_REQUIRED: Password required");
     expect(errors.join("\n")).toContain("hint: Use --password-file");
-    expect(exitCode).toBe(EXIT_CODES.AUTH);
+  });
+
+  it("writes JSON envelope to stderr in json mode", () => {
+    setJsonMode(true);
+    const errors: string[] = [];
+    globalThis.console.error = (...args: unknown[]) => {
+      errors.push(args.map(String).join(" "));
+    };
+    try {
+      renderProbeError(ProbeError.of("TASK_NOT_FOUND", "Task missing", "probe task list --json"));
+    } finally {
+      globalThis.console.error = realConsoleError;
+    }
+
+    const parsed = JSON.parse(errors.join("\n").trim());
+    expect(parsed.success).toBe(false);
+    expect(parsed.error).toEqual({
+      code: "TASK_NOT_FOUND",
+      message: "Task missing",
+      suggestion: "probe task list --json",
+    });
   });
 });

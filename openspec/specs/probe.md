@@ -72,7 +72,7 @@ The CLI SHALL NOT use `@clack/prompts`, spinners, interactive prompts, or ANSI/c
 - `probe task list` → TOON on stdout
 - `probe action complete <id>` → TOON on stdout (structured `data`, not plain sentences)
 - `probe auth status` → TOON on stdout (no separate `Wallet:` lines)
-- `probe auth <wallet> --json` → JSON envelope on stdout; errors on stderr
+- `probe login <wallet> --json` → JSON envelope on stdout; errors on stderr
 
 Commands MAY include `next_commands` in `data` for workflow discoverability.
 
@@ -120,12 +120,12 @@ The repository includes `docs/llms.txt` as an agent cheat sheet for source check
 
 ---
 
-### 2.2 `probe auth`
+### 2.2 `probe login` and `probe auth status`
 
-| Action          | Description                              |
-| --------------- | ---------------------------------------- |
-| `<wallet-name>` | Full OIDC challenge-sign-exchange flow   |
-| `status`        | Check cached token validity for a wallet |
+| Command | Description |
+| ------- | ----------- |
+| `probe login <wallet-name>` | Full OIDC challenge-sign-exchange flow |
+| `probe auth status` | Check cached token validity for a wallet |
 
 #### OIDC Authentication Flow
 
@@ -144,7 +144,7 @@ The repository includes `docs/llms.txt` as an agent cheat sheet for source check
 ```
 
 - GIVEN wallet `<name>` exists and password resolves
-- WHEN `probe auth <name>` runs
+- WHEN `probe login <name>` runs
 - THEN loads KeyStore → gets KeyPair(0) → signs challenge → exchanges for token
 - AND saves token to `{tokenCacheDir}/{wallet}.jwt` (mode 0o600)
 
@@ -375,9 +375,12 @@ SELECT * FROM agent_actions WHERE status = 'Issued'
 
 #### Target Resolution
 
-- Numeric → project ID (ProjectMessage table)
-- String → channel name or ID (Message table)
+- Numeric-only → project ID (`ProjectMessage` table)
+- Non-numeric → channel name (exact match)
+- `project:<id>` / `channel:<name|id>` — explicit disambiguation (numeric channel ids require `channel:` prefix)
 - No target → all messages from both tables
+
+Shared helpers: `listMessages` (list + directives) and `sendMessage` (send + directive).
 
 #### Message Content Validation
 
@@ -719,16 +722,17 @@ The `subscribe` option accepts `string[]` or a `subscribeFactory(identity) => st
 
 ## 6. Error Handling
 
-### Global Error Handler
+### Global Error Boundary
 
-- Expected errors (connection, auth, wallet, subscription) → `process.exit(1)` with clean message
-- JSON mode → structured error on stderr
-- Unexpected errors → full message in JSON mode, stack trace in human mode
+- Handlers throw `ProbeError` via `error()` in `src/utils/output.ts` (no direct `process.exit` in command handlers)
+- `renderProbeErrorAndExit` in `src/utils/boundary.ts` is the sole direct `process.exit` site (plus citty exit hook)
+- JSON mode → structured error envelope on stderr
+- Exit codes mapped via `exitCodeFor(code)` unless overridden on `ProbeError`
 
 ### Error Function Signature
 
 ```typescript
-error(code: string, message: string, suggestion?: string, exitCode = 1): never
+error(code: string, message: string, suggestion?: string): never // throws ProbeError
 ```
 
 ### Common Error Codes
@@ -767,13 +771,33 @@ error(code: string, message: string, suggestion?: string, exitCode = 1): never
 
 ## 8. Test Coverage
 
-| Test File        | What's Tested                                                                       |
-| ---------------- | ----------------------------------------------------------------------------------- |
-| `config.test.ts` | `expandHomeDir`, default config loading                                             |
-| `sql.test.ts`    | `normalizeSqlHttpBase` (ws→http, wss→https), `buildSqlEndpoint`, protocol rejection |
-| `wallet.test.ts` | Create, import, list, exists, load, delete, duplicate rejection, wrong password     |
+`npm run test:ci` runs all `tests/unit/*.test.ts` after `generate:decoders`.
 
-**NEEDS CLARIFICATION**: Integration/E2E tests for auth flow, reducer calls, daemon lifecycle, and action dispatch are not present in the test suite.
+| Test File | What's Tested |
+| --------- | ------------- |
+| `action-ownership.test.ts` | Action complete/fail/review ownership and routes |
+| `config.test.ts` | `expandHomeDir`, default config loading |
+| `context.test.ts` | `commandContextOptions`, host/module defaults, console/identity boundary |
+| `daemon-events.test.ts` | JSONL filtering, sanitization, log levels |
+| `daemon-harness.test.ts` | Harness spawn args and outcomes |
+| `daemon-invariants.test.ts` | One action at a time, heartbeat, reducer failures |
+| `daemon-reconnect.test.ts` | Backoff and reconnect loop |
+| `doctor.test.ts` | Doctor issue aggregation and next_commands |
+| `emit.test.ts` | TOON/JSON output and error rendering |
+| `help.test.ts` | Plain-text help (root and subcommand parents) |
+| `host-module-command.test.ts` | `--host` / `--module` forwarding |
+| `message-list.test.ts` | Shared list/directives sort and kind filter |
+| `message-send.test.ts` | Content validation and directive type policy |
+| `message-target.test.ts` | Project/channel target resolution |
+| `probe-error.test.ts` | `ProbeError` and boundary rendering |
+| `reducer-command.test.ts` | `runReducerCommand` success and `REDUCER_FAILED` |
+| `schema-drift.test.ts` | Enum decoder parity with bindings |
+| `sql-decode.test.ts` | Safe SQL table inference and decode policy |
+| `sql.test.ts` | SQL HTTP endpoint helpers |
+| `subcommands.test.ts` | Citty subcommand dispatch across groups |
+| `wallet.test.ts` | Wallet create/import/list/load/delete |
+
+Integration/E2E tests for live SpacetimeDB and full OIDC flows are still out of scope for `test:ci`.
 
 ---
 
@@ -787,13 +811,26 @@ error(code: string, message: string, suggestion?: string, exitCode = 1): never
 6. **Daemon narrow subscriptions** — two-phase subscribe (agents by identity, then agent_actions by agent_id); Issued status filtered client-side (STDB cannot filter enums in SQL)
 7. **Binary upgrade rollback** — if `.bak` restore fails, throws `ROLLBACK_FAILED`
 8. **Token expiry check** — client-side `Date.now()` comparison; clock skew possible
-9. **SQL query** — `inferTableName` for decoder selection is heuristic-based
+9. **SQL query** — decode applies only when `inferTableNameSafe` is unambiguous; joins/multi-statement return raw rows with metadata
 
 ---
 
 ## 10. Normative Requirements (merged capabilities)
 
 Formal SHALL/MUST requirements for central dispatch and related probe surfaces. Change deltas under `openspec/changes/<name>/specs/<topic>/` merge here on archive — do not add sibling files under `openspec/specs/`.
+
+### CLI Quality Reset (probe-codebase-quality-reset)
+
+> Implemented in probe `src/`; delta spec: `openspec/changes/probe-codebase-quality-reset/specs/probe/spec.md`.
+
+- **Connection forwarding:** `commandContextOptions()` forwards only explicit `wallet` / `host` / `module`; `CommandContext.create` applies config defaults.
+- **Errors:** handlers throw `ProbeError`; render and exit at CLI boundary only.
+- **Message targets:** numeric → project; non-numeric → channel; `channel:<id>` for numeric channel ids; shared `listMessages` / `sendMessage`.
+- **Subcommands:** nexus groups, `config`, and `token` use citty subcommands; `probe login <wallet>`; `probe auth status` only (no `auth login`).
+- **SQL decode:** decode when table inference is unambiguous; otherwise raw output with metadata.
+- **Schema drift:** generated enum decoders must match `module_bindings/types.ts` (CI test).
+- **Daemon:** logic under `src/daemon/`; thin `nexus-daemon.ts` wrapper; JSONL event names stable.
+- **CommandContext:** typed table getters; no public `iter<T>(tableName)`; no global console mutation.
 
 ### Central Dispatch (SpacetimeDB)
 

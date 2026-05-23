@@ -17,9 +17,13 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 
 // Type definitions for parsing
-interface EnumDef {
+export interface EnumDef {
   name: string;
   variants: string[];
+}
+
+export function buildEnumVariants(enums: EnumDef[]): Record<string, readonly string[]> {
+  return Object.fromEntries(enums.map((enumDef) => [enumDef.name, enumDef.variants]));
 }
 
 interface ColumnType {
@@ -42,7 +46,7 @@ interface TableDef {
 }
 
 // Parse enum definitions from types.ts
-function parseEnums(content: string): EnumDef[] {
+export function parseEnums(content: string): EnumDef[] {
   const enums: EnumDef[] = [];
 
   // Match: export const EnumName = __t.enum("EnumName", { ... });
@@ -242,9 +246,19 @@ function generateDecoderFile(enums: EnumDef[], tables: TableDef[]): string {
     "",
     "export type Decoder = (value: unknown) => unknown;",
     "",
-    "// Enum decoders - map variant index to name",
-    "const enumDecoders: Record<string, Decoder> = {",
+    "// Enum variant metadata for drift tests",
+    "export const ENUM_VARIANTS: Record<string, readonly string[]> = {",
   ];
+
+  for (const enumDef of enums) {
+    const variantsStr = enumDef.variants.map((v) => `'${v}'`).join(", ");
+    lines.push(`  ${enumDef.name}: [${variantsStr}],`);
+  }
+
+  lines.push("};");
+  lines.push("");
+  lines.push("// Enum decoders - map variant index to name");
+  lines.push("const enumDecoders: Record<string, Decoder> = {");
 
   // Generate enum decoders
   for (const enumDef of enums) {
@@ -349,17 +363,6 @@ function generateDecoderFile(enums: EnumDef[], tables: TableDef[]): string {
   lines.push("  ");
   lines.push("  return result;");
   lines.push("}");
-  lines.push("");
-
-  // Helper to infer table name from SQL query
-  lines.push("/**");
-  lines.push(" * Infer table name from a simple SQL query.");
-  lines.push(' * Only works for straightforward "SELECT ... FROM table" queries.');
-  lines.push(" */");
-  lines.push("export function inferTableName(sql: string): string | undefined {");
-  lines.push("  const match = sql.match(/FROM\\s+(\\w+)/i);");
-  lines.push("  return match?.[1]?.toLowerCase();");
-  lines.push("}");
 
   return lines.join("\n");
 }
@@ -405,7 +408,11 @@ async function main() {
   console.log("📝 Run this script after regenerating SpacetimeDB bindings");
 }
 
-main().catch((err) => {
-  console.error("❌ Error:", err);
-  process.exit(1);
-});
+const isMainModule = process.argv[1] === fileURLToPath(import.meta.url);
+
+if (isMainModule) {
+  main().catch((err) => {
+    console.error("❌ Error:", err);
+    process.exit(1);
+  });
+}

@@ -1,29 +1,24 @@
 import { Buffer } from "node:buffer";
 import { defineCommand } from "citty";
 import type { KeyPair } from "znn-typescript-sdk";
-import { getConfig } from "~/utils/config.js";
 import { resolvePasswordInput } from "~/utils/credentials.js";
-import { printHelp } from "~/utils/help.js";
+import { forceHelpRequested, printHelp } from "~/utils/help.js";
 import { exchangeToken, requestChallenge } from "~/utils/oidc.js";
 import { applyJsonMode, error, success } from "~/utils/output.js";
-import { cacheToken, getCachedToken } from "~/utils/token-cache.js";
+import { cacheToken } from "~/utils/token-cache.js";
 import { loadWallet } from "~/utils/wallet.js";
 import { errorMessage } from "~/utils/errors.js";
 
 export default defineCommand({
   meta: {
-    name: "auth",
-    description: "Complete OIDC authentication flow",
+    name: "login",
+    description: "Authenticate wallet and optionally cache token",
   },
   args: {
-    name: {
-      type: "positional",
-      description: "Wallet name, or status action",
-      required: false,
-    },
     wallet: {
-      type: "string",
-      description: "Wallet name override (used with auth status)",
+      type: "positional",
+      description: "Wallet name",
+      required: false,
     },
     "expect-address": {
       type: "string",
@@ -51,25 +46,23 @@ export default defineCommand({
   async run({ args }) {
     applyJsonMode(args);
 
-    const name = args.name;
+    const walletName = args.wallet;
     const requestedAddress = args["expect-address"];
 
-    if (!name) {
+    if (forceHelpRequested() || !walletName) {
       printHelp({
-        command: "probe auth",
-        description: "Complete OIDC authentication flow",
+        command: "probe login",
+        description: "Complete OIDC authentication flow for a wallet",
         usage: [
-          "probe auth <wallet-name> [options]",
-          "probe auth status [--wallet my-wallet]",
-          "probe auth my-wallet --password-file ./pass --save",
-          "probe auth my-wallet --expect-address z1q... --save",
+          "probe login <wallet> [options]",
+          "probe login my-wallet --password-file ./pass --save",
+          "probe login my-wallet --expect-address z1q... --save",
         ],
         options: [
           {
             name: "--expect-address",
             detail: "Optional safety check against resolved wallet address",
           },
-          { name: "--wallet", detail: "Wallet override for `auth status`" },
           {
             name: "--issuer",
             detail: "OIDC issuer URL (default from config: issuer)",
@@ -90,40 +83,6 @@ export default defineCommand({
       return;
     }
 
-    if (name === "status") {
-      const config = await getConfig();
-      const walletName = args.wallet || config.defaultWallet;
-      if (!walletName) {
-        error("WALLET_REQUIRED", "Wallet required. Use --wallet or set default wallet.");
-      }
-
-      const cached = await getCachedToken(walletName);
-      if (!cached) {
-        success(
-          {
-            wallet: walletName,
-            authenticated: false,
-            valid: false,
-            reason: "no_cached_token",
-          },
-          [`probe auth ${walletName} --password-file <path> --save`],
-        );
-        return;
-      }
-
-      const expiresAt = new Date(cached.expiresAt);
-      const expiresIn = Math.floor((expiresAt.getTime() - Date.now()) / 1000);
-      const valid = Number.isFinite(expiresIn) && expiresIn > 0;
-      success({
-        wallet: walletName,
-        authenticated: true,
-        valid,
-        expiresAt: cached.expiresAt,
-        expiresIn: Math.max(0, expiresIn),
-      });
-      return;
-    }
-
     const walletPassword = await resolvePasswordInput({
       passwordFile: args["password-file"],
       jsonModeError: "Password required via --password-file or PROBE_WALLET_PASSWORD",
@@ -133,7 +92,7 @@ export default defineCommand({
     let walletAddress: string;
     let address: string;
     try {
-      const keyStore = await loadWallet(name, walletPassword);
+      const keyStore = await loadWallet(walletName, walletPassword);
       keyPair = keyStore.getKeyPair(0);
       const addr = keyPair.getAddress();
       walletAddress = addr.toString();
@@ -165,11 +124,11 @@ export default defineCommand({
       const expiresAt = new Date(Date.now() + tokenResponse.expiresIn * 1000).toISOString();
 
       if (args.save) {
-        await cacheToken(name, tokenResponse.accessToken, expiresAt);
+        await cacheToken(walletName, tokenResponse.accessToken, expiresAt);
       }
 
       success({
-        wallet: name,
+        wallet: walletName,
         address,
         token: tokenResponse.accessToken,
         expiresAt,

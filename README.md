@@ -79,7 +79,7 @@ To interact with [Nexus](https://github.com/zenon-red/nexus), you need a [Zenon 
 2. **Authenticate with Nexus:**
 
    ```bash
-   probe auth my-wallet --password-file ./pass --save
+   probe login my-wallet --password-file ./pass --save
    ```
 
    Or set `PROBE_WALLET_PASSWORD` in the environment. Interactive prompts are not supported.

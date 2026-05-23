@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { defineCommand } from "citty";
-import { inferTableName, TABLE_DECODERS } from "~/generated/decoders.js";
+import { TABLE_DECODERS } from "~/generated/decoders.js";
+import { resolveQueryDecode } from "~/utils/sql-decode.js";
 import { getConfig, resolveSpacetimeArgs } from "~/utils/config.js";
 import { printHelp } from "~/utils/help.js";
 import { applyJsonMode, error, success } from "~/utils/output.js";
@@ -21,7 +22,7 @@ const KNOWN_TABLES = Object.keys(TABLE_DECODERS);
 const handleQueryError = (err: unknown, timeoutMs: number): never => {
   if (err instanceof SqlRequestError) {
     if (err.status === 401) {
-      error("AUTH_REQUIRED", "Authentication required. Run `probe auth <wallet> --save` first.");
+      error("AUTH_REQUIRED", "Authentication required. Run `probe login <wallet> --save` first.");
     }
     const { message, suggestion } = parseSqlError(err.responseBody);
     if (err.status === 400) {
@@ -178,7 +179,7 @@ export default defineCommand({
           { name: "--tables", detail: "List all available tables" },
           {
             name: "--decode",
-            detail: "Decode algebraic types (default: true)",
+            detail: "Decode algebraic types when table inference is unambiguous (default: true)",
           },
           {
             name: "--raw",
@@ -188,7 +189,9 @@ export default defineCommand({
         notes: [
           "This command is read-only and intended for SQL queries against Nexus tables.",
           'Output returns keyed objects: {"query_1": {"columns": [...], "rows": [{"id": 1, ...}]}}',
-          "Use --raw to see raw SpacetimeDB algebraic type arrays.",
+          "Decoding applies only to a single unambiguous table in the FROM clause (e.g. SELECT * FROM tasks).",
+          "Joins, subqueries, schema-qualified names, multi-statement SQL, and comma-separated FROM lists return raw values with decode metadata when --meta is set.",
+          "Use --raw to force raw SpacetimeDB algebraic type arrays, or --decode to force decode when inference succeeds.",
         ],
       });
       return;
@@ -212,7 +215,7 @@ export default defineCommand({
 
     const cached = await getCachedToken(walletName);
     if (!cached) {
-      error("AUTH_REQUIRED", "No cached token. Run `probe auth <wallet> --save` first.");
+      error("AUTH_REQUIRED", "No cached token. Run `probe login <wallet> --save` first.");
     }
 
     const { host, module: moduleName } = resolveSpacetimeArgs(args, config);
@@ -222,7 +225,7 @@ export default defineCommand({
     }
 
     const shouldDecode = args.raw ? false : (args.decode ?? true);
-    const tableName = inferTableName(sql);
+    const decodePolicy = resolveQueryDecode(sql, shouldDecode);
 
     try {
       const { results, durationMs } = await executeSqlRequest({
@@ -233,9 +236,16 @@ export default defineCommand({
         timeoutMs,
       });
 
-      const flatResponse = buildFlatResponse(results, shouldDecode, tableName);
+      const flatResponse = buildFlatResponse(
+        results,
+        decodePolicy.applyDecode,
+        decodePolicy.tableName,
+      );
       if (args.meta) {
-        success({ ...flatResponse, meta: buildMeta(results, durationMs) });
+        success({
+          ...flatResponse,
+          meta: { ...buildMeta(results, durationMs), decode: decodePolicy.decodeMeta },
+        });
       } else {
         success(flatResponse);
       }

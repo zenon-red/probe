@@ -31,7 +31,7 @@ probe task list
 probe task claim <id>
 probe action show <id>
 probe action complete <id>
-probe auth <wallet> --password-file ./pass --save
+probe login <wallet> --password-file ./pass --save
 probe auth status
 probe doctor
 probe doctor --fix
@@ -95,7 +95,7 @@ Agent registration is checked by default; pass `--no-agent` to skip.
 | `PASSWORD_REQUIRED` | `--password-file` or `PROBE_WALLET_PASSWORD` |
 | `MNEMONIC_REQUIRED` | `--mnemonic-file` or `PROBE_WALLET_MNEMONIC` |
 | `CONFIRMATION_REQUIRED` | Add `--yes` for destructive/upgrade flows |
-| `AUTH_REQUIRED` / `WALLET_REQUIRED` | `probe auth <wallet> --password-file … --save` |
+| `AUTH_REQUIRED` / `WALLET_REQUIRED` | `probe login <wallet> --password-file … --save` |
 | `UNKNOWN_COMMAND` | Check typo; bare `probe --help` |
 
 Successful commands may include `next_commands` in `data` (TOON table or JSON array of `{ command }`).

@@ -2,7 +2,6 @@ import { defineCommand } from "citty";
 import { printHelp } from "~/utils/help.js";
 import { applyJsonMode, error, success } from "~/utils/output.js";
 import {
-  type InstallMethod,
   type InstallMethodArg,
   detectMethod,
   fetchGitHubReleaseByVersion,

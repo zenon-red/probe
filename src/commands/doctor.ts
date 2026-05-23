@@ -1,6 +1,7 @@
 import { defineCommand } from "citty";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
 import { applyDoctorFixes, buildDoctorNextCommands } from "~/utils/doctor-issues.js";
+import { exitProcess } from "~/utils/boundary.js";
 import { applyJsonMode, success } from "~/utils/output.js";
 import { runHealthChecks } from "~/utils/health.js";
 
@@ -100,7 +101,7 @@ export default defineCommand({
     );
 
     if (!ok) {
-      process.exit(1);
+      exitProcess(1);
     }
   },
 });

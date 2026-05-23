@@ -1,8 +1,9 @@
 import type { Identity } from "spacetimedb";
-import { DbConnection, type ErrorContext, type tables } from "~/module_bindings/index.js";
+import { DbConnection, type ErrorContext } from "~/module_bindings/index.js";
 
 export type {
   Agent,
+  AgentAction,
   Channel,
   Config,
   DiscoveredTask,
@@ -23,7 +24,11 @@ import { error } from "./output.js";
 import { getCachedToken } from "./token-cache.js";
 import { getWalletInfo } from "./wallet.js";
 
-type TableName = Extract<keyof typeof tables, string>;
+export interface CommandConnectionArgs {
+  wallet?: string;
+  host?: string;
+  module?: string;
+}
 
 export interface CommandContextOptions {
   host?: string;
@@ -39,7 +44,24 @@ export interface CommandContextOptions {
 export interface AuthInfo {
   wallet: string;
   token: string;
-  identity: Identity;
+  /** null until onConnect assigns the SpacetimeDB identity */
+  identity: Identity | null;
+}
+
+/**
+ * Host/module inventory: docs/internal/host-module-inventory.md
+ * Wave 2 (task 2.7): migrate call sites to use this helper for forwarding.
+ */
+export function commandContextOptions(
+  args: CommandConnectionArgs,
+  extra?: Omit<CommandContextOptions, keyof CommandConnectionArgs>,
+): CommandContextOptions {
+  return {
+    ...extra,
+    ...(args.wallet !== undefined ? { wallet: args.wallet } : {}),
+    ...(args.host !== undefined ? { host: args.host } : {}),
+    ...(args.module !== undefined ? { module: args.module } : {}),
+  };
 }
 
 const DEFAULT_SUBSCRIBE = ["SELECT * FROM agents", "SELECT * FROM config"];
@@ -79,13 +101,61 @@ export class CommandContext implements AsyncDisposable {
     return this.conn.db;
   }
 
-  iter<T>(tableName: TableName): T[] {
-    const db = this.db as Record<string, { iter?: () => IterableIterator<T> }>;
-    const table = db[tableName];
-    if (table?.iter) {
-      return Array.from(table.iter());
-    }
-    return [];
+  get agents() {
+    return Array.from(this.conn.db.agents.iter());
+  }
+
+  get agentActions() {
+    return Array.from(this.conn.db.agent_actions.iter());
+  }
+
+  get tasks() {
+    return Array.from(this.conn.db.tasks.iter());
+  }
+
+  get taskDependencies() {
+    return Array.from(this.conn.db.task_dependencies.iter());
+  }
+
+  get projects() {
+    return Array.from(this.conn.db.projects.iter());
+  }
+
+  get ideas() {
+    return Array.from(this.conn.db.ideas.iter());
+  }
+
+  get votes() {
+    return Array.from(this.conn.db.votes.iter());
+  }
+
+  get evaluationDimensions() {
+    return Array.from(this.conn.db.evaluation_dimensions.iter());
+  }
+
+  get messages() {
+    return Array.from(this.conn.db.messages.iter());
+  }
+
+  get channels() {
+    return Array.from(this.conn.db.channels.iter());
+  }
+
+  get projectMessages() {
+    return Array.from(this.conn.db.project_messages.iter());
+  }
+
+  get projectChannels() {
+    return Array.from(this.conn.db.project_channels.iter());
+  }
+
+  get discoveredTasks() {
+    return Array.from(this.conn.db.discovered_tasks.iter());
+  }
+
+  /** STDB config table rows (named to avoid clashing with probe `config` settings). */
+  get stdbConfig() {
+    return Array.from(this.conn.db.config.iter());
   }
 
   async [Symbol.asyncDispose](): Promise<void> {
@@ -111,7 +181,7 @@ export class CommandContext implements AsyncDisposable {
         auth = {
           wallet: walletName,
           token: cached.token,
-          identity: undefined as unknown as Identity,
+          identity: null,
         };
       }
     }
@@ -121,69 +191,42 @@ export class CommandContext implements AsyncDisposable {
         reject(new Error("Connection timeout"));
       }, config.requestTimeout);
 
-      const originalConsoleLog = console.log;
-      const originalConsoleError = console.error;
-      const suppressSdkConnectLog = (...logArgs: unknown[]): void => {
-        const shouldSuppress = logArgs.some(
-          (arg) => typeof arg === "string" && arg.includes("Connecting to SpacetimeDB WS..."),
-        );
-        if (!shouldSuppress) {
-          originalConsoleLog(...(logArgs as Parameters<typeof console.log>));
-        }
-      };
-      // Suppress SDK error spam during connection - errors are properly thrown and handled by callers
-      const suppressSdkError = (..._logArgs: unknown[]): void => {
-        // Errors are handled by onConnectError and rejected properly
-        if (process.env.PROBE_DEBUG) {
-          originalConsoleError("[probe:debug]", ..._logArgs);
-        }
-      };
+      DbConnection.builder()
+        .withUri(host)
+        .withDatabaseName(moduleName)
+        .withToken(token || undefined)
+        .onConnect((conn: DbConnection, identity: Identity, authToken: string) => {
+          clearTimeout(timeout);
 
-      console.log = suppressSdkConnectLog as typeof console.log;
-      console.error = suppressSdkError as typeof console.error;
+          if (auth) {
+            auth.identity = identity;
+          }
 
-      try {
-        DbConnection.builder()
-          .withUri(host)
-          .withDatabaseName(moduleName)
-          .withToken(token || undefined)
-          .onConnect((conn: DbConnection, identity: Identity, authToken: string) => {
-            clearTimeout(timeout);
+          const subscriptions = resolveSubscriptions(options, identity);
 
-            if (auth) {
-              auth.identity = identity;
-            }
-
-            const subscriptions = resolveSubscriptions(options, identity);
-
-            conn
-              .subscriptionBuilder()
-              .onApplied(() => {
-                resolve(new CommandContext(conn, config, identity, authToken, auth));
-              })
-              .onError((ctx: ErrorContext) => {
-                reject(new Error(`Subscription error: ${ctx.event?.message || "Unknown error"}`));
-              })
-              .subscribe(subscriptions);
-          })
-          .onDisconnect((...disconnectArgs: unknown[]) => {
-            options.onDisconnect?.(...disconnectArgs);
-          })
-          .onConnectError((_ctx: ErrorContext, err: Error) => {
-            clearTimeout(timeout);
-            const message = err.message.toLowerCase();
-            if (message.includes("unauthorized") || message.includes("401")) {
-              reject(new Error("Authentication required. Run `probe auth <wallet> --save` first."));
-            } else {
-              reject(new Error(`Connection failed: ${err.message}`));
-            }
-          })
-
-          .build();
-      } finally {
-        console.log = originalConsoleLog;
-        console.error = originalConsoleError;
-      }
+          conn
+            .subscriptionBuilder()
+            .onApplied(() => {
+              resolve(new CommandContext(conn, config, identity, authToken, auth));
+            })
+            .onError((ctx: ErrorContext) => {
+              reject(new Error(`Subscription error: ${ctx.event?.message || "Unknown error"}`));
+            })
+            .subscribe(subscriptions);
+        })
+        .onDisconnect((...disconnectArgs: unknown[]) => {
+          options.onDisconnect?.(...disconnectArgs);
+        })
+        .onConnectError((_ctx: ErrorContext, err: Error) => {
+          clearTimeout(timeout);
+          const message = err.message.toLowerCase();
+          if (message.includes("unauthorized") || message.includes("401")) {
+            reject(new Error("Authentication required. Run `probe login <wallet> --save` first."));
+          } else {
+            reject(new Error(`Connection failed: ${err.message}`));
+          }
+        })
+        .build();
     });
   }
 }
@@ -203,7 +246,7 @@ export async function requireAuth(options: CommandContextOptions): Promise<Comma
 
   const cached = await getCachedToken(walletName);
   if (!cached) {
-    error("AUTH_REQUIRED", "No cached token. Run `probe auth <wallet> --save` first.");
+    error("AUTH_REQUIRED", "No cached token. Run `probe login <wallet> --save` first.");
   }
 
   return CommandContext.create({
@@ -247,16 +290,15 @@ export async function callReducer<T>(
   ]);
 }
 
-export async function callProcedure<R = unknown>(
+export async function callProcedure<TParams, R>(
   ctx: CommandContext,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  procedure: (params: any) => Promise<any>,
-  params: unknown,
+  procedure: (params: TParams) => Promise<R>,
+  params: TParams,
 ): Promise<R> {
   const timeoutMs = Math.max(1000, ctx.config.requestTimeout);
   let timer: ReturnType<typeof setTimeout>;
   return Promise.race([
-    (procedure(params) as Promise<R>).finally(() => clearTimeout(timer)),
+    procedure(params).finally(() => clearTimeout(timer)),
     new Promise<never>((_, reject) => {
       timer = setTimeout(
         () => reject(new Error(`Procedure call timed out after ${timeoutMs}ms`)),

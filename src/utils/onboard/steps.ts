@@ -2,7 +2,7 @@ import { execSync } from "node:child_process";
 import { access, mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { AGENT_SUBSCRIBE, callReducer, type Agent, withAuth } from "~/utils/context.js";
+import { AGENT_SUBSCRIBE, callReducer, commandContextOptions, withAuth } from "~/utils/context.js";
 import { AgentRole } from "~/utils/enums.js";
 import { createWallet, getWalletInfo, walletExists } from "~/utils/wallet.js";
 import { authenticateWallet } from "~/utils/auth-flow.js";
@@ -226,17 +226,14 @@ export async function registerAgentStep(state: OnboardState): Promise<boolean> {
   }
   try {
     await withAuth(
-      {
-        wallet: state.walletName,
-        token: state.token,
-        host: state.args.host,
-        module: state.args.module,
-        subscribe: AGENT_SUBSCRIBE,
-      },
+      commandContextOptions(
+        { wallet: state.walletName, host: state.args.host, module: state.args.module },
+        { token: state.token, subscribe: AGENT_SUBSCRIBE },
+      ),
       async (ctx) => {
-        const existing = ctx
-          .iter<Agent>("agents")
-          .find((a) => a.identity.toHexString() === ctx.identity?.toHexString());
+        const existing = ctx.agents.find(
+          (a) => a.identity.toHexString() === ctx.identity?.toHexString(),
+        );
         if (existing) {
           addStep(state, "registration", "pass", `Agent ${existing.id} already registered`);
           return;
@@ -248,7 +245,7 @@ export async function registerAgentStep(state: OnboardState): Promise<boolean> {
           zenonAddress: state.walletAddress,
         });
         await new Promise((r) => setTimeout(r, 500));
-        const registered = ctx.iter<Agent>("agents").find((a) => a.id === state.agentId);
+        const registered = ctx.agents.find((a) => a.id === state.agentId);
         if (!registered) {
           if (state.role === "zoe" || state.role === "admin") {
             addStep(
@@ -288,13 +285,10 @@ export async function setBioStep(state: OnboardState): Promise<void> {
   }
   try {
     await withAuth(
-      {
-        wallet: state.walletName,
-        token: state.token,
-        host: state.args.host,
-        module: state.args.module,
-        subscribe: [],
-      },
+      commandContextOptions(
+        { wallet: state.walletName, host: state.args.host, module: state.args.module },
+        { token: state.token, subscribe: [] },
+      ),
       async (ctx) => {
         await callReducer(ctx, ctx.conn.reducers.updateAgentBio, { bio: state.args.bio! });
       },
@@ -324,13 +318,10 @@ export async function setCapabilitiesStep(state: OnboardState): Promise<void> {
       ),
     ];
     await withAuth(
-      {
-        wallet: state.walletName,
-        token: state.token,
-        host: state.args.host,
-        module: state.args.module,
-        subscribe: [],
-      },
+      commandContextOptions(
+        { wallet: state.walletName, host: state.args.host, module: state.args.module },
+        { token: state.token, subscribe: [] },
+      ),
       async (ctx) => {
         await callReducer(ctx, ctx.conn.reducers.updateAgentCapabilities, {
           capabilities: caps,
@@ -465,13 +456,10 @@ export async function sendAnnouncement(state: OnboardState): Promise<void> {
   }
   try {
     await withAuth(
-      {
-        wallet: state.walletName,
-        token: state.token,
-        host: state.args.host,
-        module: state.args.module,
-        subscribe: [],
-      },
+      commandContextOptions(
+        { wallet: state.walletName, host: state.args.host, module: state.args.module },
+        { token: state.token, subscribe: [] },
+      ),
       async (ctx) => {
         await callReducer(ctx, ctx.conn.reducers.finalizeOnboarding, {
           content: `Hi! I'm ${state.args.name}, ready to contribute.`,

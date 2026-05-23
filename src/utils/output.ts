@@ -1,24 +1,7 @@
-import type { OutputResult } from "~/types/index.js";
-import { emit, exitCodeFor } from "./emit.js";
-import { isJsonMode } from "./output-mode.js";
+import { emit } from "./emit.js";
+import { ProbeError, markProbeErrorForExit } from "./errors.js";
 
 export { applyJsonMode, isJsonMode, setJsonMode } from "./output-mode.js";
-
-const jsonReplacer = (_key: string, value: unknown): unknown => {
-  if (typeof value === "bigint") {
-    return value.toString();
-  }
-  return value;
-};
-
-const printJson = (value: unknown, stderr = false): void => {
-  const serialized = JSON.stringify(value, jsonReplacer, 2);
-  if (stderr) {
-    console.error(serialized);
-    return;
-  }
-  console.log(serialized);
-};
 
 export function success<T>(data: T, next_commands?: string[]): void {
   emit({ data, next_commands });
@@ -30,24 +13,7 @@ export function error(
   suggestion?: string,
   exitCode?: number,
 ): never {
-  const resolvedExitCode = exitCode ?? exitCodeFor(code);
-
-  if (isJsonMode()) {
-    const output: OutputResult<never> = {
-      success: false,
-      error: {
-        code,
-        message,
-        ...(suggestion && { suggestion }),
-      },
-    };
-    printJson(output, true);
-    process.exit(resolvedExitCode);
-  }
-
-  console.error(`${code}: ${message}`);
-  if (suggestion) {
-    console.error(`hint: ${suggestion}`);
-  }
-  process.exit(resolvedExitCode);
+  const err = ProbeError.of(code, message, suggestion, exitCode);
+  markProbeErrorForExit(err);
+  throw err;
 }

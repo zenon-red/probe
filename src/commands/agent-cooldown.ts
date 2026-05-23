@@ -1,25 +1,8 @@
 import { defineCommand } from "citty";
-import { callReducer, withAuth } from "~/utils/context.js";
+import { commandContextOptions, withAuth } from "~/utils/context.js";
 import { identityHex } from "~/utils/enums.js";
 import { applyJsonMode, error, success } from "~/utils/output.js";
-
-function getAgentRow(ctx: {
-  db: unknown;
-  auth?: { identity: unknown };
-}): Record<string, unknown> | undefined {
-  const db = ctx.db as Record<string, { iter?: () => IterableIterator<Record<string, unknown>> }>;
-  const table = db["agents"];
-  if (!table?.iter) return undefined;
-  const agents = Array.from(table.iter());
-  return agents.find((agent) => identityHex(agent.identity) === identityHex(ctx.auth?.identity));
-}
-
-function getConfigRows(ctx: { db: unknown }): Record<string, unknown>[] {
-  const db = ctx.db as Record<string, { iter?: () => IterableIterator<Record<string, unknown>> }>;
-  const table = db["config"];
-  if (!table?.iter) return [];
-  return Array.from(table.iter());
-}
+import { runReducerCommand } from "~/utils/reducer-command.js";
 
 export const agentCooldownShowCommand = defineCommand({
   meta: { name: "show", description: "Show current cadence policy" },
@@ -33,25 +16,21 @@ export const agentCooldownShowCommand = defineCommand({
     applyJsonMode(args);
 
     await withAuth(
-      {
-        wallet: args.wallet,
-
+      commandContextOptions(args, {
         subscribe: ["SELECT * FROM agents", "SELECT * FROM config"],
-      },
+      }),
       async (ctx) => {
-        const agent = getAgentRow(ctx);
+        const agent = ctx.agents.find(
+          (row) => identityHex(row.identity) === identityHex(ctx.auth?.identity),
+        );
         if (!agent) {
           error("AGENT_NOT_FOUND", "Agent not found. Are you registered?");
         }
 
-        const configs = getConfigRows(ctx);
-        const globalDefault = configs.find((c) => c.key === "dispatch_cooldown_secs");
+        const globalDefault = ctx.stdbConfig.find((c) => c.key === "dispatch_cooldown_secs");
         const globalDefaultSecs = globalDefault ? Number(globalDefault.value) : 3600;
 
-        const perAgentCooldown = (agent as Record<string, unknown>).dispatchCooldownSecs as
-          | number
-          | null
-          | undefined;
+        const perAgentCooldown = agent.dispatchCooldownSecs;
 
         let effectiveSecs: number;
         let source: string;
@@ -95,13 +74,13 @@ export const agentCooldownSetCommand = defineCommand({
       error("INVALID_VALUE", "Cooldown must be a non-negative number of seconds.");
     }
 
-    await withAuth({ wallet: args.wallet, subscribe: [] }, async (ctx) => {
-      await callReducer(ctx, ctx.conn.reducers.setDispatchCooldown, {
-        cooldownSecs: secs,
-      });
-
-      success({ cooldown_secs: secs, message: `Cooldown set to ${secs}s` });
+    await runReducerCommand(args, {
+      subscribe: [],
+      reducer: (ctx) => ctx.conn.reducers.setDispatchCooldown,
+      params: { cooldownSecs: secs },
     });
+
+    success({ cooldown_secs: secs, message: `Cooldown set to ${secs}s` });
   },
 });
 
@@ -116,13 +95,13 @@ export const agentCooldownOffCommand = defineCommand({
   async run({ args }) {
     applyJsonMode(args);
 
-    await withAuth({ wallet: args.wallet, subscribe: [] }, async (ctx) => {
-      await callReducer(ctx, ctx.conn.reducers.setDispatchCooldown, {
-        cooldownSecs: 0,
-      });
-
-      success({ cooldown_secs: 0, status: "off", message: "Cooldown disabled" });
+    await runReducerCommand(args, {
+      subscribe: [],
+      reducer: (ctx) => ctx.conn.reducers.setDispatchCooldown,
+      params: { cooldownSecs: 0 },
     });
+
+    success({ cooldown_secs: 0, status: "off", message: "Cooldown disabled" });
   },
 });
 
@@ -137,38 +116,42 @@ export const agentCooldownInheritCommand = defineCommand({
   async run({ args }) {
     applyJsonMode(args);
 
-    await withAuth({ wallet: args.wallet, subscribe: [] }, async (ctx) => {
-      await callReducer(ctx, ctx.conn.reducers.setDispatchCooldown, {
-        cooldownSecs: undefined,
-      });
-
-      success({ status: "inheriting", message: "Cooldown reset to inherit global default" });
+    await runReducerCommand(args, {
+      subscribe: [],
+      reducer: (ctx) => ctx.conn.reducers.setDispatchCooldown,
+      params: { cooldownSecs: undefined },
     });
+
+    success({ status: "inheriting", message: "Cooldown reset to inherit global default" });
   },
 });
 
-export default defineCommand({
-  meta: {
-    name: "cooldown",
-    description: "Manage agent dispatch cooldown",
-  },
-  subCommands: {
-    show: agentCooldownShowCommand,
-    set: agentCooldownSetCommand,
-    off: agentCooldownOffCommand,
-    inherit: agentCooldownInheritCommand,
-  },
+import { defineSubcommandParent } from "~/utils/subcommand.js";
+
+export default defineSubcommandParent({
+  name: "cooldown",
+  description: "Manage agent dispatch cooldown",
   args: {
     wallet: { type: "string", description: "Wallet name" },
     host: { type: "string", description: "SpacetimeDB host" },
     module: { type: "string", description: "Module name" },
     json: { type: "boolean", description: "JSON output", default: false },
   },
-  run() {
-    error(
-      "SUBCOMMAND_REQUIRED",
-      "Usage: probe cooldown <show|set|off|inherit> [args]",
-      "Try: probe cooldown show",
-    );
+  help: {
+    command: "probe cooldown",
+    description: "Dispatch cadence: show, set, off, inherit",
+    usage: ["probe cooldown <subcommand> [options]", "probe cooldown show"],
+    actions: [
+      { name: "show", detail: "Show current cadence policy" },
+      { name: "set", detail: "Set cooldown seconds" },
+      { name: "off", detail: "Disable cooldown" },
+      { name: "inherit", detail: "Inherit global cooldown default" },
+    ],
+  },
+  subCommands: {
+    show: agentCooldownShowCommand,
+    set: agentCooldownSetCommand,
+    off: agentCooldownOffCommand,
+    inherit: agentCooldownInheritCommand,
   },
 });

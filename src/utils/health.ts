@@ -1,7 +1,7 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { getConfig } from "~/utils/config.js";
-import { CommandContext, type Agent } from "~/utils/context.js";
+import { CommandContext, commandContextOptions, type Agent } from "~/utils/context.js";
 import { countIssues, doctorOk, type DoctorIssue } from "~/utils/doctor-issues.js";
 import { isPathWritable } from "~/utils/path-writable.js";
 import { getCachedToken } from "~/utils/token-cache.js";
@@ -129,7 +129,7 @@ export async function runHealthChecks(options: {
         severity: "fail",
         message: "No cached authentication token",
         recommendation: "Authenticate and save a token to the cache",
-        fix_command: `probe auth ${walletName} --password-file <path> --save`,
+        fix_command: `probe login ${walletName} --password-file <path> --save`,
       });
     } else {
       token = cached.token;
@@ -167,20 +167,21 @@ export async function runHealthChecks(options: {
 
     if (tokenValid) {
       try {
-        await using ctx = await CommandContext.create({
-          host,
-          module: moduleName,
-          wallet: walletName,
-          token,
-          subscribe: includeAgent ? ["SELECT * FROM agents", "SELECT * FROM config"] : [],
-        });
+        await using ctx = await CommandContext.create(
+          commandContextOptions(
+            { wallet: walletName, host: options.host, module: options.module },
+            {
+              token,
+              subscribe: includeAgent ? ["SELECT * FROM agents", "SELECT * FROM config"] : [],
+            },
+          ),
+        );
         identity = ctx.identity?.toHexString() || "unknown";
 
         if (includeAgent && ctx.identity) {
           agent =
-            ctx
-              .iter<Agent>("agents")
-              .find((a) => a.identity.toHexString() === ctx.identity?.toHexString()) || null;
+            ctx.agents.find((a) => a.identity.toHexString() === ctx.identity?.toHexString()) ||
+            null;
           if (!agent) {
             addIssue({
               code: "AGENT_NOT_REGISTERED",
@@ -207,7 +208,7 @@ export async function runHealthChecks(options: {
         message: "Skipped Nexus connection check (no valid token)",
         recommendation: "Authenticate before testing Nexus connectivity",
         fix_command: walletName
-          ? `probe auth ${walletName} --password-file <path> --save`
+          ? `probe login ${walletName} --password-file <path> --save`
           : undefined,
       });
     }

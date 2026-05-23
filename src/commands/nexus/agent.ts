@@ -1,131 +1,56 @@
-import { defineCommand } from "citty";
-import { printHelp } from "~/utils/help.js";
-import { applyJsonMode } from "~/utils/output.js";
-import { type AgentCommandArgs, runAgentAction } from "./agent-handlers.js";
+import { JSON_FLAG_ARG_DESCRIPTION } from "~/utils/help.js";
+import { defineSubcommandParent } from "~/utils/subcommand.js";
+import agentBio from "./agent/bio.js";
+import agentCapabilities from "./agent/capabilities.js";
+import agentHeartbeat from "./agent/heartbeat.js";
+import agentIdentity from "./agent/identity.js";
+import agentList from "./agent/list.js";
+import agentMe from "./agent/me.js";
+import agentRegister from "./agent/register.js";
+import agentSetStatus from "./agent/set-status.js";
+import agentStatus from "./agent/status.js";
+import agentVoice from "./agent/voice.js";
 
-export default defineCommand({
-  meta: { name: "agent", description: "Agent management" },
+export default defineSubcommandParent({
+  name: "agent",
+  description:
+    "Agent lifecycle and identity — register, status, set-status, capabilities, me, bio, heartbeat, list, identity, voice",
   args: {
-    action: {
-      type: "positional",
-      description:
-        "Action: register, status, set-status, capabilities, bio, me, heartbeat, list, identity, voice",
-      required: false,
-    },
-    agentId: {
-      type: "positional",
-      description: "Action-dependent value (agent ID, status, bio text, or transcript)",
-      required: false,
-    },
-    name: { type: "positional", description: "Display name", required: false },
-    role: {
-      type: "positional",
-      description: "Role: zoe, admin, zeno",
-      required: false,
-    },
-    address: { type: "string", description: "Zenon address" },
     wallet: { type: "string", description: "Wallet name" },
-    task: { type: "string", description: "Current task ID" },
-    limit: { type: "string", description: "Limit agents returned for list" },
-    capabilities: {
-      type: "string",
-      description: "Comma-separated capability list",
-    },
-    set: {
-      type: "string",
-      description: "Set capabilities for capabilities action or bio text for bio action",
-    },
-    agent: { type: "string", description: "Agent ID for bio action lookup" },
-    clear: { type: "boolean", description: "Clear bio for bio action" },
-    json: { type: "boolean", description: "Output JSON", default: false },
-    audioUrl: { type: "string", description: "Audio URL for voice announcements" },
-    contextType: { type: "string", description: "Context type for voice (default: status_update)" },
     host: { type: "string", description: "SpacetimeDB host" },
     module: { type: "string", description: "Module name" },
+    json: { type: "boolean", description: JSON_FLAG_ARG_DESCRIPTION, default: false },
   },
-  async run({ args }) {
-    applyJsonMode(args);
-
-    if (!args.action) {
-      printHelp({
-        command: "probe agent",
-        description: "Agent lifecycle and identity commands",
-        usage: [
-          "probe agent <action> [options]",
-          'probe agent register agent-1 "Builder" zeno --wallet my-wallet',
-          "probe agent set-status working --task 42",
-          'probe agent capabilities --set "gh,coding,review"',
-          'probe agent bio "Build systems and task orchestration"',
-          "probe agent heartbeat",
-          'probe agent voice "Hello from Zoe" --audioUrl https://audio.zenon.red/voice/zoe/123.mp3',
-        ],
-        actions: [
-          {
-            name: "register <agentId> <name> [role]",
-            detail: "Register a new agent identity",
-          },
-          { name: "status", detail: "Show current agent status" },
-          {
-            name: "set-status <online|offline|working|busy>",
-            detail: "Update current agent status",
-          },
-          {
-            name: "capabilities --set <list>",
-            detail: "Set capabilities for authenticated agent",
-          },
-          {
-            name: "bio [--set <text>|--clear|--agent <id>]",
-            detail: "View or update agent bio",
-          },
-          { name: "me", detail: "Show current authenticated agent profile" },
-          { name: "heartbeat", detail: "Send heartbeat only" },
-          { name: "list", detail: "List online agents" },
-          { name: "identity", detail: "Show current authenticated identity" },
-          {
-            name: "voice <transcript> --audioUrl <url>",
-            detail: "Submit a voice announcement (BYO audio URL)",
-          },
-        ],
-        options: [
-          { name: "--wallet", detail: "Wallet to use for authenticated calls" },
-          { name: "--address", detail: "Zenon address for register" },
-          { name: "--task", detail: "Task ID required with status working" },
-          { name: "--limit", detail: "Max agents returned for list" },
-          {
-            name: "--capabilities",
-            detail: "Comma-separated capabilities for register/status",
-          },
-          {
-            name: "--set",
-            detail: "Set value for capabilities or bio action",
-          },
-          { name: "--agent", detail: "Agent ID for bio action lookup" },
-          {
-            name: "--clear",
-            detail: "Clear bio for authenticated agent",
-          },
-          {
-            name: "--audioUrl",
-            detail: "Audio URL for voice announcements (required)",
-          },
-          {
-            name: "--contextType",
-            detail: "Context type for voice (default: status_update)",
-          },
-          {
-            name: "--host, --module",
-            detail: "Nexus SpacetimeDB target overrides",
-          },
-        ],
-        notes: [
-          "Valid register roles: zeno (default), zoe, admin. Non-whitelisted identities cannot register as zoe/admin.",
-          "Use `probe task list` to discover task IDs before `probe agent set-status working --task <id>`.",
-          "`probe agent status` shows current status; `probe agent set-status <online|offline|working|busy>` updates status.",
-        ],
-      });
-      return;
-    }
-
-    await runAgentAction(args as AgentCommandArgs);
+  help: {
+    command: "probe agent",
+    description: "Agent identity and status",
+    usage: [
+      "probe agent <subcommand> [positionals] [options]",
+      "probe agent register --wallet agent-wallet",
+    ],
+    actions: [
+      { name: "register", detail: "Register an agent identity" },
+      { name: "status", detail: "Show agent status" },
+      { name: "set-status", detail: "Set agent online/offline/working" },
+      { name: "capabilities", detail: "Update agent capabilities" },
+      { name: "me", detail: "Show current agent profile" },
+      { name: "bio", detail: "Update agent bio" },
+      { name: "heartbeat", detail: "Send heartbeat" },
+      { name: "list", detail: "List online agents" },
+      { name: "identity", detail: "Show agent identity" },
+      { name: "voice", detail: "Voice announcement helpers" },
+    ],
+  },
+  subCommands: {
+    register: agentRegister,
+    status: agentStatus,
+    "set-status": agentSetStatus,
+    capabilities: agentCapabilities,
+    me: agentMe,
+    bio: agentBio,
+    heartbeat: agentHeartbeat,
+    list: agentList,
+    identity: agentIdentity,
+    voice: agentVoice,
   },
 });

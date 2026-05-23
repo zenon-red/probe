@@ -52,7 +52,7 @@ export function buildDoctorNextCommands(
 
   if (codes.has("AUTH_TOKEN_MISSING") || codes.has("AUTH_TOKEN_EXPIRED")) {
     if (walletName) {
-      commands.push(`probe auth ${walletName} --password-file <path> --save`);
+      commands.push(`probe login ${walletName} --password-file <path> --save`);
     }
   }
   if (codes.has("WALLET_NOT_SELECTED") || codes.has("WALLET_NOT_FOUND")) {

@@ -2,6 +2,23 @@
 
 Full command syntax for Probe CLI. Output contract: [docs/llms.txt](../../../docs/llms.txt).
 
+## CLI structure
+
+```bash
+probe <command> <subcommand> [positionals] [options]
+```
+
+Parent commands (`auth`, `token`, `config`, `task`, `message`, `agent`, `project`, `idea`, `discover`, `action`, `cooldown`, `wallet`) require an explicit subcommand.
+
+**Breaking:**
+
+| Old                            | New                             |
+| ------------------------------ | ------------------------------- |
+| `probe auth <wallet> [--save]` | `probe login <wallet> [--save]` |
+| `probe auth login <wallet>`    | `probe login <wallet>`          |
+| `probe token <wallet>`         | `probe token show <wallet>`     |
+| `probe token <wallet> --clear` | `probe token clear <wallet>`    |
+
 ## Top-Level Commands
 
 ```
@@ -11,7 +28,8 @@ probe <command> [positionals] [options]
 | Command    | Description                                                    |
 | ---------- | -------------------------------------------------------------- |
 | `wallet`   | Wallet lifecycle (create, import, list, show, delete, default) |
-| `auth`     | OIDC authentication flow                                       |
+| `login`    | Authenticate wallet and cache OIDC token                       |
+| `auth`     | Inspect cached authentication status                           |
 | `token`    | Inspect or clear cached token                                  |
 | `sign`     | Sign text payloads                                             |
 | `nexus`    | Persistent Nexus daemon (keepalive + JSONL event logs)         |
@@ -51,10 +69,10 @@ probe wallet default <name>
 
 Password sources (in order): `--password-file`, `PROBE_WALLET_PASSWORD` env. Interactive prompts are not supported.
 
-## Auth
+## Login and auth status
 
 ```bash
-probe auth <wallet-name> [--save] [--expect-address <z1...>] [--issuer <url>]
+probe login <wallet-name> [--save] [--expect-address <z1...>] [--issuer <url>] [--password-file <path>]
 probe auth status [--wallet <name>]
 ```
 
@@ -162,9 +180,12 @@ Task types: `bug`, `improvement`, `feature`. Severities: `low`, `medium`, `high`
 ## Query
 
 ```bash
-probe query "<sql>" [--meta] [--timeout <ms>]
+probe query "<sql>" [--meta] [--timeout <ms>] [--decode] [--raw]
 probe query --file <path> [--meta]
+probe query --tables
 ```
+
+Decoding applies only to single-table `FROM` clauses with unambiguous inference. Joins, subqueries, schema-qualified names, and multi-statement SQL return raw values unless inference succeeds.
 
 See [sql.md](sql.md) for schema and examples.
 
@@ -263,6 +284,6 @@ Returns hex-encoded Ed25519 signature.
 ## Token
 
 ```bash
-probe token <wallet-name>
-probe token <wallet-name> --clear
+probe token show <wallet-name>
+probe token clear <wallet-name>
 ```

@@ -34,7 +34,7 @@ describe("doctor issues", () => {
     ];
     const commands = buildDoctorNextCommands(issues, "my-wallet");
     expect(commands).toContain("probe token my-wallet --clear");
-    expect(commands).toContain("probe auth my-wallet --password-file <path> --save");
+    expect(commands).toContain("probe login my-wallet --password-file <path> --save");
   });
 
   it("includes registration command for AGENT_NOT_REGISTERED", () => {

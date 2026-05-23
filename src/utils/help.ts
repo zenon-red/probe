@@ -1,9 +1,11 @@
+import { SUBCOMMAND_PARENTS } from "./subcommand-registry.js";
+
 interface HelpSectionItem {
   name: string;
   detail: string;
 }
 
-interface HelpSpec {
+export interface HelpSpec {
   command: string;
   description: string;
   usage: string[];
@@ -57,27 +59,7 @@ export const suggestCommand = (unknown: string, candidates: string[]): string | 
   return best?.command;
 };
 
-const actionHelpCommands = new Set([
-  "agent",
-  "task",
-  "message",
-  "idea",
-  "discover",
-  "project",
-  "config",
-]);
-const directHelpCommands = new Set([
-  "wallet",
-  "auth",
-  "sign",
-  "token",
-  "nexus",
-  "query",
-  "cooldown",
-  "doctor",
-  "upgrade",
-]);
-const walletSubcommands = new Set(["create", "import", "list", "show", "delete", "default"]);
+const directHelpCommands = new Set(["login", "sign", "nexus", "query", "doctor", "upgrade"]);
 
 let forceHelpFlag = false;
 
@@ -175,19 +157,17 @@ export const normalizeHelpArgv = (argv: string[]): { argv: string[]; forceHelp: 
     return { argv, forceHelp: true };
   }
 
-  if (actionHelpCommands.has(command)) {
+  const parentSubs = SUBCOMMAND_PARENTS[command];
+  if (parentSubs) {
+    const positionals = argv.filter((arg) => !arg.startsWith("-"));
+    if (positionals.length > 1 && parentSubs.has(positionals[1]!)) {
+      return { argv: [command, positionals[1]!], forceHelp: true };
+    }
     return { argv: [command], forceHelp: true };
   }
 
   if (!directHelpCommands.has(command)) {
-    return { argv, forceHelp: true };
-  }
-
-  if (command === "wallet") {
-    const positionals = argv.filter((arg) => !arg.startsWith("-"));
-    if (positionals.length > 1 && walletSubcommands.has(positionals[1])) {
-      return { argv: [command, positionals[1]], forceHelp: true };
-    }
+    return { argv: [command], forceHelp: true };
   }
 
   return { argv: [command], forceHelp: true };

@@ -1,7 +1,8 @@
 import { createRequire } from "node:module";
 import { defineCommand, runMain } from "citty";
-import auth from "./commands/auth.js";
-import config from "./commands/config.js";
+import auth from "./commands/auth/index.js";
+import login from "./commands/login.js";
+import config from "./commands/config/index.js";
 import doctor from "./commands/doctor.js";
 import action from "./commands/action.js";
 import agentCooldown from "./commands/agent-cooldown.js";
@@ -15,7 +16,7 @@ import task from "./commands/nexus/task.js";
 import nexusDaemon from "./commands/nexus-daemon.js";
 import query from "./commands/query.js";
 import sign from "./commands/sign.js";
-import token from "./commands/token.js";
+import token from "./commands/token/index.js";
 import upgrade from "./commands/upgrade.js";
 import wallet from "./commands/wallet/index.js";
 import whoami from "./commands/whoami.js";
@@ -29,11 +30,14 @@ import {
   setForceHelpRequested,
   suggestCommand,
 } from "./utils/help.js";
-import { error, isJsonMode } from "./utils/output.js";
-import { errorMessage } from "./utils/errors.js";
+import { guardUnknownSubcommand } from "./utils/subcommand.js";
+import { installProbeExitHook, renderProbeErrorAndExit } from "./utils/boundary.js";
+import { error } from "./utils/output.js";
+import { errorMessage, isProbeError, ProbeError } from "./utils/errors.js";
 
 const topLevelCommands = new Set([
   "wallet",
+  "login",
   "auth",
   "sign",
   "token",
@@ -53,12 +57,6 @@ const topLevelCommands = new Set([
   "onboard",
   "action",
 ]);
-
-const applyHelpNormalization = (): void => {
-  const normalized = normalizeHelpArgv(process.argv.slice(2));
-  setForceHelpRequested(normalized.forceHelp);
-  process.argv = [...process.argv.slice(0, 2), ...normalized.argv];
-};
 
 const require = createRequire(import.meta.url);
 const { version, description } = require("../package.json");
@@ -86,7 +84,8 @@ const main = defineCommand({
         ],
         actions: [
           { name: "wallet", detail: "Wallet lifecycle commands" },
-          { name: "auth", detail: "Authenticate wallet and cache token" },
+          { name: "login", detail: "Authenticate wallet and cache token" },
+          { name: "auth", detail: "Inspect cached authentication status" },
           { name: "token", detail: "Inspect or clear cached token" },
           { name: "sign", detail: "Sign text payloads" },
           {
@@ -124,6 +123,7 @@ const main = defineCommand({
   },
   subCommands: {
     wallet,
+    login,
     auth,
     sign,
     token,
@@ -145,54 +145,49 @@ const main = defineCommand({
   },
 });
 
-// Global error handler to suppress stack traces for expected errors
-const isExpectedError = (err: unknown): boolean => {
-  if (!(err instanceof Error)) return false;
-  const message = err.message.toLowerCase();
-  return (
-    message.includes("connection failed") ||
-    message.includes("connection timeout") ||
-    message.includes("authentication required") ||
-    message.includes("unauthorized") ||
-    message.includes("wallet required") ||
-    message.includes("wallet not found") ||
-    message.includes("agent not registered") ||
-    message.includes("subscription error")
-  );
-};
-
 process.on("unhandledRejection", (err: unknown) => {
-  if (isExpectedError(err)) {
-    // Error message already printed by the error() utility
-    process.exit(1);
+  if (isProbeError(err)) {
+    renderProbeErrorAndExit(err);
   }
-  if (isJsonMode()) {
-    console.error(
-      JSON.stringify({
-        success: false,
-        error: {
-          code: "UNEXPECTED_ERROR",
-          message: errorMessage(err),
-        },
-      }),
-    );
-  } else {
-    console.error(errorMessage(err));
-  }
-  process.exit(1);
+  renderProbeErrorAndExit(ProbeError.of("UNEXPECTED_ERROR", errorMessage(err)));
 });
 
-applyHelpNormalization();
+installProbeExitHook();
 
-const argv = process.argv.slice(2);
+const prepareCliArgv = (): string[] => {
+  const argv = process.argv.slice(2);
+  const normalized = normalizeHelpArgv(argv);
+  setForceHelpRequested(normalized.forceHelp);
+  process.argv = [...process.argv.slice(0, 2), ...normalized.argv];
+  return normalized.argv;
+};
+
+const argv = prepareCliArgv();
+
 const firstPositional = argv.find((arg) => !arg.startsWith("-"));
 if (firstPositional && !topLevelCommands.has(firstPositional)) {
   const suggestion = suggestCommand(firstPositional, [...topLevelCommands]);
-  error(
-    "UNKNOWN_COMMAND",
-    `Unknown command: ${firstPositional}`,
-    suggestion ? `Did you mean: probe ${suggestion}` : undefined,
-  );
+  try {
+    error(
+      "UNKNOWN_COMMAND",
+      `Unknown command: ${firstPositional}`,
+      suggestion ? `Did you mean: probe ${suggestion}` : undefined,
+    );
+  } catch (err) {
+    if (isProbeError(err)) {
+      renderProbeErrorAndExit(err);
+    }
+    throw err;
+  }
+}
+
+try {
+  guardUnknownSubcommand(argv);
+} catch (err) {
+  if (isProbeError(err)) {
+    renderProbeErrorAndExit(err);
+  }
+  throw err;
 }
 
 runMain(main);

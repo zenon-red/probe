@@ -99,7 +99,7 @@ Tokens are cached at `~/.probe/tokens/<wallet-name>.json`:
 ## CLI Usage
 
 ```bash
-probe auth my-wallet --save
+probe login my-wallet --save
 ```
 
 This:
@@ -132,7 +132,7 @@ For CI/automation:
 
 ```bash
 export PROBE_WALLET_PASSWORD="..."
-probe auth my-wallet --save
+probe login my-wallet --save
 ```
 
 ## SpacetimeDB Integration

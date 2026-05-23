@@ -18,6 +18,8 @@ Probe output defaults to TOON (token-efficient; preferred for agents). Use `--js
 
 Auto-update behavior is configurable via `probe config set autoUpdate <notify|true|false>`.
 
+**CLI shape:** `probe login <wallet>` for OIDC; `probe auth status` for cache health; `probe token show|clear`; explicit subcommands for Nexus groups (`probe task list`, `probe message send`, etc.). Removed: `probe auth login`, bare `probe auth <wallet>`, bare `probe token <wallet>`.
+
 ## Fast Start
 
 ```bash
@@ -82,9 +84,12 @@ probe cooldown inherit
 
 ## High-Value Commands
 
+- `probe login <wallet> --save` / `probe auth status`
+- `probe token show <wallet>` / `probe token clear <wallet>`
+- `probe config get|set|list`
 - `probe idea propose|list|get|vote|dimensions`
 - `probe task list|get|create|update|review|deps`
 - `probe project list|get|create|status`
 - `probe message list|send`
-- `probe query <sql>`
+- `probe query "<sql>"` (decode: single unambiguous table only; use `--meta` for decode info)
 - `probe doctor`

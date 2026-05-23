@@ -4,6 +4,31 @@
 
 Agent output contract: see [llms.txt](./llms.txt). Default success output is TOON on stdout; errors are plain text on stderr. Interactive prompts are not supported.
 
+## CLI structure
+
+Most commands use **citty subcommands** — the action is always the second token:
+
+```bash
+probe <command> <subcommand> [positionals] [options]
+```
+
+Examples: `probe login my-wallet`, `probe auth status`, `probe token show my-wallet`, `probe config get spacetime.host`, `probe message list general`.
+
+**Breaking (removed positional overloads):**
+
+| Old                                                                      | New                                                                        |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `probe auth <wallet> [--save]`                                           | `probe login <wallet> [--save]`                                            |
+| `probe auth login <wallet>`                                              | `probe login <wallet>`                                                     |
+| `probe auth status`                                                      | `probe auth status` (unchanged)                                            |
+| `probe token <wallet>`                                                   | `probe token show <wallet>`                                                |
+| `probe token <wallet> --clear`                                           | `probe token clear <wallet>`                                               |
+| `probe config get\|set\|list`                                            | unchanged (already subcommands)                                            |
+| `probe message list` (was `probe message list` via action positional)    | `probe message list` (unchanged syntax; parent now requires subcommand)    |
+| Nexus groups (`task`, `agent`, `project`, `idea`, `discover`, `message`) | same subcommand names; parent rejects bare `probe task` without subcommand |
+
+Running a parent without a subcommand prints help or `SUBCOMMAND_REQUIRED`.
+
 ## Output contract
 
 | Mode     | Success (stdout)                 | Failure (stderr)                       |
@@ -22,7 +47,8 @@ probe <command> [positionals] [options]
 | Command    | Description                                                      |
 | ---------- | ---------------------------------------------------------------- |
 | `wallet`   | Wallet lifecycle (create, import, list, show, delete, default)   |
-| `auth`     | OIDC authentication flow                                         |
+| `login`    | Authenticate wallet and cache OIDC token                         |
+| `auth`     | Inspect cached authentication status                             |
 | `token`    | Inspect or clear cached token                                    |
 | `sign`     | Sign text payloads                                               |
 | `nexus`    | Persistent Nexus daemon (keepalive + JSONL event logs)           |
@@ -63,10 +89,10 @@ probe wallet default <name>
 Password sources (in order): `--password-file`, `PROBE_WALLET_PASSWORD` env. Interactive prompts are not supported.
 Note: `wallet show --public-key` only returns a key when the wallet can be decrypted (for example with `--password-file`).
 
-## Auth
+## Login and auth status
 
 ```bash
-probe auth <wallet-name> [--save] [--expect-address <z1...>] [--issuer <url>]
+probe login <wallet-name> [--save] [--expect-address <z1...>] [--issuer <url>] [--password-file <path>]
 probe auth status [--wallet <name>]
 ```
 
@@ -222,9 +248,12 @@ List ordering and limits:
 ## Query
 
 ```bash
-probe query "<sql>" [--meta] [--timeout <ms>]
+probe query "<sql>" [--meta] [--timeout <ms>] [--decode] [--raw]
 probe query --file <path> [--meta]
+probe query --tables
 ```
+
+Enum decoding applies only when the query references a **single unambiguous table** in `FROM` (e.g. `SELECT * FROM tasks`). Joins, subqueries, schema-qualified names, multi-statement SQL, and comma-separated `FROM` lists return raw algebraic values; use `--meta` to inspect decode metadata or `--raw` / `--decode` to override.
 
 See [sql.md](./sql.md) for schema and examples.
 
@@ -382,6 +411,6 @@ Returns hex-encoded Ed25519 signature.
 ## Token
 
 ```bash
-probe token <wallet-name>
-probe token <wallet-name> --clear
+probe token show <wallet-name>
+probe token clear <wallet-name>
 ```
