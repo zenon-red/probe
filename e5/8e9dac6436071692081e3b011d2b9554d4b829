@@ -1,0 +1,475 @@
+src/utils/onboard/steps.ts
+  s_39641ce99ec686::t_4bf0cc26e10287 321-324
+  s_39641ce99ec686::t_6f45dbc6ca086b 229-232,234-236,248
+  s_39641ce99ec686::t_d7b9aa471c33d3 288-291
+  s_39641ce99ec686::t_a98715ac945798 5
+  s_39641ce99ec686::t_85dca99255213b 459-462
+tests/unit/reducer-command.test.ts
+  s_39641ce99ec686::t_fdfe4b69a91b7e 69,91-96
+  s_39641ce99ec686::t_33fa1f67804388 70-71,73-74
+  s_39641ce99ec686::t_01dae122db9280 1,4-8,40,56-60
+  s_39641ce99ec686::t_15205c6dc4b73d 2-3,9-17,20-30,32-39,41-55,61-68,75-90,97-101
+tests/unit/help.test.ts
+  s_30e45298ba69af::t_05c75338fd3d17 2
+  s_30e45298ba69af::t_1ebc98f98dcbd8 9
+  s_30e45298ba69af::t_debc117999d6b5 5,7,14,21
+  s_30e45298ba69af::t_d5db99a5080b24 17-20,22
+  s_30e45298ba69af::t_affa00a70ad440 47-57
+src/commands/nexus/agent/me.ts
+  s_39641ce99ec686::t_326f8ab40a18d7 1-24,26-28
+tests/unit/sql-decode.test.ts
+  s_39641ce99ec686::t_9de8fb473baa7c 1-73,75-118,120-122,124-136
+  s_39641ce99ec686::t_4d02b6e48af18a 119,123
+src/utils/sql-decode.ts
+  s_39641ce99ec686::t_4ed2ae3e858ca4 1-106
+tests/unit/message-list.test.ts
+  s_30e45298ba69af::t_2e51fcd1b7b4e9 1-71
+src/commands/query.ts
+  s_39641ce99ec686::t_35bbda8f5dd755 228,239-243,245-248
+  s_30e45298ba69af::t_a2008e421ee072 218
+  s_39641ce99ec686::t_6efb5fe13e4526 3-4
+  s_30e45298ba69af::t_ee101072336a6b 25
+  s_39641ce99ec686::t_7ba783b3115abd 182,192-194
+src/commands/token/show.ts
+  s_30e45298ba69af::t_4eae8b733c56c2 46
+  s_39641ce99ec686::t_ee8d62260c24d5 2,4,9,13,27,29,31-34,40,45,56,64
+src/utils/help.ts
+  s_30e45298ba69af::t_1a58ec84d77241 2
+  s_30e45298ba69af::t_48f20ee002f077 62
+  s_30e45298ba69af::t_9f01e90690457e 160-165,170
+  s_30e45298ba69af::t_f4de241af98266 8
+  s_30e45298ba69af::t_edbfbf029960d5 1
+src/commands/nexus/agent-handlers.ts
+  s_39641ce99ec686::t_0808e008c22d96 1
+src/commands/nexus/agent/identity.ts
+  s_39641ce99ec686::t_abd5fe58288c72 1-20,22-24
+src/commands/nexus/idea/list.ts
+  s_39641ce99ec686::t_3e95df7849845c 1-39
+src/daemon/session.ts
+  s_39641ce99ec686::t_20dd9f0b8acd73 7
+  s_39641ce99ec686::t_5dfc65a56cdb2a 1-6,8-164,166-169
+  s_39641ce99ec686::t_71bb6f1d15233b 165
+src/commands/config/set.ts
+  s_39641ce99ec686::t_269e3c6f1f7837 2,5,9-10,32,34-35,37,39,41,47-48
+src/daemon/action-executor.ts
+  s_39641ce99ec686::t_80cc8c817d4016 1-33,35-104
+src/commands/nexus/discover/shared.ts
+  s_39641ce99ec686::t_da460407a97448 1-37
+skills/probe/references/commands.md
+  s_39641ce99ec686::t_657cfec8d8f92c 287-288
+  s_30e45298ba69af::t_6eb30f718d203c 31-32
+  s_30e45298ba69af::t_72402ea7ec595d 72,75
+  s_39641ce99ec686::t_f04c54fe6a15cf 183,185,188
+  s_30e45298ba69af::t_3906027836a70d 17-18
+  s_39641ce99ec686::t_a920bbb6d0c53b 5-15,19-21
+tests/unit/context.test.ts
+  s_30e45298ba69af::t_687268643fd658 165
+  s_30e45298ba69af::t_b61fddf3b368fa 8-22,38-39
+  s_30e45298ba69af::t_0e2dcd9da72ffb 130-131,141-164,166-172,174-175,177-179,183-194
+  s_30e45298ba69af::t_a8a0e33d841ce7 173,176,180-182
+  s_39641ce99ec686::t_b8fc72f47d6f58 3,60,62-99,106-116,119-123,125-129,195
+  s_39641ce99ec686::t_1cab0018ea9fcb 1,4-7,23-37,40-59,61,100-102,104-105,117-118,124
+  s_30e45298ba69af::t_fb17a7f77f74bd 2
+  s_30e45298ba69af::t_2535fdc1aaff91 103
+  s_30e45298ba69af::t_f9cf82ef021c05 132-140
+src/commands/nexus/agent/bio.ts
+  s_39641ce99ec686::t_2c239ca248f01d 1-42,44-94,96-98
+src/commands/nexus/discover/report.ts
+  s_39641ce99ec686::t_f96b94eab9a34d 2-3,24-37
+  s_39641ce99ec686::t_6f4d841d0f587d 1,4-23,38-40
+docs/internal/process-exit-inventory.md
+  s_39641ce99ec686::t_10a6869e38a82b 1-7,9-13,15-21,23-27
+README.md
+  s_30e45298ba69af::t_05e0cf683dc003 82
+src/commands/config/shared.ts
+  s_39641ce99ec686::t_bb6a44ef435b70 1-93
+src/commands/nexus/message/send.ts
+  s_39641ce99ec686::t_5d87b4e47a2ab7 2-3,47-55,57-58
+  s_39641ce99ec686::t_b1e77acb918987 1,4-46,59-60
+docs/auth.md
+  s_30e45298ba69af::t_418d6fd38a9cc8 102,135
+src/utils/context.ts
+  s_39641ce99ec686::t_29fb889269b25a 6,27-31,47-64,104-155,158,184,194-223,225-229
+  s_39641ce99ec686::t_8a770cb5b4893c 2
+  s_30e45298ba69af::t_4ae54b5d3ce7dd 249
+  s_30e45298ba69af::t_c71b3dbf9fb527 224
+  s_39641ce99ec686::t_bf2647b976a371 293,295-296,301
+  s_39641ce99ec686::t_d827616d720776 156-157
+src/commands/config/list.ts
+  s_39641ce99ec686::t_2db15887967d61 1-37
+src/commands/nexus/project/list.ts
+  s_39641ce99ec686::t_4be4d58070fb62 1-20,24-46
+  s_30e45298ba69af::t_7d55a18cea520e 21-23
+src/commands/nexus/project/shared.ts
+  s_39641ce99ec686::t_6ef3c10e7375d7 1-10
+src/commands/config/index.ts
+  s_39641ce99ec686::t_c56c9f3a94eb2c 2-5,25-31
+  s_30e45298ba69af::t_0fed911e6b3c5b 1,6-24
+src/commands/nexus/message/directive.ts
+  s_39641ce99ec686::t_bb2928579d8201 1,4-41,49,51-52
+  s_39641ce99ec686::t_4d9b1e68c47a35 2-3,42-48,50
+src/commands/whoami.ts
+  s_39641ce99ec686::t_477ae871e7d13e 2,21-24
+src/commands/nexus/idea/dimensions.ts
+  s_39641ce99ec686::t_7d7e4cfcb23482 1-27
+src/daemon/harness-runner.ts
+  s_39641ce99ec686::t_a2ea5cc5a79773 1-10,12-87
+src/daemon/events.ts
+  s_39641ce99ec686::t_42c69e28f924c4 1-97
+src/commands/nexus/project/status.ts
+  s_39641ce99ec686::t_b1e77acb918987 1-29
+src/commands/nexus/task/list.ts
+  s_39641ce99ec686::t_3ade3973e5cac8 1-56
+src/commands/nexus/task/get.ts
+  s_30e45298ba69af::t_4a53283ce6dcb9 4
+  s_39641ce99ec686::t_5db793fe2eb90a 1-3,5-16,21-24,26-27
+  s_30e45298ba69af::t_6170a40b9bd1d5 17-20,25
+docs/commands.md
+  s_30e45298ba69af::t_d02fa605745e88 50-51
+  s_39641ce99ec686::t_3da846c825d7dd 7-14,16-19,23-31
+  s_30e45298ba69af::t_5965249bfaf680 92,95
+  s_39641ce99ec686::t_f439da5114acb6 251,253,256
+  s_30e45298ba69af::t_924d5f4b6b81fb 15,21-22
+  s_39641ce99ec686::t_70d15be5fe4e3c 414-415
+src/commands/token/index.ts
+  s_39641ce99ec686::t_8541fda07ef41d 2-4,10,20-25
+  s_30e45298ba69af::t_beb9b209bcb790 1,5-9,11-19
+src/commands/nexus/agent/register.ts
+  s_39641ce99ec686::t_694d22221f23be 1-2,4-73,75,79-92
+src/utils/boundary.ts
+  s_39641ce99ec686::t_6d51443cf822d8 1,3-15,17-47,49,51-53,56-57
+  s_39641ce99ec686::t_e25117cacafd65 50,55
+  s_39641ce99ec686::t_d70ae227113c40 16,48,54,58
+src/commands/nexus/message/directives.ts
+  s_39641ce99ec686::t_21b46774a170ce 1-46
+src/utils/output.ts
+  s_39641ce99ec686::t_5edfa70a173737 16-18
+  s_39641ce99ec686::t_fb34023aedd18f 1
+  s_39641ce99ec686::t_c6d71ebcff30e3 2
+src/commands/nexus/discover/list.ts
+  s_39641ce99ec686::t_91283c2c9a2618 1-19,23-48
+  s_30e45298ba69af::t_f1e36688ba09e0 20-22
+docs/llms.txt
+  s_30e45298ba69af::t_e71ed5531869f4 34
+  s_30e45298ba69af::t_9a4e91f58004a0 98
+src/commands/nexus/task/ready.ts
+  s_39641ce99ec686::t_d2f1d502ebb271 1-86
+skills/probe/SKILL.md
+  s_30e45298ba69af::t_c0c83604e7bda0 21
+  s_30e45298ba69af::t_2fed587a1053f4 87
+  s_39641ce99ec686::t_bbe3173f819ec6 22
+  s_39641ce99ec686::t_5f8b22f4892689 88-89,94
+package.json
+  s_30e45298ba69af::t_0d38cc28f38af1 36,38
+  s_39641ce99ec686::t_7b1949aae5ec47 33
+  s_39641ce99ec686::t_09326aca64a2d2 27-29
+src/commands/nexus/message-target.ts
+  s_39641ce99ec686::t_85a6f2f8454141 1-12,14-82
+src/commands/nexus/project/create.ts
+  s_39641ce99ec686::t_7b518338e4a6ff 2-3,22-37
+  s_39641ce99ec686::t_384be9a0f735ed 1,4-21,38-40
+src/daemon/loop.ts
+  s_39641ce99ec686::t_f9ab556889a329 192
+  s_39641ce99ec686::t_d4890f858bb08b 226
+  s_39641ce99ec686::t_14bd830ba8a337 126
+  s_39641ce99ec686::t_af2b1b3d9c22b1 1-27,61-63,65-111,113-125,127-191,193-225,227-275
+  s_39641ce99ec686::t_dce5dd19661444 28-60
+  s_39641ce99ec686::t_3384660209aba7 112
+tests/unit/emit.test.ts
+  s_39641ce99ec686::t_909f9b922a9efd 89-90,92-93,95,102-109
+  s_30e45298ba69af::t_0b049dda9ad506 2,4,10,13-15,17,23-25,27,40-42,44,74,79-83,85,91,97,99,101
+  s_30e45298ba69af::t_09ef0962c9734a 7-8,11-12,20,26,37,43,76,84,94,96,100
+tests/unit/daemon-events.test.ts
+  s_39641ce99ec686::t_f0b1199b5b59ec 1-113
+tests/unit/daemon-harness.test.ts
+  s_39641ce99ec686::t_71406b1eafc602 1-9,11-54,56-120
+docs/sql.md
+  s_30e45298ba69af::t_733da617abc24f 15
+src/commands/nexus/idea.ts
+  s_30e45298ba69af::t_e0502b78a637dd 1-2,10-12,17,19-30
+  s_39641ce99ec686::t_aaeb926f390678 3-8,31-38
+src/commands/nexus/task/watch.ts
+  s_39641ce99ec686::t_1b639caa7b9162 1-71
+src/commands/wallet/index.ts
+  s_30e45298ba69af::t_7926cc6e407811 1,9-28
+src/commands/nexus/agent/set-status.ts
+  s_39641ce99ec686::t_598fccc3665e9f 1-32,34-51,53-64
+src/commands/nexus/project/set-status.ts
+  s_39641ce99ec686::t_6306904e9efd54 1-3,5-30,39,41-43
+  s_39641ce99ec686::t_dabf7c892c9e9c 4,31-38,40
+src/commands/nexus/discover.ts
+  s_30e45298ba69af::t_2ddea5b6bb243c 1-2,8-10,15,17-26
+  s_39641ce99ec686::t_5e75f99118d354 3-6,27-32
+src/commands/config/get.ts
+  s_39641ce99ec686::t_55c0586629078e 1-44
+src/commands/nexus/discover/review.ts
+  s_39641ce99ec686::t_dfadf378363c04 1-2,4-45,55-57
+  s_39641ce99ec686::t_e1f60bcbefd75d 3,46-54
+src/commands/nexus/task/review.ts
+  s_39641ce99ec686::t_bae50cb3633a57 1-38
+tests/unit/daemon-invariants.test.ts
+  s_30e45298ba69af::t_acc38d2b688456 221
+  s_39641ce99ec686::t_fe7a9e8a50fe34 41
+  s_30e45298ba69af::t_57f1375132548d 211
+  s_39641ce99ec686::t_60531cfbdecb6a 1-26,32-40,42-114,116,124,126,131-150,152-166,168,170-173,177-178,182-192,194-198,201-208,212-215,220,223-228,230-239,243-250,252-257
+  s_39641ce99ec686::t_388bfe2950ea8c 117-123,125,127-130
+  s_30e45298ba69af::t_02fd5035c1601e 251
+  s_30e45298ba69af::t_43024c021c4425 151,167
+  s_39641ce99ec686::t_334642f5abd12e 174-176,179-181
+  s_30e45298ba69af::t_51df363ff3dd61 241
+  s_30e45298ba69af::t_65aac43b654ea9 210
+  s_30e45298ba69af::t_a39301599d48ac 242
+  s_30e45298ba69af::t_37607bb8279699 193,199,209
+  s_30e45298ba69af::t_9273707b23a479 169
+  s_30e45298ba69af::t_027d5a4980a55f 27-31
+  s_39641ce99ec686::t_32de7228bc4c80 200,216-219,222
+  s_39641ce99ec686::t_c78c2fd74fa28d 115
+  s_39641ce99ec686::t_8861ab7c22aeb9 229,240
+src/utils/reducer-command.ts
+  s_39641ce99ec686::t_8813050a6f0cf0 1-16,18-19,28-39,41-61
+  s_39641ce99ec686::t_69ca61cb1f8570 17,20-27,40
+src/commands/nexus/idea/vote.ts
+  s_39641ce99ec686::t_37cf6f3c9489ed 1-48
+src/utils/output-mode.ts
+  s_30e45298ba69af::t_df006cd3ce9489 1,4,12
+src/commands/nexus/task/create.ts
+  s_39641ce99ec686::t_7bfbe3053ae684 8-9
+  s_39641ce99ec686::t_3c08812d19a6f6 3,30-34,36-47
+  s_39641ce99ec686::t_6729c56d846f13 1-2,4-7,10-20,27-29,48-49
+  s_39641ce99ec686::t_b3c90d0107faa1 21-24
+  s_39641ce99ec686::t_0c015b18ac2fad 25-26
+  s_39641ce99ec686::t_29a0174447ac3a 35
+src/commands/nexus/idea/propose.ts
+  s_39641ce99ec686::t_b4380d80dd2414 1-77
+src/commands/login.ts
+  s_30e45298ba69af::t_92ac590265365f 5,8,14-15,18,20,49,52,54-55,57-59,95,127,131
+src/utils/errors.ts
+  s_39641ce99ec686::t_864a78bbe9d960 1,3-17,46-65
+  s_39641ce99ec686::t_c3ba645e0dae3f 2
+  s_30e45298ba69af::t_6a7494a62584dd 72-74,76-78
+  s_39641ce99ec686::t_c16d16b0158e8c 75
+  s_39641ce99ec686::t_d8b21f3dc25b2b 31-45
+tests/unit/schema-drift.test.ts
+  s_39641ce99ec686::t_3a18674ac33ad0 4
+  s_39641ce99ec686::t_6ec827900aeecd 1-3,5-20
+src/commands/nexus/message-send.ts
+  s_39641ce99ec686::t_b471b3c98ef5a1 129
+  s_39641ce99ec686::t_f7fb8d46a16445 5,13-16,99-101,104-112,114-123,126-128,130-131,134-148,150-164
+  s_30e45298ba69af::t_dae673fcad227f 60
+  s_39641ce99ec686::t_637c6cbc17d87b 2
+  s_39641ce99ec686::t_ba009b00c81f1d 124-125
+src/commands/nexus/agent/list.ts
+  s_30e45298ba69af::t_7532f64951d6bd 20-22
+  s_39641ce99ec686::t_13136d022635fd 1-19,23-40
+src/commands/token/clear.ts
+  s_30e45298ba69af::t_a0d6e68d9b82a9 41
+  s_39641ce99ec686::t_5853e95ab70259 1-40,42-44
+tests/unit/daemon-reconnect.test.ts
+  s_bea670bc3449f0::t_253186dc984c86 67-68,72,88-89
+  s_39641ce99ec686::t_795c9b02423a9b 41-61,91,119,136,138
+  s_39641ce99ec686::t_191ca57df3795b 74-83
+  s_bea670bc3449f0::t_70859aa8374993 22
+  s_bea670bc3449f0::t_ef1b066f333a7b 121
+  s_bea670bc3449f0::t_0613da39a7a32d 69-71,73,85-87,90,92-93,102-110,120
+  s_39641ce99ec686::t_7dc5e3f3e1d778 1-16,18-21,23-40,62-66,94-101,111-118,122-135,137,139-151
+  s_39641ce99ec686::t_1aacca61777482 17
+src/commands/nexus/agent/status.ts
+  s_39641ce99ec686::t_7798df882748b8 1-24,26-28
+src/commands/nexus/discover/get.ts
+  s_39641ce99ec686::t_ff4c3c0f061704 1-27
+src/utils/subcommand.ts
+  s_30e45298ba69af::t_0a9dfc490a5e79 1
+  s_30e45298ba69af::t_818f5af98cbac0 47
+  s_30e45298ba69af::t_8ba7ce5e5c259b 13-14,24
+  s_30e45298ba69af::t_4e4f5957b43f09 18
+  s_30e45298ba69af::t_a63ffcc3972503 25-28,30-31
+  s_30e45298ba69af::t_cd959dcad68221 29
+  s_30e45298ba69af::t_f1451b26dd6173 5,7
+  s_30e45298ba69af::t_2f423c0257a8d5 2-4,6,8-12,15-17,19-23,32-46,48-68
+tests/unit/probe-error.test.ts
+  s_30e45298ba69af::t_eee9fb44eaaca0 7-12,14,55,58-64
+  s_39641ce99ec686::t_1ab843654d6518 1-2,4-6,13,15-54,56-57,65-69
+tests/unit/doctor.test.ts
+  s_30e45298ba69af::t_2743cc38baf142 37
+src/commands/nexus/agent.ts
+  s_30e45298ba69af::t_417cec570ead4f 1-2,14-17,22,24-28,30-42
+  s_39641ce99ec686::t_de46eaa327407d 3-12,43-54
+skills/probe/references/sql.md
+  s_30e45298ba69af::t_d09cf1b9cc127e 15
+openspec/specs/probe.md
+  s_30e45298ba69af::t_62de7c5d0aa372 774-800
+  s_30e45298ba69af::t_e73fb48f97db15 814,822-833
+  s_30e45298ba69af::t_102308e4afbd14 123,125-128
+  s_30e45298ba69af::t_d9f3c8a2c68108 147
+  s_30e45298ba69af::t_ac513af8ee6aac 75
+  s_30e45298ba69af::t_f2a2cb75d36839 378-380,383
+  s_30e45298ba69af::t_9f8d33ebccef64 725,727-730,735
+src/commands/nexus/message.ts
+  s_30e45298ba69af::t_f5d3554f0ccb46 1,8-16,18-25
+  s_39641ce99ec686::t_2a7b61e9ce5bc9 2-6,27-32
+tests/unit/subcommands.test.ts
+  s_30e45298ba69af::t_4c4578cfbd001d 102
+  s_30e45298ba69af::t_15d9ec80a9bb82 73-83
+  s_39641ce99ec686::t_c0ac88104c2495 16-17
+  s_30e45298ba69af::t_9b8e682fcfa844 87-88,94-95
+  s_30e45298ba69af::t_ffd6cca24105ae 86,89-93,96
+  s_39641ce99ec686::t_2f5d728e82196b 1-5,7-15,18-72,84-85,106-206,208-216,218-233
+  s_30e45298ba69af::t_f810a753d3567c 6
+  s_30e45298ba69af::t_7a78af77365fc4 97-98
+  s_30e45298ba69af::t_7631f6db8450df 99-101,103-105
+  s_39641ce99ec686::t_685f632f36edb0 207,217
+src/commands/doctor.ts
+  s_39641ce99ec686::t_1f1d029528d4ea 104
+  s_39641ce99ec686::t_55e4c70ae62513 4
+src/commands/nexus/idea/get.ts
+  s_39641ce99ec686::t_af9a1be8d9c58f 1-27
+tests/unit/action-ownership.test.ts
+  s_bea670bc3449f0::t_a87bf81daed3a2 47
+  s_39641ce99ec686::t_ccd02412132ee7 8-42,52-55,57-65,67-81,83-92,94-103,105-119,121-135,137-153,155-175,177-191
+  s_39641ce99ec686::t_d6de9564230296 1-7,43-46,48-51,56,66,82,93,104,120,136,154,176
+src/commands/nexus/message-list.ts
+  s_39641ce99ec686::t_93e60c2bf51e2e 33-34
+  s_39641ce99ec686::t_48ffedf52b09c3 1,3-9,11-32,35-43,45-48,50-54,57-81
+  s_39641ce99ec686::t_498801cfe1c0ef 44
+  s_39641ce99ec686::t_02c5e5176005dd 49
+  s_39641ce99ec686::t_ef8d044256401c 55
+  s_39641ce99ec686::t_f56521a0fcf319 56
+src/commands/auth/status.ts
+  s_39641ce99ec686::t_9dffbd49c5795b 1-50,52-67
+  s_30e45298ba69af::t_db79500c30be19 51
+src/commands/agent-cooldown.ts
+  s_39641ce99ec686::t_d139ba96a5483e 2
+  s_39641ce99ec686::t_44046e175303f3 5,23-25,30,33,77-80,82-83,98-101,103-104,119-122,124-125
+  s_39641ce99ec686::t_7f06d84853c939 19,21
+  s_30e45298ba69af::t_8b71e6391d98fa 129-133,140-155
+src/commands/nexus/agent/shared.ts
+  s_39641ce99ec686::t_01a6d8eec6bfbc 1-36
+src/commands/nexus/task.ts
+  s_39641ce99ec686::t_f15ce2ba0723c4 2-10,35-44
+  s_30e45298ba69af::t_126283573c3556 1,12-33
+src/commands/nexus/message/channels.ts
+  s_39641ce99ec686::t_c60dc0001af8f4 1-3,5,12-21,26-30,32-38,40-41
+  s_30e45298ba69af::t_f1543ac230ba41 4,6-11,22-25,39
+src/commands/nexus/agent/capabilities.ts
+  s_39641ce99ec686::t_598fa2e015af72 1-28,30-35
+skills/probe/references/troubleshooting.md
+  s_30e45298ba69af::t_8358467bcf300b 14-15,24-25,33-35,42
+src/commands/nexus-daemon.ts
+  s_39641ce99ec686::t_fa84f5c9827e21 3,5
+src/commands/nexus/task/deps.ts
+  s_39641ce99ec686::t_2281612265a4d4 1,3-60
+  s_39641ce99ec686::t_a6e9b731143dca 2
+src/commands/nexus/project/get.ts
+  s_39641ce99ec686::t_156e73a657557c 1-27
+tests/unit/message-target.test.ts
+  s_39641ce99ec686::t_280f2ff0dddc2b 5-6,8-9,20
+  s_30e45298ba69af::t_97890c775697da 1,3-4,10-19,21,59-66,70-77,81-90
+  s_39641ce99ec686::t_32b22be8ae00e5 2,7,22-58,67-69,78-80,91-92
+docs/internal/host-module-inventory.md
+  s_39641ce99ec686::t_6744f0b970988a 13-14,16-17,23-28,34-37,43-48,52
+  s_39641ce99ec686::t_9d1438fdcc2c4d 1-11,15,18-21,29-32,38-41,49-51
+tests/unit/host-module-command.test.ts
+  s_39641ce99ec686::t_1abd6b4c3a0694 4-6,10-16,26,28-30,33-40,58,60-65,68-75
+  s_39641ce99ec686::t_1c585df88fadfd 1-3,7-9,17-24,41-49,51-56
+  s_39641ce99ec686::t_3bac1a895d3904 31-32
+  s_39641ce99ec686::t_f42a1c0cd542a2 50
+  s_39641ce99ec686::t_b51acb1929dfd3 66-67
+  s_39641ce99ec686::t_3c5254a486cd11 25,27,57,59
+src/commands/action.ts
+  s_39641ce99ec686::t_e20a04f6bb1b22 167
+  s_30e45298ba69af::t_ec6c7983d839f1 379-403
+  s_30e45298ba69af::t_be56c803dcbda3 11
+  s_39641ce99ec686::t_e9edb4695f1d10 359
+  s_39641ce99ec686::t_28620eb4ed6d3a 2-7,10,41,43-44,82,89,97,145-150,165,173-174,195-198,201,203,206,208-210,228-231,233,235,238,240-242,260-263,265,267,270,272-274,311-314,317,321,323-325,361-364,367,371,373-375
+  s_39641ce99ec686::t_656578b801d7b5 83
+  s_39641ce99ec686::t_5aeee99a884482 308-309
+src/commands/nexus/agent/voice.ts
+  s_39641ce99ec686::t_e836463f6addc7 51-56,59
+  s_39641ce99ec686::t_7bba2479436f6e 62-65
+  s_39641ce99ec686::t_dc8d6a55c2f950 1-7,9-43,45-50,57-58,60-61,66-74,76-81
+src/utils/doctor-issues.ts
+  s_30e45298ba69af::t_54c3b6b8ed35c7 55
+src/commands/nexus/message/list.ts
+  s_39641ce99ec686::t_13877233cb28f1 1-46
+src/commands/auth/index.ts
+  s_30e45298ba69af::t_bfecf7ec220918 6,9,11,13
+  s_39641ce99ec686::t_9873ac2b6787f0 2-3,15-19
+  s_30e45298ba69af::t_b51ed2e62f4cc9 1,4-5,7-8,12,14
+src/commands/nexus/task/update.ts
+  s_39641ce99ec686::t_15fb08378da241 1-44
+scripts/generate-decoders.ts
+  s_39641ce99ec686::t_dc533c42f87429 49
+  s_39641ce99ec686::t_9bf151f1394af0 249-250,253-261
+  s_39641ce99ec686::t_e471f5276e3dd5 411-418
+  s_39641ce99ec686::t_ba6141a74f68ae 20,25-26
+src/commands/nexus/idea/pending.ts
+  s_39641ce99ec686::t_88c2e622437fdd 1-54
+src/commands/nexus/task/claim.ts
+  s_39641ce99ec686::t_9874840ef275dc 1-4,6,32,34-44,46-64,66-78,80-81
+src/index.ts
+  s_30e45298ba69af::t_79573bee3ae239 40
+  s_39641ce99ec686::t_cfef6c7a4bace0 3,5
+  s_30e45298ba69af::t_861a237d8a5944 33
+  s_30e45298ba69af::t_1b7ce5e8020b97 4
+  s_39641ce99ec686::t_2c47dd6e494594 35
+  s_39641ce99ec686::t_f78e5cb143830e 155-156,170-181
+  s_39641ce99ec686::t_cb4219170ee5be 149-150
+  s_30e45298ba69af::t_5206e5ee1dd4e4 87-88
+  s_39641ce99ec686::t_e86a1ff7ce09ce 36
+  s_39641ce99ec686::t_a815d2dfb034dd 19
+  s_30e45298ba69af::t_f6680aa8d1b237 157,159-163,165,182-190
+  s_30e45298ba69af::t_7da5c62186a8c1 126
+  s_30e45298ba69af::t_9fbd5a6ddcfecd 158
+  s_30e45298ba69af::t_6c428585f0f8dd 164
+src/utils/subcommand-registry.ts
+  s_30e45298ba69af::t_a0361bea222b1d 3
+  s_30e45298ba69af::t_3cbb6d1186f5db 1-2,4-25
+tests/unit/message-send.test.ts
+  s_30e45298ba69af::t_869a53c39783e8 42
+  s_30e45298ba69af::t_e0e51065a6acbb 2
+  s_30e45298ba69af::t_2d24341e14c9c6 1,3,5-41,43-62,64-85
+src/utils/health.ts
+  s_30e45298ba69af::t_4006f4d072784d 132
+  s_30e45298ba69af::t_b9e77f8260dd5e 211
+  s_39641ce99ec686::t_32c30308add1ee 170-178,183-184
+  s_39641ce99ec686::t_0adc054596cc39 4
+src/commands/nexus/agent/heartbeat.ts
+  s_39641ce99ec686::t_157a01bd04163f 1-27,29-34
+src/commands/nexus/project.ts
+  s_30e45298ba69af::t_21da764deefd8d 1-2,9-11,16,18-28
+  s_39641ce99ec686::t_b9275e92284ec3 3-7,29-35
+src/commands/nexus/idea/shared.ts
+  s_39641ce99ec686::t_ed99a6cf4615d0 1-160
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "e58e9dac6436071692081e3b011d2b9554d4b829",
+  "prompts": {},
+  "sessions": {
+    "s_30e45298ba69af": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "e23ad298-a81b-4ce6-aa6c-8d18a62b742d",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_39641ce99ec686": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "c7d9a336-ba4b-462f-9ba7-d7ec53dfeaff",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_bea670bc3449f0": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "058805b0-84ac-41fb-a06c-6a95c7e3226b",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
