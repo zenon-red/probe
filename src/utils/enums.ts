@@ -1,11 +1,27 @@
 import type {
   AgentRole as AgentRoleType,
   AgentStatus as AgentStatusType,
+  DispatchRoute as DispatchRouteType,
   IdeaStatus as IdeaStatusType,
   MessageType as MessageTypeType,
   ProjectStatus as ProjectStatusType,
   TaskStatus as TaskStatusType,
 } from "~/module_bindings/types.js";
+
+export function enumName(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object" && "tag" in value) {
+    return String((value as { tag: unknown }).tag);
+  }
+  return String(value ?? "—");
+}
+
+export function identityHex(value: unknown): string {
+  if (value && typeof value === "object" && "toHexString" in value) {
+    return String((value as { toHexString: () => string }).toHexString());
+  }
+  return String(value ?? "");
+}
 
 export const TaskStatus = {
   values: ["Open", "Claimed", "InProgress", "Review", "Completed", "Blocked", "Archived"] as const,
@@ -34,7 +50,9 @@ export const TaskStatus = {
       blocked: { tag: "Blocked" },
       archived: { tag: "Archived" },
     };
-    return map[s.toLowerCase().replace(/[_\s]/g, "")] ?? { tag: "Open" };
+    const result = map[s.toLowerCase().replace(/[_\s]/g, "")];
+    if (!result) throw new Error(`Unknown TaskStatus: "${s}"`);
+    return result;
   },
 
   matches(status: TaskStatusType, filter: string): boolean {
@@ -50,49 +68,78 @@ export const TaskStatus = {
 } as const;
 
 export const IdeaStatus = {
-  values: ["Voting", "ApprovedForProject", "Rejected", "Implemented"] as const,
+  values: [
+    "PendingHumanReview",
+    "HumanApproved",
+    "ChangesRequested",
+    "Voting",
+    "ApprovedForProject",
+    "Rejected",
+    "Implemented",
+  ] as const,
 
   is: {
+    pendingHumanReview: (s: IdeaStatusType) => s.tag === "PendingHumanReview",
+    humanApproved: (s: IdeaStatusType) => s.tag === "HumanApproved",
+    changesRequested: (s: IdeaStatusType) => s.tag === "ChangesRequested",
     voting: (s: IdeaStatusType) => s.tag === "Voting",
     approved: (s: IdeaStatusType) => s.tag === "ApprovedForProject",
     rejected: (s: IdeaStatusType) => s.tag === "Rejected",
     implemented: (s: IdeaStatusType) => s.tag === "Implemented",
-    active: (s: IdeaStatusType) => s.tag === "Voting",
+    active: (s: IdeaStatusType) =>
+      ["PendingHumanReview", "HumanApproved", "ChangesRequested", "Voting"].includes(s.tag),
     terminal: (s: IdeaStatusType) =>
       ["ApprovedForProject", "Rejected", "Implemented"].includes(s.tag),
   },
 
   fromString(s: string): IdeaStatusType {
     const map: Record<string, IdeaStatusType> = {
+      pending_human_review: { tag: "PendingHumanReview" },
+      pendinghumanreview: { tag: "PendingHumanReview" },
+      human_approved: { tag: "HumanApproved" },
+      humanapproved: { tag: "HumanApproved" },
+      changes_requested: { tag: "ChangesRequested" },
+      changesrequested: { tag: "ChangesRequested" },
       voting: { tag: "Voting" },
       approved: { tag: "ApprovedForProject" },
       approved_for_project: { tag: "ApprovedForProject" },
+      approvedforproject: { tag: "ApprovedForProject" },
       rejected: { tag: "Rejected" },
       implemented: { tag: "Implemented" },
     };
-    return map[s.toLowerCase().replace(/[_\s]/g, "")] ?? { tag: "Voting" };
+    const result = map[s.toLowerCase().replace(/[_\s]/g, "")];
+    if (!result) throw new Error(`Unknown IdeaStatus: "${s}"`);
+    return result;
   },
 
   matches(status: IdeaStatusType, filter: string): boolean {
     const f = filter.toLowerCase().replace(/[_\s]/g, "");
     if (f === "approved") return status.tag === "ApprovedForProject";
+    if (f === "pendinghumanreview" || f === "pending") return status.tag === "PendingHumanReview";
+    if (f === "humanapproved") return status.tag === "HumanApproved";
+    if (f === "changesrequested" || f === "changes") return status.tag === "ChangesRequested";
     return status.tag.toLowerCase() === f;
   },
 
   display(status: IdeaStatusType): string {
     if (status.tag === "ApprovedForProject") return "Approved";
+    if (status.tag === "PendingHumanReview") return "Pending Review";
+    if (status.tag === "HumanApproved") return "Human Approved";
+    if (status.tag === "ChangesRequested") return "Changes Requested";
     return status.tag;
   },
 } as const;
 
 export const AgentRole = {
-  values: ["Zoe", "Admin", "Zeno"] as const,
+  values: ["Zoe", "Admin", "Zeno", "Human"] as const,
 
   is: {
     zoe: (r: AgentRoleType) => r.tag === "Zoe",
     admin: (r: AgentRoleType) => r.tag === "Admin",
     zeno: (r: AgentRoleType) => r.tag === "Zeno",
+    human: (r: AgentRoleType) => r.tag === "Human",
     privileged: (r: AgentRoleType) => ["Zoe", "Admin"].includes(r.tag),
+    agent: (r: AgentRoleType) => ["Zoe", "Admin", "Zeno"].includes(r.tag),
   },
 
   fromString(s: string): AgentRoleType {
@@ -100,8 +147,11 @@ export const AgentRole = {
       zoe: { tag: "Zoe" },
       admin: { tag: "Admin" },
       zeno: { tag: "Zeno" },
+      human: { tag: "Human" },
     };
-    return map[s.toLowerCase()] ?? { tag: "Zeno" };
+    const result = map[s.toLowerCase()];
+    if (!result) throw new Error(`Unknown AgentRole: "${s}"`);
+    return result;
   },
 
   display(r: AgentRoleType): string {
@@ -126,7 +176,9 @@ export const AgentStatus = {
       working: { tag: "Working" },
       busy: { tag: "Working" },
     };
-    return map[s.toLowerCase()] ?? { tag: "Offline" };
+    const result = map[s.toLowerCase()];
+    if (!result) throw new Error(`Unknown AgentStatus: "${s}"`);
+    return result;
   },
 
   display(s: AgentStatusType): string {
@@ -150,11 +202,20 @@ export const MessageType = {
       system: { tag: "System" },
       directive: { tag: "Directive" },
     };
-    return map[s.toLowerCase()] ?? { tag: "User" };
+    const result = map[s.toLowerCase()];
+    if (!result) throw new Error(`Unknown MessageType: "${s}"`);
+    return result;
   },
 
   display(t: MessageTypeType): string {
     return t.tag.toLowerCase();
+  },
+} as const;
+
+export const DispatchRoute = {
+  is: {
+    reviewTask: (r: DispatchRouteType | undefined) => r?.tag === "ReviewTask",
+    validateReview: (r: DispatchRouteType | undefined) => r?.tag === "ValidateReview",
   },
 } as const;
 
@@ -172,7 +233,9 @@ export const ProjectStatus = {
       active: { tag: "Active" },
       paused: { tag: "Paused" },
     };
-    return map[normalized] ?? { tag: "Active" };
+    const result = map[normalized];
+    if (!result) throw new Error(`Unknown ProjectStatus: "${s}"`);
+    return result;
   },
 
   matches(status: ProjectStatusType, filter: string): boolean {

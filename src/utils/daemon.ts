@@ -2,6 +2,8 @@ import { execSync } from "node:child_process";
 import { mkdir, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { commandExists } from "./system.js";
+import { SHELL_TIMEOUT } from "./timeouts.js";
 
 export interface DaemonAdapter {
   id: string;
@@ -27,15 +29,6 @@ export interface DaemonVerifyResult {
   detail: string;
 }
 
-function commandExists(cmd: string): boolean {
-  try {
-    execSync(`command -v ${cmd}`, { stdio: "ignore", timeout: 5000 });
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 const systemdAdapter: DaemonAdapter = {
   id: "systemd",
   displayName: "systemd user service",
@@ -48,7 +41,7 @@ const systemdAdapter: DaemonAdapter = {
     const servicePath = join(serviceDir, "probe-nexus.service");
     const probePath = execSync("command -v probe", {
       encoding: "utf-8",
-      timeout: 5000,
+      timeout: SHELL_TIMEOUT.SHORT,
     }).trim();
     const hostLine = config.host ? `Environment=PROBE_SPACETIME_HOST=${config.host}` : "";
     const moduleLine = config.module ? `Environment=PROBE_SPACETIME_MODULE=${config.module}` : "";
@@ -72,15 +65,15 @@ WantedBy=default.target
     try {
       execSync("systemctl --user daemon-reload", {
         stdio: "ignore",
-        timeout: 10000,
+        timeout: SHELL_TIMEOUT.MEDIUM,
       });
       execSync("systemctl --user enable probe-nexus", {
         stdio: "ignore",
-        timeout: 10000,
+        timeout: SHELL_TIMEOUT.MEDIUM,
       });
       execSync("systemctl --user start probe-nexus", {
         stdio: "ignore",
-        timeout: 10000,
+        timeout: SHELL_TIMEOUT.MEDIUM,
       });
     } catch {
       return {
@@ -97,7 +90,7 @@ WantedBy=default.target
     try {
       execSync("systemctl --user is-active probe-nexus", {
         stdio: "ignore",
-        timeout: 5000,
+        timeout: SHELL_TIMEOUT.SHORT,
       });
       return { active: true, detail: "systemd user service active" };
     } catch {
@@ -121,7 +114,7 @@ const launchdAdapter: DaemonAdapter = {
     const plistPath = join(plistDir, "com.zenon.probe-nexus.plist");
     const probePath = execSync("command -v probe", {
       encoding: "utf-8",
-      timeout: 5000,
+      timeout: SHELL_TIMEOUT.SHORT,
     }).trim();
     const envLines: string[] = [];
     if (config.host) {
@@ -162,15 +155,15 @@ const launchdAdapter: DaemonAdapter = {
     try {
       execSync("launchctl bootstrap gui/$(id -u) " + plistPath, {
         stdio: "ignore",
-        timeout: 10000,
+        timeout: SHELL_TIMEOUT.MEDIUM,
       });
       execSync("launchctl enable gui/$(id -u)/com.zenon.probe-nexus", {
         stdio: "ignore",
-        timeout: 10000,
+        timeout: SHELL_TIMEOUT.MEDIUM,
       });
       execSync("launchctl kickstart -k gui/$(id -u)/com.zenon.probe-nexus", {
         stdio: "ignore",
-        timeout: 10000,
+        timeout: SHELL_TIMEOUT.MEDIUM,
       });
     } catch {
       return {
@@ -187,7 +180,7 @@ const launchdAdapter: DaemonAdapter = {
     try {
       execSync("launchctl print gui/$(id -u)/com.zenon.probe-nexus", {
         stdio: "ignore",
-        timeout: 5000,
+        timeout: SHELL_TIMEOUT.SHORT,
       });
       return { active: true, detail: "launchd agent active" };
     } catch {
@@ -223,7 +216,7 @@ const tmuxAdapter: DaemonAdapter = {
     try {
       execSync("tmux has-session -t nexus", {
         stdio: "ignore",
-        timeout: 5000,
+        timeout: SHELL_TIMEOUT.SHORT,
       });
       return { active: true, detail: "tmux session 'nexus' exists" };
     } catch {
@@ -248,7 +241,7 @@ const dockerAdapter: DaemonAdapter = {
     try {
       const names = execSync('docker ps --filter "name=probe-nexus" --format "{{.Names}}"', {
         encoding: "utf-8",
-        timeout: 10000,
+        timeout: SHELL_TIMEOUT.MEDIUM,
       }).trim();
       if (!names.split("\n").includes("probe-nexus")) {
         return {

@@ -1,6 +1,6 @@
 import { defineCommand } from "citty";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { error, isJsonMode, setJsonMode, success, successMessage } from "~/utils/output.js";
+import { applyJsonMode, error, isJsonMode, success, successMessage } from "~/utils/output.js";
 import { loadUserConfig, saveUserConfig } from "~/utils/user-config.js";
 import { walletExists } from "~/utils/wallet.js";
 
@@ -22,9 +22,7 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    if (args.json) {
-      setJsonMode(true);
-    }
+    applyJsonMode(args);
 
     const name = args.name;
 

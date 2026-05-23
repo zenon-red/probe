@@ -1,8 +1,9 @@
 import { defineCommand } from "citty";
 import { clearConfigCache, getConfig } from "~/utils/config.js";
 import { printHelp } from "~/utils/help.js";
-import { error, isJsonMode, setJsonMode, success, successMessage } from "~/utils/output.js";
+import { applyJsonMode, error, isJsonMode, success, successMessage } from "~/utils/output.js";
 import { loadUserConfig, saveUserConfig } from "~/utils/user-config.js";
+import { errorMessage } from "~/utils/errors.js";
 
 function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
   const parts = path.split(".");
@@ -58,9 +59,7 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    if (args.json) {
-      setJsonMode(true);
-    }
+    applyJsonMode(args);
 
     if (!args.action) {
       printHelp({
@@ -197,7 +196,7 @@ export default defineCommand({
           error("INVALID_ACTION", `Invalid action: ${action}`, "Use: get, set, list");
       }
     } catch (err) {
-      error("CONFIG_ERROR", err instanceof Error ? err.message : "Configuration error");
+      error("CONFIG_ERROR", errorMessage(err, "Configuration error"));
     }
   },
 });

@@ -37,6 +37,8 @@ import {
 import AddTaskDependencyReducer from "./add_task_dependency_reducer";
 import AssignHumanRoleReducer from "./assign_human_role_reducer";
 import ClaimTaskReducer from "./claim_task_reducer";
+import CompleteReviewActionReducer from "./complete_review_action_reducer";
+import CompleteValidateReviewActionReducer from "./complete_validate_review_action_reducer";
 import CreateProjectReducer from "./create_project_reducer";
 import CreateTaskReducer from "./create_task_reducer";
 import DiscoverTaskReducer from "./discover_task_reducer";
@@ -44,11 +46,12 @@ import FailVoiceAnnouncementReducer from "./fail_voice_announcement_reducer";
 import FinalizeOnboardingReducer from "./finalize_onboarding_reducer";
 import FinalizeVoiceAnnouncementReducer from "./finalize_voice_announcement_reducer";
 import HeartbeatReducer from "./heartbeat_reducer";
-import IssueAgentActionReducer from "./issue_agent_action_reducer";
 import MarkIdeaImplementedReducer from "./mark_idea_implemented_reducer";
 import OpenIdeaVotingReducer from "./open_idea_voting_reducer";
 import ProposeIdeaReducer from "./propose_idea_reducer";
 import RegisterAgentReducer from "./register_agent_reducer";
+import ReportActionRunFinishedReducer from "./report_action_run_finished_reducer";
+import ReportActionRunStartedReducer from "./report_action_run_started_reducer";
 import ResubmitIdeaRevisionReducer from "./resubmit_idea_revision_reducer";
 import ReviewDiscoveredTaskReducer from "./review_discovered_task_reducer";
 import ReviewIdeaHumanReducer from "./review_idea_human_reducer";
@@ -57,7 +60,9 @@ import SeedUiDataReducer from "./seed_ui_data_reducer";
 import SeedVoiceAnnouncementsReducer from "./seed_voice_announcements_reducer";
 import SendMessageReducer from "./send_message_reducer";
 import SendProjectMessageReducer from "./send_project_message_reducer";
+import SetAgentDispatchCooldownReducer from "./set_agent_dispatch_cooldown_reducer";
 import SetAgentStatusReducer from "./set_agent_status_reducer";
+import SetDispatchCooldownReducer from "./set_dispatch_cooldown_reducer";
 import SubmitProjectPlanRefReducer from "./submit_project_plan_ref_reducer";
 import UpdateAgentActionReducer from "./update_agent_action_reducer";
 import UpdateAgentBioReducer from "./update_agent_bio_reducer";
@@ -76,6 +81,7 @@ import AgentsRow from "./agents_table";
 import ChannelsRow from "./channels_table";
 import ConfigRow from "./config_table";
 import DiscoveredTasksRow from "./discovered_tasks_table";
+import DispatchRunsRow from "./dispatch_runs_table";
 import EvaluationDimensionsRow from "./evaluation_dimensions_table";
 import IdeaFeedbackRow from "./idea_feedback_table";
 import IdeasRow from "./ideas_table";
@@ -86,6 +92,8 @@ import ProjectMessagesRow from "./project_messages_table";
 import ProjectPlanFeedbackRow from "./project_plan_feedback_table";
 import ProjectsRow from "./projects_table";
 import TaskDependenciesRow from "./task_dependencies_table";
+import TaskReviewValidationsRow from "./task_review_validations_table";
+import TaskReviewsRow from "./task_reviews_table";
 import TasksRow from "./tasks_table";
 import VoiceAnnouncementsRow from "./voice_announcements_table";
 import VotesRow from "./votes_table";
@@ -94,403 +102,341 @@ import VotesRow from "./votes_table";
 
 /** The schema information for all tables in this module. This is defined the same was as the tables would have been defined in the server. */
 const tablesSchema = __schema({
-  agent_action_events: __table(
-    {
-      name: "agent_action_events",
-      indexes: [
-        {
-          accessor: "by_action",
-          name: "agent_action_events_action_id_created_at_idx_btree",
-          algorithm: "btree",
-          columns: ["actionId", "createdAt"],
-        },
-        {
-          accessor: "id",
-          name: "agent_action_events_id_idx_btree",
-          algorithm: "btree",
-          columns: ["id"],
-        },
-      ],
-      constraints: [{ name: "agent_action_events_id_key", constraint: "unique", columns: ["id"] }],
-      event: true,
-    },
-    AgentActionEventsRow,
-  ),
-  agent_actions: __table(
-    {
-      name: "agent_actions",
-      indexes: [
-        {
-          accessor: "by_agent_created",
-          name: "agent_actions_agent_id_created_at_idx_btree",
-          algorithm: "btree",
-          columns: ["agentId", "createdAt"],
-        },
-        {
-          accessor: "by_agent_id",
-          name: "agent_actions_agent_id_idx_btree",
-          algorithm: "btree",
-          columns: ["agentId"],
-        },
-        { accessor: "id", name: "agent_actions_id_idx_btree", algorithm: "btree", columns: ["id"] },
-      ],
-      constraints: [{ name: "agent_actions_id_key", constraint: "unique", columns: ["id"] }],
-    },
-    AgentActionsRow,
-  ),
-  agents: __table(
-    {
-      name: "agents",
-      indexes: [
-        { accessor: "id", name: "agents_id_idx_btree", algorithm: "btree", columns: ["id"] },
-        {
-          accessor: "identity",
-          name: "agents_identity_idx_btree",
-          algorithm: "btree",
-          columns: ["identity"],
-        },
-      ],
-      constraints: [
-        { name: "agents_id_key", constraint: "unique", columns: ["id"] },
-        { name: "agents_identity_key", constraint: "unique", columns: ["identity"] },
-      ],
-    },
-    AgentsRow,
-  ),
-  channels: __table(
-    {
-      name: "channels",
-      indexes: [
-        { accessor: "id", name: "channels_id_idx_btree", algorithm: "btree", columns: ["id"] },
-        {
-          accessor: "by_name",
-          name: "channels_name_idx_btree",
-          algorithm: "btree",
-          columns: ["name"],
-        },
-      ],
-      constraints: [{ name: "channels_id_key", constraint: "unique", columns: ["id"] }],
-    },
-    ChannelsRow,
-  ),
-  config: __table(
-    {
-      name: "config",
-      indexes: [
-        { accessor: "key", name: "config_key_idx_btree", algorithm: "btree", columns: ["key"] },
-      ],
-      constraints: [{ name: "config_key_key", constraint: "unique", columns: ["key"] }],
-    },
-    ConfigRow,
-  ),
-  discovered_tasks: __table(
-    {
-      name: "discovered_tasks",
-      indexes: [
-        {
-          accessor: "by_created_at",
-          name: "discovered_tasks_created_at_idx_btree",
-          algorithm: "btree",
-          columns: ["createdAt"],
-        },
-        {
-          accessor: "id",
-          name: "discovered_tasks_id_idx_btree",
-          algorithm: "btree",
-          columns: ["id"],
-        },
-        {
-          accessor: "by_priority",
-          name: "discovered_tasks_priority_idx_btree",
-          algorithm: "btree",
-          columns: ["priority"],
-        },
-        {
-          accessor: "by_status",
-          name: "discovered_tasks_status_idx_btree",
-          algorithm: "btree",
-          columns: ["status"],
-        },
-      ],
-      constraints: [{ name: "discovered_tasks_id_key", constraint: "unique", columns: ["id"] }],
-    },
-    DiscoveredTasksRow,
-  ),
-  evaluation_dimensions: __table(
-    {
-      name: "evaluation_dimensions",
-      indexes: [
-        {
-          accessor: "by_active",
-          name: "evaluation_dimensions_active_sort_order_idx_btree",
-          algorithm: "btree",
-          columns: ["active", "sortOrder"],
-        },
-        {
-          accessor: "id",
-          name: "evaluation_dimensions_id_idx_btree",
-          algorithm: "btree",
-          columns: ["id"],
-        },
-      ],
-      constraints: [
-        { name: "evaluation_dimensions_id_key", constraint: "unique", columns: ["id"] },
-      ],
-    },
-    EvaluationDimensionsRow,
-  ),
-  idea_feedback: __table(
-    {
-      name: "idea_feedback",
-      indexes: [
-        { accessor: "id", name: "idea_feedback_id_idx_btree", algorithm: "btree", columns: ["id"] },
-        {
-          accessor: "by_idea_id",
-          name: "idea_feedback_idea_id_idx_btree",
-          algorithm: "btree",
-          columns: ["ideaId"],
-        },
-      ],
-      constraints: [{ name: "idea_feedback_id_key", constraint: "unique", columns: ["id"] }],
-    },
-    IdeaFeedbackRow,
-  ),
-  ideas: __table(
-    {
-      name: "ideas",
-      indexes: [
-        { accessor: "id", name: "ideas_id_idx_btree", algorithm: "btree", columns: ["id"] },
-        {
-          accessor: "by_status",
-          name: "ideas_status_idx_btree",
-          algorithm: "btree",
-          columns: ["status"],
-        },
-      ],
-      constraints: [{ name: "ideas_id_key", constraint: "unique", columns: ["id"] }],
-    },
-    IdeasRow,
-  ),
-  identity_roles: __table(
-    {
-      name: "identity_roles",
-      indexes: [
-        {
-          accessor: "identity",
-          name: "identity_roles_identity_idx_btree",
-          algorithm: "btree",
-          columns: ["identity"],
-        },
-      ],
-      constraints: [
-        { name: "identity_roles_identity_key", constraint: "unique", columns: ["identity"] },
-      ],
-    },
-    IdentityRolesRow,
-  ),
-  messages: __table(
-    {
-      name: "messages",
-      indexes: [
-        {
-          accessor: "by_channel",
-          name: "messages_channel_id_created_at_idx_btree",
-          algorithm: "btree",
-          columns: ["channelId", "createdAt"],
-        },
-        { accessor: "id", name: "messages_id_idx_btree", algorithm: "btree", columns: ["id"] },
-      ],
-      constraints: [{ name: "messages_id_key", constraint: "unique", columns: ["id"] }],
-    },
-    MessagesRow,
-  ),
-  project_channels: __table(
-    {
-      name: "project_channels",
-      indexes: [
-        {
-          accessor: "project_id",
-          name: "project_channels_project_id_idx_btree",
-          algorithm: "btree",
-          columns: ["projectId"],
-        },
-      ],
-      constraints: [
-        { name: "project_channels_project_id_key", constraint: "unique", columns: ["projectId"] },
-      ],
-    },
-    ProjectChannelsRow,
-  ),
-  project_messages: __table(
-    {
-      name: "project_messages",
-      indexes: [
-        {
-          accessor: "id",
-          name: "project_messages_id_idx_btree",
-          algorithm: "btree",
-          columns: ["id"],
-        },
-        {
-          accessor: "by_project",
-          name: "project_messages_project_id_idx_btree",
-          algorithm: "btree",
-          columns: ["projectId"],
-        },
-      ],
-      constraints: [{ name: "project_messages_id_key", constraint: "unique", columns: ["id"] }],
-    },
-    ProjectMessagesRow,
-  ),
-  project_plan_feedback: __table(
-    {
-      name: "project_plan_feedback",
-      indexes: [
-        {
-          accessor: "id",
-          name: "project_plan_feedback_id_idx_btree",
-          algorithm: "btree",
-          columns: ["id"],
-        },
-        {
-          accessor: "by_project_id",
-          name: "project_plan_feedback_project_id_idx_btree",
-          algorithm: "btree",
-          columns: ["projectId"],
-        },
-      ],
-      constraints: [
-        { name: "project_plan_feedback_id_key", constraint: "unique", columns: ["id"] },
-      ],
-    },
-    ProjectPlanFeedbackRow,
-  ),
-  projects: __table(
-    {
-      name: "projects",
-      indexes: [
-        { accessor: "id", name: "projects_id_idx_btree", algorithm: "btree", columns: ["id"] },
-        {
-          accessor: "by_source_idea_id",
-          name: "projects_source_idea_id_idx_btree",
-          algorithm: "btree",
-          columns: ["sourceIdeaId"],
-        },
-      ],
-      constraints: [{ name: "projects_id_key", constraint: "unique", columns: ["id"] }],
-    },
-    ProjectsRow,
-  ),
-  task_dependencies: __table(
-    {
-      name: "task_dependencies",
-      indexes: [
-        {
-          accessor: "by_depends_on_id",
-          name: "task_dependencies_depends_on_id_idx_btree",
-          algorithm: "btree",
-          columns: ["dependsOnId"],
-        },
-        {
-          accessor: "id",
-          name: "task_dependencies_id_idx_btree",
-          algorithm: "btree",
-          columns: ["id"],
-        },
-        {
-          accessor: "by_task_id",
-          name: "task_dependencies_task_id_idx_btree",
-          algorithm: "btree",
-          columns: ["taskId"],
-        },
-      ],
-      constraints: [{ name: "task_dependencies_id_key", constraint: "unique", columns: ["id"] }],
-    },
-    TaskDependenciesRow,
-  ),
-  tasks: __table(
-    {
-      name: "tasks",
-      indexes: [
-        {
-          accessor: "by_assigned_to",
-          name: "tasks_assigned_to_idx_btree",
-          algorithm: "btree",
-          columns: ["assignedTo"],
-        },
-        { accessor: "id", name: "tasks_id_idx_btree", algorithm: "btree", columns: ["id"] },
-        {
-          accessor: "by_priority",
-          name: "tasks_priority_idx_btree",
-          algorithm: "btree",
-          columns: ["priority"],
-        },
-        {
-          accessor: "by_project_id",
-          name: "tasks_project_id_idx_btree",
-          algorithm: "btree",
-          columns: ["projectId"],
-        },
-        {
-          accessor: "by_status",
-          name: "tasks_status_idx_btree",
-          algorithm: "btree",
-          columns: ["status"],
-        },
-      ],
-      constraints: [{ name: "tasks_id_key", constraint: "unique", columns: ["id"] }],
-    },
-    TasksRow,
-  ),
-  voice_announcements: __table(
-    {
-      name: "voice_announcements",
-      indexes: [
-        {
-          accessor: "by_agent",
-          name: "voice_announcements_agent_id_created_at_idx_btree",
-          algorithm: "btree",
-          columns: ["agentId", "createdAt"],
-        },
-        {
-          accessor: "id",
-          name: "voice_announcements_id_idx_btree",
-          algorithm: "btree",
-          columns: ["id"],
-        },
-        {
-          accessor: "by_status",
-          name: "voice_announcements_status_created_at_idx_btree",
-          algorithm: "btree",
-          columns: ["status", "createdAt"],
-        },
-      ],
-      constraints: [{ name: "voice_announcements_id_key", constraint: "unique", columns: ["id"] }],
-    },
-    VoiceAnnouncementsRow,
-  ),
-  votes: __table(
-    {
-      name: "votes",
-      indexes: [
-        { accessor: "id", name: "votes_id_idx_btree", algorithm: "btree", columns: ["id"] },
-        {
-          accessor: "by_idea_agent",
-          name: "votes_idea_id_agent_id_idx_btree",
-          algorithm: "btree",
-          columns: ["ideaId", "agentId"],
-        },
-        {
-          accessor: "by_idea",
-          name: "votes_idea_id_idx_btree",
-          algorithm: "btree",
-          columns: ["ideaId"],
-        },
-      ],
-      constraints: [{ name: "votes_id_key", constraint: "unique", columns: ["id"] }],
-    },
-    VotesRow,
-  ),
+  agent_action_events: __table({
+    name: 'agent_action_events',
+    indexes: [
+      { accessor: 'by_action', name: 'agent_action_events_action_id_created_at_idx_btree', algorithm: 'btree', columns: [
+        'actionId',
+        'createdAt',
+      ] },
+      { accessor: 'id', name: 'agent_action_events_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'agent_action_events_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+    event: true,
+  }, AgentActionEventsRow),
+  agent_actions: __table({
+    name: 'agent_actions',
+    indexes: [
+      { accessor: 'by_agent_created', name: 'agent_actions_agent_id_created_at_idx_btree', algorithm: 'btree', columns: [
+        'agentId',
+        'createdAt',
+      ] },
+      { accessor: 'by_agent_id', name: 'agent_actions_agent_id_idx_btree', algorithm: 'btree', columns: [
+        'agentId',
+      ] },
+      { accessor: 'id', name: 'agent_actions_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_status', name: 'agent_actions_status_idx_btree', algorithm: 'btree', columns: [
+        'status',
+      ] },
+    ],
+    constraints: [
+      { name: 'agent_actions_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, AgentActionsRow),
+  agents: __table({
+    name: 'agents',
+    indexes: [
+      { accessor: 'id', name: 'agents_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'identity', name: 'agents_identity_idx_btree', algorithm: 'btree', columns: [
+        'identity',
+      ] },
+    ],
+    constraints: [
+      { name: 'agents_id_key', constraint: 'unique', columns: ['id'] },
+      { name: 'agents_identity_key', constraint: 'unique', columns: ['identity'] },
+    ],
+  }, AgentsRow),
+  channels: __table({
+    name: 'channels',
+    indexes: [
+      { accessor: 'id', name: 'channels_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_name', name: 'channels_name_idx_btree', algorithm: 'btree', columns: [
+        'name',
+      ] },
+    ],
+    constraints: [
+      { name: 'channels_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, ChannelsRow),
+  config: __table({
+    name: 'config',
+    indexes: [
+      { accessor: 'key', name: 'config_key_idx_btree', algorithm: 'btree', columns: [
+        'key',
+      ] },
+    ],
+    constraints: [
+      { name: 'config_key_key', constraint: 'unique', columns: ['key'] },
+    ],
+  }, ConfigRow),
+  discovered_tasks: __table({
+    name: 'discovered_tasks',
+    indexes: [
+      { accessor: 'by_created_at', name: 'discovered_tasks_created_at_idx_btree', algorithm: 'btree', columns: [
+        'createdAt',
+      ] },
+      { accessor: 'id', name: 'discovered_tasks_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_priority', name: 'discovered_tasks_priority_idx_btree', algorithm: 'btree', columns: [
+        'priority',
+      ] },
+      { accessor: 'by_status', name: 'discovered_tasks_status_idx_btree', algorithm: 'btree', columns: [
+        'status',
+      ] },
+    ],
+    constraints: [
+      { name: 'discovered_tasks_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, DiscoveredTasksRow),
+  dispatch_runs: __table({
+    name: 'dispatch_runs',
+    indexes: [
+      { accessor: 'id', name: 'dispatch_runs_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'dispatch_runs_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, DispatchRunsRow),
+  evaluation_dimensions: __table({
+    name: 'evaluation_dimensions',
+    indexes: [
+      { accessor: 'by_active', name: 'evaluation_dimensions_active_sort_order_idx_btree', algorithm: 'btree', columns: [
+        'active',
+        'sortOrder',
+      ] },
+      { accessor: 'id', name: 'evaluation_dimensions_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'evaluation_dimensions_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, EvaluationDimensionsRow),
+  idea_feedback: __table({
+    name: 'idea_feedback',
+    indexes: [
+      { accessor: 'id', name: 'idea_feedback_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_idea_id', name: 'idea_feedback_idea_id_idx_btree', algorithm: 'btree', columns: [
+        'ideaId',
+      ] },
+    ],
+    constraints: [
+      { name: 'idea_feedback_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, IdeaFeedbackRow),
+  ideas: __table({
+    name: 'ideas',
+    indexes: [
+      { accessor: 'id', name: 'ideas_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_status', name: 'ideas_status_idx_btree', algorithm: 'btree', columns: [
+        'status',
+      ] },
+    ],
+    constraints: [
+      { name: 'ideas_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, IdeasRow),
+  identity_roles: __table({
+    name: 'identity_roles',
+    indexes: [
+      { accessor: 'identity', name: 'identity_roles_identity_idx_btree', algorithm: 'btree', columns: [
+        'identity',
+      ] },
+    ],
+    constraints: [
+      { name: 'identity_roles_identity_key', constraint: 'unique', columns: ['identity'] },
+    ],
+  }, IdentityRolesRow),
+  messages: __table({
+    name: 'messages',
+    indexes: [
+      { accessor: 'by_channel', name: 'messages_channel_id_created_at_idx_btree', algorithm: 'btree', columns: [
+        'channelId',
+        'createdAt',
+      ] },
+      { accessor: 'id', name: 'messages_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'messages_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, MessagesRow),
+  project_channels: __table({
+    name: 'project_channels',
+    indexes: [
+      { accessor: 'project_id', name: 'project_channels_project_id_idx_btree', algorithm: 'btree', columns: [
+        'projectId',
+      ] },
+    ],
+    constraints: [
+      { name: 'project_channels_project_id_key', constraint: 'unique', columns: ['projectId'] },
+    ],
+  }, ProjectChannelsRow),
+  project_messages: __table({
+    name: 'project_messages',
+    indexes: [
+      { accessor: 'id', name: 'project_messages_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_project', name: 'project_messages_project_id_idx_btree', algorithm: 'btree', columns: [
+        'projectId',
+      ] },
+    ],
+    constraints: [
+      { name: 'project_messages_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, ProjectMessagesRow),
+  project_plan_feedback: __table({
+    name: 'project_plan_feedback',
+    indexes: [
+      { accessor: 'id', name: 'project_plan_feedback_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_project_id', name: 'project_plan_feedback_project_id_idx_btree', algorithm: 'btree', columns: [
+        'projectId',
+      ] },
+    ],
+    constraints: [
+      { name: 'project_plan_feedback_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, ProjectPlanFeedbackRow),
+  projects: __table({
+    name: 'projects',
+    indexes: [
+      { accessor: 'id', name: 'projects_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_source_idea_id', name: 'projects_source_idea_id_idx_btree', algorithm: 'btree', columns: [
+        'sourceIdeaId',
+      ] },
+    ],
+    constraints: [
+      { name: 'projects_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, ProjectsRow),
+  task_dependencies: __table({
+    name: 'task_dependencies',
+    indexes: [
+      { accessor: 'by_depends_on_id', name: 'task_dependencies_depends_on_id_idx_btree', algorithm: 'btree', columns: [
+        'dependsOnId',
+      ] },
+      { accessor: 'id', name: 'task_dependencies_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_task_id', name: 'task_dependencies_task_id_idx_btree', algorithm: 'btree', columns: [
+        'taskId',
+      ] },
+    ],
+    constraints: [
+      { name: 'task_dependencies_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, TaskDependenciesRow),
+  task_review_validations: __table({
+    name: 'task_review_validations',
+    indexes: [
+      { accessor: 'id', name: 'task_review_validations_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_review_id', name: 'task_review_validations_review_id_idx_btree', algorithm: 'btree', columns: [
+        'reviewId',
+      ] },
+    ],
+    constraints: [
+      { name: 'task_review_validations_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, TaskReviewValidationsRow),
+  task_reviews: __table({
+    name: 'task_reviews',
+    indexes: [
+      { accessor: 'id', name: 'task_reviews_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_task_id', name: 'task_reviews_task_id_idx_btree', algorithm: 'btree', columns: [
+        'taskId',
+      ] },
+    ],
+    constraints: [
+      { name: 'task_reviews_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, TaskReviewsRow),
+  tasks: __table({
+    name: 'tasks',
+    indexes: [
+      { accessor: 'by_assigned_to', name: 'tasks_assigned_to_idx_btree', algorithm: 'btree', columns: [
+        'assignedTo',
+      ] },
+      { accessor: 'id', name: 'tasks_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_priority', name: 'tasks_priority_idx_btree', algorithm: 'btree', columns: [
+        'priority',
+      ] },
+      { accessor: 'by_project_id', name: 'tasks_project_id_idx_btree', algorithm: 'btree', columns: [
+        'projectId',
+      ] },
+      { accessor: 'by_status', name: 'tasks_status_idx_btree', algorithm: 'btree', columns: [
+        'status',
+      ] },
+    ],
+    constraints: [
+      { name: 'tasks_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, TasksRow),
+  voice_announcements: __table({
+    name: 'voice_announcements',
+    indexes: [
+      { accessor: 'by_agent', name: 'voice_announcements_agent_id_created_at_idx_btree', algorithm: 'btree', columns: [
+        'agentId',
+        'createdAt',
+      ] },
+      { accessor: 'id', name: 'voice_announcements_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_status', name: 'voice_announcements_status_created_at_idx_btree', algorithm: 'btree', columns: [
+        'status',
+        'createdAt',
+      ] },
+    ],
+    constraints: [
+      { name: 'voice_announcements_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, VoiceAnnouncementsRow),
+  votes: __table({
+    name: 'votes',
+    indexes: [
+      { accessor: 'id', name: 'votes_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+      { accessor: 'by_idea_agent', name: 'votes_idea_id_agent_id_idx_btree', algorithm: 'btree', columns: [
+        'ideaId',
+        'agentId',
+      ] },
+      { accessor: 'by_idea', name: 'votes_idea_id_idx_btree', algorithm: 'btree', columns: [
+        'ideaId',
+      ] },
+    ],
+    constraints: [
+      { name: 'votes_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, VotesRow),
 });
 
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
@@ -498,6 +444,8 @@ const reducersSchema = __reducers(
   __reducerSchema("add_task_dependency", AddTaskDependencyReducer),
   __reducerSchema("assign_human_role", AssignHumanRoleReducer),
   __reducerSchema("claim_task", ClaimTaskReducer),
+  __reducerSchema("complete_review_action", CompleteReviewActionReducer),
+  __reducerSchema("complete_validate_review_action", CompleteValidateReviewActionReducer),
   __reducerSchema("create_project", CreateProjectReducer),
   __reducerSchema("create_task", CreateTaskReducer),
   __reducerSchema("discover_task", DiscoverTaskReducer),
@@ -505,11 +453,12 @@ const reducersSchema = __reducers(
   __reducerSchema("finalize_onboarding", FinalizeOnboardingReducer),
   __reducerSchema("finalize_voice_announcement", FinalizeVoiceAnnouncementReducer),
   __reducerSchema("heartbeat", HeartbeatReducer),
-  __reducerSchema("issue_agent_action", IssueAgentActionReducer),
   __reducerSchema("mark_idea_implemented", MarkIdeaImplementedReducer),
   __reducerSchema("open_idea_voting", OpenIdeaVotingReducer),
   __reducerSchema("propose_idea", ProposeIdeaReducer),
   __reducerSchema("register_agent", RegisterAgentReducer),
+  __reducerSchema("report_action_run_finished", ReportActionRunFinishedReducer),
+  __reducerSchema("report_action_run_started", ReportActionRunStartedReducer),
   __reducerSchema("resubmit_idea_revision", ResubmitIdeaRevisionReducer),
   __reducerSchema("review_discovered_task", ReviewDiscoveredTaskReducer),
   __reducerSchema("review_idea_human", ReviewIdeaHumanReducer),
@@ -518,7 +467,9 @@ const reducersSchema = __reducers(
   __reducerSchema("seed_voice_announcements", SeedVoiceAnnouncementsReducer),
   __reducerSchema("send_message", SendMessageReducer),
   __reducerSchema("send_project_message", SendProjectMessageReducer),
+  __reducerSchema("set_agent_dispatch_cooldown", SetAgentDispatchCooldownReducer),
   __reducerSchema("set_agent_status", SetAgentStatusReducer),
+  __reducerSchema("set_dispatch_cooldown", SetDispatchCooldownReducer),
   __reducerSchema("submit_project_plan_ref", SubmitProjectPlanRefReducer),
   __reducerSchema("update_agent_action", UpdateAgentActionReducer),
   __reducerSchema("update_agent_bio", UpdateAgentBioReducer),
@@ -530,11 +481,7 @@ const reducersSchema = __reducers(
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */
 const proceduresSchema = __procedures(
-  __procedureSchema(
-    "generate_voice",
-    GenerateVoiceProcedure.params,
-    GenerateVoiceProcedure.returnType,
-  ),
+  __procedureSchema("generate_voice", GenerateVoiceProcedure.params, GenerateVoiceProcedure.returnType),
 );
 
 /** The remote SpacetimeDB module schema, both runtime and type information. */
@@ -552,9 +499,7 @@ const REMOTE_MODULE = {
 >;
 
 /** The tables available in this remote SpacetimeDB module. Each table reference doubles as a query builder. */
-export const tables: __QueryBuilder<typeof tablesSchema.schemaType> = __makeQueryBuilder(
-  tablesSchema.schemaType,
-);
+export const tables: __QueryBuilder<typeof tablesSchema.schemaType> = __makeQueryBuilder(tablesSchema.schemaType);
 
 /** The reducers available in this remote SpacetimeDB module. */
 export const reducers = __convertToAccessorMap(reducersSchema.reducersType.reducers);
@@ -583,10 +528,7 @@ export class DbConnectionBuilder extends __DbConnectionBuilder<DbConnection> {}
 export class DbConnection extends __DbConnectionImpl<typeof REMOTE_MODULE> {
   /** Creates a new {@link DbConnectionBuilder} to configure and connect to the remote SpacetimeDB instance. */
   static builder = (): DbConnectionBuilder => {
-    return new DbConnectionBuilder(
-      REMOTE_MODULE,
-      (config: __DbConnectionConfig<typeof REMOTE_MODULE>) => new DbConnection(config),
-    );
+    return new DbConnectionBuilder(REMOTE_MODULE, (config: __DbConnectionConfig<typeof REMOTE_MODULE>) => new DbConnection(config));
   };
 
   /** Creates a new {@link SubscriptionBuilder} to configure a subscription to the remote SpacetimeDB instance. */
@@ -594,3 +536,4 @@ export class DbConnection extends __DbConnectionImpl<typeof REMOTE_MODULE> {
     return new SubscriptionBuilder(this);
   };
 }
+

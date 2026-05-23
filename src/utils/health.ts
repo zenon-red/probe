@@ -3,6 +3,7 @@ import { CommandContext, type Agent } from "~/utils/context.js";
 import { AgentRole } from "~/utils/enums.js";
 import { getCachedToken } from "~/utils/token-cache.js";
 import { getWalletInfo } from "~/utils/wallet.js";
+import { errorMessage } from "~/utils/errors.js";
 
 export type HealthStatus = "pass" | "warn" | "fail" | "manual_required";
 
@@ -45,7 +46,7 @@ export async function runHealthChecks(options: {
     config = await getConfig();
     addCheck("config", "pass", "Loaded Probe configuration");
   } catch (err) {
-    addCheck("config", "fail", err instanceof Error ? err.message : "Failed to load configuration");
+    addCheck("config", "fail", errorMessage(err, "Failed to load configuration"));
   }
 
   const walletName = options.wallet || config?.defaultWallet;
@@ -104,7 +105,7 @@ export async function runHealthChecks(options: {
           module: moduleName,
           wallet: walletName,
           token,
-          subscribe: options.includeAgent ?? false,
+          subscribe: options.includeAgent ? ["SELECT * FROM agents", "SELECT * FROM config"] : [],
         });
         identity = ctx.identity?.toHexString() || "unknown";
         addCheck("nexus.connect", "pass", `Connected as ${identity}`);
@@ -125,7 +126,7 @@ export async function runHealthChecks(options: {
           }
         }
       } catch (err) {
-        addCheck("nexus.connect", "fail", err instanceof Error ? err.message : "Connection failed");
+        addCheck("nexus.connect", "fail", errorMessage(err, "Connection failed"));
       }
     } else {
       addCheck("nexus.connect", "warn", "Skipped connection check (no valid token)");

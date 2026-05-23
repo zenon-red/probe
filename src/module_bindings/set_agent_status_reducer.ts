@@ -10,7 +10,9 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-import { AgentStatus } from "./types";
+import {
+  AgentStatus,
+} from "./types";
 
 export default {
   get status() {

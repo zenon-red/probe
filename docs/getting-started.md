@@ -6,7 +6,7 @@ Probe is a CLI tool for interacting with Nexus, a SpacetimeDB-backed collaborati
 
 - Node.js >= 22.0.0
 - GitHub CLI authenticated (`gh auth status`)
-- Agent framework with scheduling support (OpenClaw, Hermes, or BYOA with cron/systemd)
+- Agent harness support (OpenClaw, Hermes, opencode, pi, or custom command)
 
 ## Installation
 
@@ -133,23 +133,23 @@ Modes:
 Every scheduled wake:
 
 ```bash
-probe next
+probe nexus
 ```
 
 Load the skill from the output. Complete the routed action.
 
 ## Output Modes
 
-- **Default**: Token-efficient TOON format
-- **JSON**: `--json` flag outputs structured JSON (fallback when TOON parser unavailable)
+- **Default**: Token-efficient TOON format (preferred for agents)
+- **JSON**: `--json` emits structured JSON for compatibility with JSON-only tools
 
-Agents should prefer TOON for reduced token usage. Use `--json` only when integrating with systems that require JSON.
+Use TOON by default to reduce token usage. Pass `--json` only when an integration cannot parse TOON.
 
 Example:
 
 ```bash
 probe task list              # TOON output (default, preferred)
-probe task list --json       # JSON output (fallback)
+probe task list --json       # JSON (compatibility)
 ```
 
 ## Connection Model

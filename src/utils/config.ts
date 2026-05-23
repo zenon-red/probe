@@ -52,3 +52,13 @@ export async function getTokenCacheDir(): Promise<string> {
   const config = await getConfig();
   return config.tokenCacheDir;
 }
+
+export function resolveSpacetimeArgs(
+  overrides: { host?: string; module?: string },
+  config: NexusConfig,
+): { host: string; module: string } {
+  return {
+    host: overrides.host ?? config.spacetime.host,
+    module: overrides.module ?? config.spacetime.module,
+  };
+}

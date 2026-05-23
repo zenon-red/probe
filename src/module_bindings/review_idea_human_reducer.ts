@@ -10,7 +10,9 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-import { ReviewDecision } from "./types";
+import {
+  ReviewDecision,
+} from "./types";
 
 export default {
   ideaId: __t.u64(),

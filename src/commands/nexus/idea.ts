@@ -10,8 +10,8 @@ import {
 import { IdeaStatus } from "~/utils/enums.js";
 import { currentAgentForIdentity } from "~/commands/nexus/agent-handlers.js";
 import { printHelp } from "~/utils/help.js";
-import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
-import { error, isJsonMode, setJsonMode, success } from "~/utils/output.js";
+import { errorMessage, failWithConnectionOrUnexpected } from "~/utils/errors.js";
+import { applyJsonMode, error, isJsonMode, success } from "~/utils/output.js";
 import { toMicros } from "~/utils/time.js";
 import { toonList } from "~/utils/toon.js";
 
@@ -190,7 +190,7 @@ export default defineCommand({
     module: { type: "string", description: "Module name" },
   },
   async run({ args }) {
-    if (args.json) setJsonMode(true);
+    applyJsonMode(args);
 
     if (!args.action) {
       printHelp({
@@ -261,8 +261,7 @@ export default defineCommand({
       switch (action) {
         case "list": {
           await using ctx = await CommandContext.create({
-            host: args.host,
-            module: args.module,
+            subscribe: ["SELECT * FROM ideas"],
           });
           let ideas = ctx.iter<Idea>("ideas");
           const limit = args.limit ? parseInt(args.limit, 10) : undefined;
@@ -291,7 +290,10 @@ export default defineCommand({
           }
 
           await withAuth(
-            { host: args.host, module: args.module, wallet: args.wallet },
+            {
+              wallet: args.wallet,
+              subscribe: ["SELECT * FROM agents", "SELECT * FROM votes", "SELECT * FROM ideas"],
+            },
             async (ctx) => {
               const myAgent = currentAgentForIdentity(ctx);
               if (!myAgent) {
@@ -328,8 +330,7 @@ export default defineCommand({
           if (!ideaId) error("IDEA_ID_REQUIRED", "Idea ID required");
 
           await using ctx = await CommandContext.create({
-            host: args.host,
-            module: args.module,
+            subscribe: ["SELECT * FROM ideas"],
           });
           const idea = ctx.iter<Idea>("ideas").find((i) => i.id.toString() === ideaId);
           if (!idea) error("IDEA_NOT_FOUND", `Idea not found: ${ideaId}`);
@@ -361,8 +362,7 @@ export default defineCommand({
 
         case "dimensions": {
           await using ctx = await CommandContext.create({
-            host: args.host,
-            module: args.module,
+            subscribe: ["SELECT * FROM evaluation_dimensions"],
           });
           const dimensions = ctx
             .iter<EvaluationDimension>("evaluation_dimensions")
@@ -399,10 +399,13 @@ export default defineCommand({
 
           try {
             await withAuth(
-              { host: args.host, module: args.module, wallet: args.wallet },
+              {
+                wallet: args.wallet,
+                subscribe: ["SELECT * FROM agents", "SELECT * FROM ideas"],
+              },
               async (ctx) => {
                 const myAgent = currentAgentForIdentity(ctx);
-                await callReducer(ctx, "proposeIdea", {
+                await callReducer(ctx, ctx.conn.reducers.proposeIdea, {
                   title,
                   description,
                   category,
@@ -449,7 +452,7 @@ export default defineCommand({
               );
             }
           } catch (err) {
-            error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+            error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }
           break;
         }
@@ -461,12 +464,15 @@ export default defineCommand({
 
           try {
             await withAuth(
-              { host: args.host, module: args.module, wallet: args.wallet },
+              {
+                wallet: args.wallet,
+                subscribe: ["SELECT * FROM evaluation_dimensions"],
+              },
               async (ctx) => {
                 const activeDimensions = ctx.iter<EvaluationDimension>("evaluation_dimensions");
                 validateDimensionScores(dimensionScores, activeDimensions);
 
-                await callReducer(ctx, "voteIdea", {
+                await callReducer(ctx, ctx.conn.reducers.voteIdea, {
                   ideaId: BigInt(ideaId),
                   scores: dimensionScores,
                 });
@@ -484,7 +490,7 @@ export default defineCommand({
               );
             }
           } catch (err) {
-            error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+            error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }
           break;
         }
@@ -497,7 +503,7 @@ export default defineCommand({
           );
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
+      const message = errorMessage(err);
       failWithConnectionOrUnexpected(message);
     }
   },

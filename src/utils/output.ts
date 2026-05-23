@@ -27,6 +27,10 @@ export function setJsonMode(enabled: boolean) {
   outputModeStorage.enterWith({ jsonMode: enabled });
 }
 
+export function applyJsonMode(args: { json?: boolean }): void {
+  if (args.json) setJsonMode(true);
+}
+
 export function isJsonMode(): boolean {
   return outputModeStorage.getStore()?.jsonMode === true || jsonModeFallback;
 }

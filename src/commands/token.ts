@@ -1,7 +1,8 @@
 import { defineCommand } from "citty";
 import { printHelp } from "~/utils/help.js";
-import { error, info, isJsonMode, setJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, info, isJsonMode, success } from "~/utils/output.js";
 import { clearCachedToken, getCachedToken } from "~/utils/token-cache.js";
+import { errorMessage } from "~/utils/errors.js";
 
 export default defineCommand({
   meta: {
@@ -26,9 +27,7 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    if (args.json) {
-      setJsonMode(true);
-    }
+    applyJsonMode(args);
 
     const name = args.name;
 
@@ -91,7 +90,7 @@ export default defineCommand({
         }
       }
     } catch (err) {
-      error("TOKEN_ERROR", err instanceof Error ? err.message : "Failed to read token");
+      error("TOKEN_ERROR", errorMessage(err, "Failed to read token"));
     }
   },
 });

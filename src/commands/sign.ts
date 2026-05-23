@@ -3,8 +3,9 @@ import { readFile } from "node:fs/promises";
 import { defineCommand } from "citty";
 import { resolvePasswordInput } from "~/utils/credentials.js";
 import { printHelp } from "~/utils/help.js";
-import { error, isJsonMode, setJsonMode, success, successMessage } from "~/utils/output.js";
+import { applyJsonMode, error, isJsonMode, success, successMessage } from "~/utils/output.js";
 import { loadWallet } from "~/utils/wallet.js";
+import { errorMessage } from "~/utils/errors.js";
 
 export default defineCommand({
   meta: {
@@ -37,9 +38,7 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    if (args.json) {
-      setJsonMode(true);
-    }
+    applyJsonMode(args);
 
     const name = args.name;
 
@@ -101,7 +100,7 @@ export default defineCommand({
         console.log(`Signature: ${signature.toString("hex")}`);
       }
     } catch (err) {
-      error("SIGN_ERROR", err instanceof Error ? err.message : "Failed to sign message");
+      error("SIGN_ERROR", errorMessage(err, "Failed to sign message"));
     }
   },
 });

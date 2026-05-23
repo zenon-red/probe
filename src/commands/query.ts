@@ -1,9 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { defineCommand } from "citty";
 import { inferTableName, TABLE_DECODERS } from "~/generated/decoders.js";
-import { getConfig } from "~/utils/config.js";
+import { getConfig, resolveSpacetimeArgs } from "~/utils/config.js";
 import { printHelp } from "~/utils/help.js";
-import { error, isJsonMode, setJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, isJsonMode, success } from "~/utils/output.js";
 import {
   executeSqlRequest,
   extractColumnNames,
@@ -13,6 +13,8 @@ import {
 } from "~/utils/sql.js";
 import { getCachedToken } from "~/utils/token-cache.js";
 import { getWalletInfo } from "~/utils/wallet.js";
+import { errorMessage } from "~/utils/errors.js";
+import { NETWORK_TIMEOUT } from "~/utils/timeouts.js";
 
 // Known tables derived from generated decoders
 const KNOWN_TABLES = Object.keys(TABLE_DECODERS);
@@ -37,10 +39,10 @@ const handleQueryError = (err: unknown, timeoutMs: number): never => {
     error("SQL_UNAVAILABLE", `SQL request timed out after ${timeoutMs}ms`);
   }
 
-  error("SQL_UNAVAILABLE", err instanceof Error ? err.message : "SQL request failed");
+  error("SQL_UNAVAILABLE", errorMessage(err, "SQL request failed"));
 };
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = NETWORK_TIMEOUT.DEFAULT;
 
 const buildMeta = (results: SqlStatementResult[], durationMs: number) => ({
   duration_ms: durationMs,
@@ -185,9 +187,7 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    if (args.json) {
-      setJsonMode(true);
-    }
+    applyJsonMode(args);
 
     const hasSql = args.sql || args.file;
 
@@ -267,8 +267,7 @@ export default defineCommand({
       error("AUTH_REQUIRED", "No cached token. Run `probe auth <wallet> --save` first.");
     }
 
-    const host = args.host || config.spacetime.host;
-    const moduleName = args.module || config.spacetime.module;
+    const { host, module: moduleName } = resolveSpacetimeArgs(args, config);
     const sql = args.file ? await readFile(args.file, "utf-8") : (args.sql ?? "");
     if (!sql.trim()) {
       error("SQL_REQUIRED", "SQL query is empty");

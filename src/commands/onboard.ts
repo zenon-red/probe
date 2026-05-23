@@ -1,13 +1,12 @@
 import { defineCommand } from "citty";
 import { log } from "@clack/prompts";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { error, info, isJsonMode, note, setJsonMode, success, warning } from "~/utils/output.js";
-import { buildAgenticRuntimePlan } from "~/utils/scheduler-plans.js";
+import { applyJsonMode, error, info, isJsonMode, note, success, warning } from "~/utils/output.js";
 import type { OnboardStep } from "~/utils/onboard/types.js";
 import {
   authenticateStep,
   configureDaemon,
-  configureScheduler,
+  configureHarness,
   createWalletStep,
   createWorkspace,
   installSkillsStep,
@@ -25,7 +24,7 @@ import {
 export default defineCommand({
   meta: {
     name: "onboard",
-    description: "Idempotent agent setup for wallet, auth, registration, and scheduled wakes",
+    description: "Idempotent agent setup for wallet, auth, registration, and harness configuration",
   },
   args: {
     name: {
@@ -71,10 +70,14 @@ export default defineCommand({
       description: "Daemon: auto, systemd, tmux, docker, stateless",
       default: "auto",
     },
-    scheduler: {
+    harness: {
       type: "string",
-      description: "Scheduler: auto, managed, manual",
+      description: "Harness: auto, pi, hermes, openclaw, opencode, custom",
       default: "auto",
+    },
+    "harness-command": {
+      type: "string",
+      description: "Custom harness command (required when --harness custom)",
     },
     "dry-run": {
       type: "boolean",
@@ -88,15 +91,19 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    if (args.json) setJsonMode(true);
+    applyJsonMode(args);
 
-    const allowedSchedulers = new Set(["auto", "managed", "manual"]);
-    if (!allowedSchedulers.has(String(args.scheduler))) {
+    const allowedHarnesses = new Set(["auto", "pi", "hermes", "openclaw", "opencode", "custom"]);
+    if (!allowedHarnesses.has(String(args.harness))) {
       error(
-        "INVALID_SCHEDULER",
-        `Invalid --scheduler value: ${args.scheduler}`,
-        "Use one of: auto, managed, manual",
+        "INVALID_HARNESS",
+        `Invalid --harness value: ${args.harness}`,
+        "Use one of: auto, pi, hermes, openclaw, opencode, custom",
       );
+    }
+
+    if (args.harness === "custom" && !args["harness-command"]) {
+      error("HARNESS_COMMAND_REQUIRED", "--harness-command is required when --harness is custom");
     }
 
     if (forceHelpRequested() || !args.name) {
@@ -105,7 +112,7 @@ export default defineCommand({
         description: "Complete required local and Nexus setup for autonomous participation",
         usage: [
           'probe onboard --name "Alpha Centauri"',
-          'probe onboard --name "Alpha Centauri" --role zeno --dry-run',
+          'probe onboard --name "Alpha Centauri" --role zeno --harness opencode --dry-run',
         ],
         options: [
           { name: "--name", detail: "Required display name" },
@@ -117,7 +124,11 @@ export default defineCommand({
           { name: "--capabilities", detail: "Comma-separated list" },
           { name: "--bio", detail: "Agent bio text" },
           { name: "--daemon", detail: "auto | systemd | tmux | docker | stateless" },
-          { name: "--scheduler", detail: "auto | managed | manual" },
+          { name: "--harness", detail: "auto | pi | hermes | openclaw | opencode | custom" },
+          {
+            name: "--harness-command",
+            detail: "Custom harness binary (required with --harness custom)",
+          },
           { name: "--dry-run", detail: "Plan only, no side effects" },
           { name: "--json", detail: "JSON output" },
         ],
@@ -193,8 +204,8 @@ export default defineCommand({
     // 13. Daemon
     await configureDaemon(state);
 
-    // 14. Scheduler
-    await configureScheduler(state);
+    // 14. Harness (replaces scheduler)
+    await configureHarness(state);
 
     // 15. Announcement
     await sendAnnouncement(state);
@@ -219,7 +230,7 @@ export default defineCommand({
         role: s.role,
         wallet: s.walletName,
         next: ok
-          ? "Run probe next on scheduled wakes"
+          ? "Run probe nexus to start the daemon (dispatch is automatic)"
           : hasManualRequired
             ? "Complete manual-required steps and rerun probe onboard"
             : "Fix failed steps and rerun probe onboard",
@@ -246,22 +257,6 @@ export default defineCommand({
         if (s.mnemonic) {
           warning("Save this mnemonic securely — it will not be shown again");
           info(s.mnemonic);
-        }
-
-        const schedulerStep = s.steps.find(
-          (st) => st.step === "scheduler" && st.status === "manual_required",
-        );
-        if (schedulerStep) {
-          warning("Scheduler setup required — autonomous participation blocked");
-          note(
-            buildAgenticRuntimePlan({
-              agentId: s.agentId,
-              role: s.role,
-              intervalMinutes: 30,
-              prompt: "Run probe next and follow its instructions exactly.",
-            }),
-            "Agentic Runtime Setup",
-          );
         }
       }
     }

@@ -1,12 +1,14 @@
 import { defineCommand } from "citty";
 import { CommandContext, callReducer, type DiscoveredTask, withAuth } from "~/utils/context.js";
-import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
+import { errorMessage, failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { printHelp } from "~/utils/help.js";
-import { error, isJsonMode, setJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, isJsonMode, success } from "~/utils/output.js";
 import { formatTimestamp, toMicros } from "~/utils/time.js";
 import { toonList } from "~/utils/toon.js";
 
-const toDiscoveryDecision = (input: string) => {
+import type { DiscoveryDecision } from "~/module_bindings/types.js";
+
+const toDiscoveryDecision = (input: string): DiscoveryDecision | null => {
   const value = input.toLowerCase();
   if (value === "approve") return { tag: "ApproveAsTask" };
   if (value === "reject") return { tag: "Reject" };
@@ -71,7 +73,7 @@ export default defineCommand({
     module: { type: "string", description: "Module name" },
   },
   async run({ args }) {
-    if (args.json) setJsonMode(true);
+    applyJsonMode(args);
 
     if (!args.action) {
       printHelp({
@@ -126,20 +128,17 @@ export default defineCommand({
           }
 
           try {
-            await withAuth(
-              { host: args.host, module: args.module, wallet: args.wallet },
-              async (ctx) => {
-                await callReducer(ctx, "discoverTask", {
-                  currentTaskId: BigInt(args.task!),
-                  projectId: BigInt(args.project!),
-                  title: args.title,
-                  description: args.description || "",
-                  priority: 5,
-                  taskType: args.type || "improvement",
-                  severity: args.severity || "medium",
-                });
-              },
-            );
+            await withAuth({ wallet: args.wallet, subscribe: [] }, async (ctx) => {
+              await callReducer(ctx, ctx.conn.reducers.discoverTask, {
+                currentTaskId: BigInt(args.task!),
+                projectId: BigInt(args.project!),
+                title: args.title!,
+                description: args.description || "",
+                priority: 5,
+                taskType: args.type || "improvement",
+                severity: args.severity || "medium",
+              });
+            });
             success({ reported: true, title: args.title });
             if (!isJsonMode()) {
               console.log(
@@ -153,7 +152,7 @@ export default defineCommand({
               );
             }
           } catch (err) {
-            error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+            error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }
           break;
         }
@@ -182,16 +181,13 @@ export default defineCommand({
           }
 
           try {
-            await withAuth(
-              { host: args.host, module: args.module, wallet: args.wallet },
-              async (ctx) => {
-                await callReducer(ctx, "reviewDiscoveredTask", {
-                  discoveryId: BigInt(discId),
-                  decision: decisionValue,
-                  reason: args.reason || undefined,
-                });
-              },
-            );
+            await withAuth({ wallet: args.wallet }, async (ctx) => {
+              await callReducer(ctx, ctx.conn.reducers.reviewDiscoveredTask, {
+                discoveryId: BigInt(discId),
+                decision: decisionValue,
+                reason: args.reason || undefined,
+              });
+            });
             success({ reviewed: true, id: discId, decision });
             if (!isJsonMode()) {
               console.log(
@@ -205,16 +201,13 @@ export default defineCommand({
               );
             }
           } catch (err) {
-            error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+            error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }
           break;
         }
 
         case "list": {
-          await using ctx = await CommandContext.create({
-            host: args.host,
-            module: args.module,
-          });
+          await using ctx = await CommandContext.create({});
           let discovered = ctx.iter<DiscoveredTask>("discovered_tasks");
           const limit = args.limit ? parseInt(args.limit, 10) : undefined;
 
@@ -261,8 +254,7 @@ export default defineCommand({
           if (!discoveryId) error("DISCOVERY_ID_REQUIRED", "Discovery ID required");
 
           await using ctx = await CommandContext.create({
-            host: args.host,
-            module: args.module,
+            subscribe: ["SELECT * FROM discovered_tasks"],
           });
           const discovery = ctx
             .iter<DiscoveredTask>("discovered_tasks")
@@ -298,7 +290,7 @@ export default defineCommand({
           error("INVALID_ACTION", `Invalid action: ${action}`, "Use: report, review, list, get");
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
+      const message = errorMessage(err);
       failWithConnectionOrUnexpected(message);
     }
   },

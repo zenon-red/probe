@@ -6,7 +6,7 @@ import {
   type TaskDependency,
   withAuth,
 } from "~/utils/context.js";
-import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
+import { errorMessage, failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { TaskStatus } from "~/utils/enums.js";
 import { error, isJsonMode, success } from "~/utils/output.js";
 import { toMicros } from "~/utils/time.js";
@@ -70,8 +70,7 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
     switch (action) {
       case "list": {
         await using ctx = await CommandContext.create({
-          host: args.host,
-          module: args.module,
+          subscribe: ["SELECT * FROM tasks"],
         });
         let tasks = ctx.iter<Task>("tasks");
         const statusFilter = args.status;
@@ -114,8 +113,7 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
 
       case "ready": {
         await using ctx = await CommandContext.create({
-          host: args.host,
-          module: args.module,
+          subscribe: ["SELECT * FROM tasks", "SELECT * FROM task_dependencies"],
         });
         const tasks = ctx.iter<Task>("tasks");
         const deps = ctx.iter<TaskDependency>("task_dependencies");
@@ -192,10 +190,7 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
         const taskId = args.id;
         if (!taskId) error("TASK_ID_REQUIRED", "Task ID required");
 
-        await using ctx = await CommandContext.create({
-          host: args.host,
-          module: args.module,
-        });
+        await using ctx = await CommandContext.create({});
         const task = ctx.iter<Task>("tasks").find((t) => t.id.toString() === taskId);
         if (!task) error("TASK_NOT_FOUND", `Task not found: ${taskId}`);
 
@@ -227,19 +222,16 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
         if (priority < 1 || priority > 10) error("INVALID_PRIORITY", "Priority must be 1-10");
 
         try {
-          await withAuth(
-            { host: args.host, module: args.module, wallet: args.wallet },
-            async (ctx) => {
-              await callReducer(ctx, "createTask", {
-                projectId: BigInt(args.project as string),
-                title: args.title,
-                description: args.description || "",
-                priority,
-                sourceIdeaId: undefined,
-                githubIssueUrl: args["github-issue-url"],
-              });
-            },
-          );
+          await withAuth({ wallet: args.wallet, subscribe: [] }, async (ctx) => {
+            await callReducer(ctx, ctx.conn.reducers.createTask, {
+              projectId: BigInt(args.project as string),
+              title: args.title!,
+              description: args.description || "",
+              priority,
+              sourceIdeaId: undefined,
+              githubIssueUrl: args["github-issue-url"],
+            });
+          });
           success({
             created: true,
             projectId: args.project,
@@ -258,7 +250,7 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
             );
           }
         } catch (err) {
-          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+          error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
         break;
       }
@@ -272,9 +264,12 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
           let contributingUrl: string | undefined;
 
           await withAuth(
-            { host: args.host, module: args.module, wallet: args.wallet },
+            {
+              wallet: args.wallet,
+              subscribe: ["SELECT * FROM tasks", "SELECT * FROM projects"],
+            },
             async (ctx) => {
-              await callReducer(ctx, "claimTask", { taskId: BigInt(taskId) });
+              await callReducer(ctx, ctx.conn.reducers.claimTask, { taskId: BigInt(taskId) });
 
               const task = ctx.iter<Task>("tasks").find((t) => t.id.toString() === taskId);
               const project = task
@@ -332,7 +327,7 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
             );
           }
         } catch (err) {
-          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+          error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
         break;
       }
@@ -344,17 +339,14 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
           error("UPDATE_REQUIRED", "--status or --github-pr-url required");
 
         try {
-          await withAuth(
-            { host: args.host, module: args.module, wallet: args.wallet },
-            async (ctx) => {
-              await callReducer(ctx, "updateTaskStatus", {
-                taskId: BigInt(taskId),
-                status: args.status ? TaskStatus.fromString(args.status) : (undefined as never),
-                githubPrUrl: args["github-pr-url"],
-                archiveReason: undefined,
-              });
-            },
-          );
+          await withAuth({ wallet: args.wallet, subscribe: [] }, async (ctx) => {
+            await callReducer(ctx, ctx.conn.reducers.updateTaskStatus, {
+              taskId: BigInt(taskId),
+              status: args.status ? TaskStatus.fromString(args.status) : (undefined as never),
+              githubPrUrl: args["github-pr-url"],
+              archiveReason: undefined,
+            });
+          });
           success({
             updated: true,
             taskId,
@@ -373,7 +365,7 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
             );
           }
         } catch (err) {
-          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+          error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
         break;
       }
@@ -383,17 +375,14 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
         if (!taskId) error("TASK_ID_REQUIRED", "Task ID required");
 
         try {
-          await withAuth(
-            { host: args.host, module: args.module, wallet: args.wallet },
-            async (ctx) => {
-              await callReducer(ctx, "updateTaskStatus", {
-                taskId: BigInt(taskId),
-                status: { tag: "Review" },
-                githubPrUrl: args["github-pr-url"],
-                archiveReason: undefined,
-              });
-            },
-          );
+          await withAuth({ wallet: args.wallet, subscribe: [] }, async (ctx) => {
+            await callReducer(ctx, ctx.conn.reducers.updateTaskStatus, {
+              taskId: BigInt(taskId),
+              status: { tag: "Review" },
+              githubPrUrl: args["github-pr-url"],
+              archiveReason: undefined,
+            });
+          });
           success({
             reviewed: true,
             taskId,
@@ -412,7 +401,7 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
             );
           }
         } catch (err) {
-          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+          error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
         break;
       }
@@ -424,16 +413,13 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
 
         if (args["add-dep"]) {
           try {
-            await withAuth(
-              { host: args.host, module: args.module, wallet: args.wallet },
-              async (ctx) => {
-                await callReducer(ctx, "addTaskDependency", {
-                  taskId: taskIdBigInt,
-                  dependsOnId: BigInt(args["add-dep"] as string),
-                  dependencyType: { tag: "Blocks" },
-                });
-              },
-            );
+            await withAuth({ wallet: args.wallet, subscribe: [] }, async (ctx) => {
+              await callReducer(ctx, ctx.conn.reducers.addTaskDependency, {
+                taskId: taskIdBigInt,
+                dependsOnId: BigInt(args["add-dep"] as string),
+                dependencyType: { tag: "Blocks" },
+              });
+            });
             success({ added: true, taskId, dependsOn: args["add-dep"] });
             if (!isJsonMode()) {
               console.log(
@@ -447,12 +433,11 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
               );
             }
           } catch (err) {
-            error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+            error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }
         } else if (args.list) {
           await using ctx = await CommandContext.create({
-            host: args.host,
-            module: args.module,
+            subscribe: ["SELECT * FROM task_dependencies"],
           });
           const deps = ctx.iter<TaskDependency>("task_dependencies");
           const taskDeps = deps.filter(
@@ -487,7 +472,10 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
         const timeout = Math.min(parseInt(args.timeout || "60", 10), 300);
 
         await withAuth(
-          { host: args.host, module: args.module, wallet: args.wallet },
+          {
+            wallet: args.wallet,
+            subscribe: ["SELECT * FROM tasks"],
+          },
           async (ctx) => {
             if (!isJsonMode()) {
               console.log(
@@ -560,7 +548,7 @@ export const runTaskAction = async (args: TaskCommandArgs): Promise<void> => {
         );
     }
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = errorMessage(err);
     failWithConnectionOrUnexpected(message);
   }
 };

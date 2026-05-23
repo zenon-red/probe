@@ -1,9 +1,10 @@
 import { defineCommand } from "citty";
 import { resolveMnemonicInput, resolvePasswordInput } from "~/utils/credentials.js";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { error, isJsonMode, setJsonMode, success, successMessage } from "~/utils/output.js";
+import { applyJsonMode, error, isJsonMode, success, successMessage } from "~/utils/output.js";
 import { loadUserConfig, saveUserConfig } from "~/utils/user-config.js";
 import { importWallet, listWallets } from "~/utils/wallet.js";
+import { errorMessage } from "~/utils/errors.js";
 
 export default defineCommand({
   meta: {
@@ -40,9 +41,7 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    if (args.json) {
-      setJsonMode(true);
-    }
+    applyJsonMode(args);
 
     const name = args.name;
 
@@ -117,7 +116,7 @@ export default defineCommand({
         }
       }
     } catch (err) {
-      error("WALLET_IMPORT_ERROR", err instanceof Error ? err.message : "Failed to import wallet");
+      error("WALLET_IMPORT_ERROR", errorMessage(err, "Failed to import wallet"));
     }
   },
 });

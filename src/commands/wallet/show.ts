@@ -1,8 +1,9 @@
 import { readFile } from "node:fs/promises";
 import { defineCommand } from "citty";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { error, isJsonMode, setJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, isJsonMode, success } from "~/utils/output.js";
 import { getWalletInfo, loadWallet } from "~/utils/wallet.js";
+import { errorMessage } from "~/utils/errors.js";
 
 export default defineCommand({
   meta: {
@@ -31,9 +32,7 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    if (args.json) {
-      setJsonMode(true);
-    }
+    applyJsonMode(args);
 
     const name = args.name;
 
@@ -109,7 +108,7 @@ export default defineCommand({
         }
       }
     } catch (err) {
-      error("WALLET_LOAD_ERROR", err instanceof Error ? err.message : "Failed to load wallet");
+      error("WALLET_LOAD_ERROR", errorMessage(err, "Failed to load wallet"));
     }
   },
 });

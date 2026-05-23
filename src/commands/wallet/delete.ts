@@ -1,8 +1,9 @@
 import { confirm } from "@clack/prompts";
 import { defineCommand } from "citty";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { error, info, isJsonMode, setJsonMode, success, successMessage } from "~/utils/output.js";
+import { applyJsonMode, error, info, isJsonMode, success, successMessage } from "~/utils/output.js";
 import { deleteWallet, walletExists } from "~/utils/wallet.js";
+import { errorMessage } from "~/utils/errors.js";
 
 export default defineCommand({
   meta: {
@@ -27,9 +28,7 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    if (args.json) {
-      setJsonMode(true);
-    }
+    applyJsonMode(args);
 
     const name = args.name;
 
@@ -75,7 +74,7 @@ export default defineCommand({
         successMessage(`Wallet "${name}" deleted successfully`);
       }
     } catch (err) {
-      error("WALLET_DELETE_ERROR", err instanceof Error ? err.message : "Failed to delete wallet");
+      error("WALLET_DELETE_ERROR", errorMessage(err, "Failed to delete wallet"));
     }
   },
 });

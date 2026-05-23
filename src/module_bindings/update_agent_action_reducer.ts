@@ -10,7 +10,9 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-import { ActionEventType } from "./types";
+import {
+  ActionEventType,
+} from "./types";
 
 export default {
   actionId: __t.u64(),

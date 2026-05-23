@@ -8,13 +8,14 @@ import { exchangeToken, requestChallenge } from "~/utils/oidc.js";
 import {
   error,
   isJsonMode,
-  setJsonMode,
+  applyJsonMode,
   spinner,
   success,
   successMessage,
 } from "~/utils/output.js";
 import { cacheToken, getCachedToken } from "~/utils/token-cache.js";
 import { loadWallet } from "~/utils/wallet.js";
+import { errorMessage } from "~/utils/errors.js";
 
 export default defineCommand({
   meta: {
@@ -55,9 +56,7 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    if (args.json) {
-      setJsonMode(true);
-    }
+    applyJsonMode(args);
 
     const name = args.name;
     const requestedAddress = args["expect-address"];
@@ -164,7 +163,7 @@ export default defineCommand({
 
       address = requestedAddress || walletAddress;
     } catch (err) {
-      error("WALLET_LOAD_ERROR", err instanceof Error ? err.message : "Failed to load wallet");
+      error("WALLET_LOAD_ERROR", errorMessage(err, "Failed to load wallet"));
     }
 
     try {
@@ -217,12 +216,7 @@ export default defineCommand({
         );
       }
     } catch (err) {
-      error(
-        "AUTH_ERROR",
-        err instanceof Error ? err.message : "Authentication failed",
-        undefined,
-        2,
-      );
+      error("AUTH_ERROR", errorMessage(err, "Authentication failed"), undefined, 2);
     }
   },
 });

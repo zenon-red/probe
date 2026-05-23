@@ -23,3 +23,9 @@ export const failWithConnectionOrUnexpected = (message: string): never => {
   }
   error("UNEXPECTED_ERROR", message);
 };
+
+export function errorMessage(err: unknown, fallback?: string): string {
+  if (err instanceof Error) return err.message;
+  if (fallback) return fallback;
+  return String(err);
+}

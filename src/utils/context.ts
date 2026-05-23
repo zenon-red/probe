@@ -18,7 +18,7 @@ export type {
   Vote,
 } from "~/module_bindings/types.js";
 
-import { getConfig } from "./config.js";
+import { getConfig, resolveSpacetimeArgs } from "./config.js";
 import { error } from "./output.js";
 import { getCachedToken } from "./token-cache.js";
 import { getWalletInfo } from "./wallet.js";
@@ -30,7 +30,9 @@ export interface CommandContextOptions {
   module?: string;
   wallet?: string;
   token?: string;
-  subscribe?: boolean;
+  subscribe?: string[];
+  /** Factory that receives the connected identity and returns subscription SQL queries. */
+  subscribeFactory?: (identity: Identity) => string[];
   onDisconnect?: (...args: unknown[]) => void;
 }
 
@@ -38,6 +40,16 @@ export interface AuthInfo {
   wallet: string;
   token: string;
   identity: Identity;
+}
+
+const DEFAULT_SUBSCRIBE = ["SELECT * FROM agents", "SELECT * FROM config"];
+
+export const AGENT_SUBSCRIBE = ["SELECT * FROM agents"];
+
+function resolveSubscriptions(options: CommandContextOptions, identity: Identity): string[] {
+  if (options.subscribeFactory) return options.subscribeFactory(identity);
+  if (Array.isArray(options.subscribe)) return options.subscribe;
+  return DEFAULT_SUBSCRIBE;
 }
 
 export class CommandContext implements AsyncDisposable {
@@ -85,8 +97,8 @@ export class CommandContext implements AsyncDisposable {
 
   static async create(options: CommandContextOptions = {}): Promise<CommandContext> {
     const config = await getConfig();
-    const host = options.host || config.spacetime.host;
-    const moduleName = options.module || config.spacetime.module;
+    const { host, module } = resolveSpacetimeArgs(options, config);
+    const moduleName = module;
     const walletName = options.wallet || config.defaultWallet;
 
     let token = options.token;
@@ -142,37 +154,17 @@ export class CommandContext implements AsyncDisposable {
               auth.identity = identity;
             }
 
-            const shouldSubscribe = options.subscribe !== false;
+            const subscriptions = resolveSubscriptions(options, identity);
 
-            if (shouldSubscribe) {
-              conn
-                .subscriptionBuilder()
-                .onApplied(() => {
-                  resolve(new CommandContext(conn, config, identity, authToken, auth));
-                })
-                .onError((ctx: ErrorContext) => {
-                  reject(new Error(`Subscription error: ${ctx.event?.message || "Unknown error"}`));
-                })
-                .subscribe([
-                  "SELECT * FROM agents",
-                  "SELECT * FROM agent_actions",
-                  "SELECT * FROM tasks",
-                  "SELECT * FROM ideas",
-                  "SELECT * FROM messages",
-                  "SELECT * FROM channels",
-                  "SELECT * FROM projects",
-                  "SELECT * FROM votes",
-                  "SELECT * FROM evaluation_dimensions",
-                  "SELECT * FROM discovered_tasks",
-                  "SELECT * FROM task_dependencies",
-                  "SELECT * FROM identity_roles",
-                  "SELECT * FROM config",
-                  "SELECT * FROM project_channels",
-                  "SELECT * FROM project_messages",
-                ]);
-            } else {
-              resolve(new CommandContext(conn, config, identity, authToken, auth));
-            }
+            conn
+              .subscriptionBuilder()
+              .onApplied(() => {
+                resolve(new CommandContext(conn, config, identity, authToken, auth));
+              })
+              .onError((ctx: ErrorContext) => {
+                reject(new Error(`Subscription error: ${ctx.event?.message || "Unknown error"}`));
+              })
+              .subscribe(subscriptions);
           })
           .onDisconnect((...disconnectArgs: unknown[]) => {
             options.onDisconnect?.(...disconnectArgs);
@@ -237,47 +229,39 @@ export async function withAuth<T>(
   return await handler(ctx);
 }
 
-export async function callReducer(
+export async function callReducer<T>(
   ctx: CommandContext,
-  reducerName: string,
-  args: Record<string, unknown>,
+  reducer: (params: T) => Promise<void>,
+  params: T,
 ): Promise<void> {
-  const reducers = ctx.conn.reducers as unknown as Record<
-    string,
-    (args: Record<string, unknown>) => Promise<void>
-  >;
-  const accessorName = reducerName.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
-  const reducer = reducers[accessorName];
-  if (typeof reducer !== "function") {
-    throw new Error(`Reducer not found: ${reducerName}`);
-  }
-
   const timeoutMs = Math.max(1000, ctx.config.requestTimeout);
   let timer: ReturnType<typeof setTimeout>;
   await Promise.race([
-    reducer(args).finally(() => clearTimeout(timer)),
+    reducer(params).finally(() => clearTimeout(timer)),
     new Promise<never>((_, reject) => {
       timer = setTimeout(
-        () => reject(new Error(`Reducer timed out after ${timeoutMs}ms: ${reducerName}`)),
+        () => reject(new Error(`Reducer call timed out after ${timeoutMs}ms`)),
         timeoutMs,
       );
     }),
   ]);
 }
 
-export async function callProcedure<T = unknown>(
+export async function callProcedure<R = unknown>(
   ctx: CommandContext,
-  procedureName: string,
-  args: Record<string, unknown>,
-): Promise<T> {
-  const procedures = ctx.conn.procedures as unknown as Record<
-    string,
-    (args: Record<string, unknown>) => Promise<unknown>
-  >;
-  const accessorName = procedureName.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
-  const proc = procedures[accessorName];
-  if (typeof proc !== "function") {
-    throw new Error(`Procedure not found: ${procedureName}`);
-  }
-  return (await proc(args)) as T;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  procedure: (params: any) => Promise<any>,
+  params: unknown,
+): Promise<R> {
+  const timeoutMs = Math.max(1000, ctx.config.requestTimeout);
+  let timer: ReturnType<typeof setTimeout>;
+  return Promise.race([
+    (procedure(params) as Promise<R>).finally(() => clearTimeout(timer)),
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error(`Procedure call timed out after ${timeoutMs}ms`)),
+        timeoutMs,
+      );
+    }),
+  ]);
 }

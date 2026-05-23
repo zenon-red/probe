@@ -1,3 +1,5 @@
+export type HarnessType = "pi" | "hermes" | "openclaw" | "opencode" | "custom";
+
 export interface NexusConfig {
   issuer: string;
   walletDir: string;
@@ -6,7 +8,10 @@ export interface NexusConfig {
   passwordMinLength: number;
   tokenCacheDir: string;
   requestTimeout: number;
-  schedulerConfirmed?: boolean;
+  harness?: HarnessType;
+  harnessCommand?: string;
+  harnessArgs?: string[];
+  harnessTimeoutSecs?: number;
   spacetime: {
     host: string;
     module: string;
@@ -20,6 +25,8 @@ export const DEFAULT_CONFIG: NexusConfig = {
   passwordMinLength: 8,
   tokenCacheDir: "~/.probe/tokens",
   requestTimeout: 30000,
+  harnessTimeoutSecs: 7200,
+  harnessArgs: [],
   spacetime: {
     host: "wss://db.zenon.red",
     module: "nexus",

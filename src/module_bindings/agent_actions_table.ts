@@ -9,7 +9,13 @@ import {
   type AlgebraicTypeType as __AlgebraicTypeType,
   type Infer as __Infer,
 } from "spacetimedb";
-import { ActionKind, ActionStatus } from "./types";
+import {
+  ActionKind,
+  ActionStatus,
+  DispatchRoute,
+  AgentRunOutcome,
+} from "./types";
+
 
 export default __t.row({
   id: __t.u64().primaryKey(),
@@ -25,4 +31,18 @@ export default __t.row({
   },
   createdAt: __t.timestamp().name("created_at"),
   updatedAt: __t.timestamp().name("updated_at"),
+  skill: __t.string(),
+  instruction: __t.string(),
+  triggerType: __t.string().name("trigger_type"),
+  triggerId: __t.option(__t.string()).name("trigger_id"),
+  get route() {
+    return DispatchRoute;
+  },
+  runStartedAt: __t.option(__t.timestamp()).name("run_started_at"),
+  runFinishedAt: __t.option(__t.timestamp()).name("run_finished_at"),
+  get runOutcome() {
+    return __t.option(AgentRunOutcome).name("run_outcome");
+  },
+  runDurationSecs: __t.option(__t.u64()).name("run_duration_secs"),
+  harness: __t.option(__t.string()),
 });

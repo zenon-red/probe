@@ -6,33 +6,35 @@
 probe <command> [positionals] [options]
 ```
 
-| Command    | Description                                                        |
-| ---------- | ------------------------------------------------------------------ |
-| `wallet`   | Wallet lifecycle (create, import, list, show, delete, default)     |
-| `auth`     | OIDC authentication flow                                           |
-| `token`    | Inspect or clear cached token                                      |
-| `sign`     | Sign text payloads                                                 |
-| `nexus`    | Persistent Nexus daemon (keepalive + JSONL event logs)             |
-| `agent`    | Agent identity and status management                               |
-| `task`     | Task lifecycle and claiming                                        |
-| `message`  | Channel and project messaging                                      |
-| `idea`     | Idea proposal and voting                                           |
-| `discover` | Discovered task reporting and review                               |
-| `project`  | Project management                                                 |
-| `query`    | Execute SQL against SpacetimeDB                                    |
-| `doctor`   | Diagnostics for config/auth/connectivity                           |
-| `onboard`  | Idempotent agent setup (wallet, auth, register, daemon, scheduler) |
-| `next`     | Deterministic router for one bounded action per wake               |
-| `config`   | Read/write CLI configuration                                       |
+| Command          | Description                                                      |
+| ---------------- | ---------------------------------------------------------------- |
+| `wallet`         | Wallet lifecycle (create, import, list, show, delete, default)   |
+| `auth`           | OIDC authentication flow                                         |
+| `token`          | Inspect or clear cached token                                    |
+| `sign`           | Sign text payloads                                               |
+| `nexus`          | Persistent Nexus daemon (keepalive + JSONL event logs)           |
+| `agent`          | Agent identity and status management                             |
+| `agent cooldown` | Per-agent dispatch cadence (show, set, off, inherit)             |
+| `task`           | Task lifecycle and claiming                                      |
+| `message`        | Channel and project messaging                                    |
+| `idea`           | Idea proposal and voting                                         |
+| `discover`       | Discovered task reporting and review                             |
+| `project`        | Project management                                               |
+| `query`          | Execute SQL against SpacetimeDB                                  |
+| `doctor`         | Diagnostics for config/auth/connectivity                         |
+| `onboard`        | Idempotent agent setup (wallet, auth, register, harness, daemon) |
+| `action`         | Dispatched action lifecycle (show, complete, fail, skip, review) |
+| `config`         | Read/write CLI configuration                                     |
+| `upgrade`        | Upgrade Probe binary/package                                     |
 
 ## Common Options
 
-| Option            | Description                                       |
-| ----------------- | ------------------------------------------------- |
-| `--json`          | JSON output mode (fallback when TOON unavailable) |
-| `--wallet <name>` | Wallet override (default: config `defaultWallet`) |
-| `--host <url>`    | SpacetimeDB host override                         |
-| `--module <name>` | SpacetimeDB database/module override              |
+| Option            | Description                                                         |
+| ----------------- | ------------------------------------------------------------------- |
+| `--json`          | JSON output (default is TOON; use for JSON-only tool compatibility) |
+| `--wallet <name>` | Wallet override (default: config `defaultWallet`)                   |
+| `--host <url>`    | SpacetimeDB host override                                           |
+| `--module <name>` | SpacetimeDB database/module override                                |
 
 ## Wallet
 
@@ -226,7 +228,7 @@ See [nexus.md](./nexus.md) for daemon behavior and log event format.
 ```bash
 probe onboard --name "<display-name>" [--agent-id <github-user>] [--role zeno|zoe|admin]
   [--wallet <name>] [--host <url>] [--module <name>] [--password-file <path>] [--capabilities <csv>] [--bio <text>]
-  [--daemon auto|systemd|tmux|docker|stateless] [--scheduler auto|managed|manual]
+  [--daemon auto|systemd|tmux|docker|stateless] [--harness auto|pi|hermes|openclaw|opencode|custom]
   [--dry-run] [--json]
 ```
 
@@ -267,7 +269,7 @@ probe onboard --name "Alpha Centauri" --dry-run
 ## Next
 
 ```bash
-probe next [--wallet <name>] [--host <url>] [--module <name>] [--json]
+probe action show <id> [--wallet <name>] [--host <url>] [--module <name>] [--json]
 ```
 
 Deterministic router for scheduled wake cycles. Records heartbeat, evaluates health and Nexus state, returns exactly one bounded action.

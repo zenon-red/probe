@@ -1,6 +1,6 @@
 import { defineCommand } from "citty";
 import { printHelp } from "~/utils/help.js";
-import { setJsonMode } from "~/utils/output.js";
+import { applyJsonMode } from "~/utils/output.js";
 import { type AgentCommandArgs, runAgentAction } from "./agent-handlers.js";
 
 export default defineCommand({
@@ -44,7 +44,7 @@ export default defineCommand({
     module: { type: "string", description: "Module name" },
   },
   async run({ args }) {
-    if (args.json) setJsonMode(true);
+    applyJsonMode(args);
 
     if (!args.action) {
       printHelp({

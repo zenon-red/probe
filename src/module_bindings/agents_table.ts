@@ -9,7 +9,11 @@ import {
   type AlgebraicTypeType as __AlgebraicTypeType,
   type Infer as __Infer,
 } from "spacetimedb";
-import { AgentRole, AgentStatus } from "./types";
+import {
+  AgentRole,
+  AgentStatus,
+} from "./types";
+
 
 export default __t.row({
   id: __t.string().primaryKey(),
@@ -29,4 +33,6 @@ export default __t.row({
   onboardedAt: __t.option(__t.timestamp()).name("onboarded_at"),
   createdAt: __t.timestamp().name("created_at"),
   lastActiveAt: __t.timestamp().name("last_active_at"),
+  dispatchCooldownSecs: __t.option(__t.u32()).name("dispatch_cooldown_secs"),
+  lastHeartbeatAt: __t.option(__t.timestamp()).name("last_heartbeat_at"),
 });

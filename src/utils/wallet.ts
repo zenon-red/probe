@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { KeyFile, KeyStore } from "znn-typescript-sdk";
 import type { WalletCreationResult, WalletInfo } from "~/types/index.js";
 import { getWalletDir } from "./config.js";
+import { errorMessage } from "./errors.js";
 
 async function ensureWalletDir(): Promise<string> {
   const walletDir = await getWalletDir();
@@ -123,9 +124,7 @@ export async function loadWallet(name: string, password: string): Promise<KeySto
 
     return keyStore;
   } catch (err) {
-    throw new Error(
-      `Failed to load wallet: ${err instanceof Error ? err.message : "Unknown error"}`,
-    );
+    throw new Error(`Failed to load wallet: ${errorMessage(err, "Unknown error")}`);
   }
 }
 
@@ -135,9 +134,7 @@ export async function deleteWallet(name: string): Promise<void> {
   try {
     await unlink(walletPath);
   } catch (err) {
-    throw new Error(
-      `Failed to delete wallet: ${err instanceof Error ? err.message : "Unknown error"}`,
-    );
+    throw new Error(`Failed to delete wallet: ${errorMessage(err, "Unknown error")}`);
   }
 }
 

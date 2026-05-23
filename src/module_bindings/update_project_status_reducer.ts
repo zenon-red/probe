@@ -10,7 +10,9 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-import { ProjectStatus } from "./types";
+import {
+  ProjectStatus,
+} from "./types";
 
 export default {
   projectId: __t.u64(),

@@ -9,7 +9,11 @@ import {
   type AlgebraicTypeType as __AlgebraicTypeType,
   type Infer as __Infer,
 } from "spacetimedb";
-import { ProjectStatus, PlanReviewStatus } from "./types";
+import {
+  ProjectStatus,
+  PlanReviewStatus,
+} from "./types";
+
 
 export default __t.row({
   id: __t.u64().primaryKey(),

@@ -13,6 +13,7 @@ import {
 // The tagged union or sum type for the algebraic type `ActionEventType`.
 export const ActionEventType = __t.enum("ActionEventType", {
   Issued: __t.unit(),
+  Started: __t.unit(),
   Completed: __t.unit(),
   Skipped: __t.unit(),
   Failed: __t.unit(),
@@ -26,13 +27,13 @@ export const ActionKind = __t.enum("ActionKind", {
   Inbox: __t.unit(),
   Vote: __t.unit(),
   Propose: __t.unit(),
-  ContinueTask: __t.unit(),
-  ClaimTask: __t.unit(),
+  ExecuteTask: __t.unit(),
+  ReviewTask: __t.unit(),
+  ValidateReview: __t.unit(),
+  MergeReadyTask: __t.unit(),
   ProjectSetup: __t.unit(),
   CreateTasks: __t.unit(),
-  ValidateReviews: __t.unit(),
   ReviewDiscovery: __t.unit(),
-  Idle: __t.unit(),
 });
 export type ActionKind = __Infer<typeof ActionKind>;
 
@@ -64,6 +65,8 @@ export const Agent = __t.object("Agent", {
   onboardedAt: __t.option(__t.timestamp()),
   createdAt: __t.timestamp(),
   lastActiveAt: __t.timestamp(),
+  dispatchCooldownSecs: __t.option(__t.u32()),
+  lastHeartbeatAt: __t.option(__t.timestamp()),
 });
 export type Agent = __Infer<typeof Agent>;
 
@@ -81,6 +84,20 @@ export const AgentAction = __t.object("AgentAction", {
   },
   createdAt: __t.timestamp(),
   updatedAt: __t.timestamp(),
+  skill: __t.string(),
+  instruction: __t.string(),
+  triggerType: __t.string(),
+  triggerId: __t.option(__t.string()),
+  get route() {
+    return DispatchRoute;
+  },
+  runStartedAt: __t.option(__t.timestamp()),
+  runFinishedAt: __t.option(__t.timestamp()),
+  get runOutcome() {
+    return __t.option(AgentRunOutcome);
+  },
+  runDurationSecs: __t.option(__t.u64()),
+  harness: __t.option(__t.string()),
 });
 export type AgentAction = __Infer<typeof AgentAction>;
 
@@ -105,6 +122,15 @@ export const AgentRole = __t.enum("AgentRole", {
   Human: __t.unit(),
 });
 export type AgentRole = __Infer<typeof AgentRole>;
+
+// The tagged union or sum type for the algebraic type `AgentRunOutcome`.
+export const AgentRunOutcome = __t.enum("AgentRunOutcome", {
+  Clean: __t.unit(),
+  Signal: __t.unit(),
+  Timeout: __t.unit(),
+  SpawnFailed: __t.unit(),
+});
+export type AgentRunOutcome = __Infer<typeof AgentRunOutcome>;
 
 // The tagged union or sum type for the algebraic type `AgentStatus`.
 export const AgentStatus = __t.enum("AgentStatus", {
@@ -192,6 +218,38 @@ export const DiscoveryDecision = __t.enum("DiscoveryDecision", {
   EscalateToIdea: __t.unit(),
 });
 export type DiscoveryDecision = __Infer<typeof DiscoveryDecision>;
+
+// The tagged union or sum type for the algebraic type `DispatchRoute`.
+export const DispatchRoute = __t.enum("DispatchRoute", {
+  AuthorizedDirective: __t.unit(),
+  ContinueOwnedTask: __t.unit(),
+  ReviewTask: __t.unit(),
+  ValidateReview: __t.unit(),
+  Vote: __t.unit(),
+  AssignOpenTask: __t.unit(),
+  ProposalScout: __t.unit(),
+  ProjectSetup: __t.unit(),
+  CreateTasks: __t.unit(),
+  MergeReadyTask: __t.unit(),
+  ReviewDiscovery: __t.unit(),
+});
+export type DispatchRoute = __Infer<typeof DispatchRoute>;
+
+export const DispatchRun = __t.object("DispatchRun", {
+  id: __t.u64(),
+  startedAt: __t.timestamp(),
+  finishedAt: __t.option(__t.timestamp()),
+  eligibleAgentCount: __t.u32(),
+  issuedActionCount: __t.u32(),
+  expiredActionCount: __t.u32(),
+});
+export type DispatchRun = __Infer<typeof DispatchRun>;
+
+export const DispatchTickSchedule = __t.object("DispatchTickSchedule", {
+  scheduledId: __t.u64(),
+  scheduledAt: __t.scheduleAt(),
+});
+export type DispatchTickSchedule = __Infer<typeof DispatchTickSchedule>;
 
 export const EvaluationDimension = __t.object("EvaluationDimension", {
   id: __t.u64(),
@@ -412,6 +470,55 @@ export const TaskDependency = __t.object("TaskDependency", {
 });
 export type TaskDependency = __Infer<typeof TaskDependency>;
 
+export const TaskReview = __t.object("TaskReview", {
+  id: __t.u64(),
+  taskId: __t.u64(),
+  reviewerAgentId: __t.string(),
+  get status() {
+    return TaskReviewStatus;
+  },
+  get outcome() {
+    return __t.option(TaskReviewOutcome);
+  },
+  summary: __t.string(),
+  createdAt: __t.timestamp(),
+  completedAt: __t.option(__t.timestamp()),
+});
+export type TaskReview = __Infer<typeof TaskReview>;
+
+// The tagged union or sum type for the algebraic type `TaskReviewOutcome`.
+export const TaskReviewOutcome = __t.enum("TaskReviewOutcome", {
+  Approved: __t.unit(),
+  ChangesRequested: __t.unit(),
+});
+export type TaskReviewOutcome = __Infer<typeof TaskReviewOutcome>;
+
+// The tagged union or sum type for the algebraic type `TaskReviewStatus`.
+export const TaskReviewStatus = __t.enum("TaskReviewStatus", {
+  Completed: __t.unit(),
+  Invalidated: __t.unit(),
+});
+export type TaskReviewStatus = __Infer<typeof TaskReviewStatus>;
+
+export const TaskReviewValidation = __t.object("TaskReviewValidation", {
+  id: __t.u64(),
+  reviewId: __t.u64(),
+  validatorAgentId: __t.string(),
+  get outcome() {
+    return TaskReviewValidationOutcome;
+  },
+  summary: __t.string(),
+  createdAt: __t.timestamp(),
+});
+export type TaskReviewValidation = __Infer<typeof TaskReviewValidation>;
+
+// The tagged union or sum type for the algebraic type `TaskReviewValidationOutcome`.
+export const TaskReviewValidationOutcome = __t.enum("TaskReviewValidationOutcome", {
+  Valid: __t.unit(),
+  Invalid: __t.unit(),
+});
+export type TaskReviewValidationOutcome = __Infer<typeof TaskReviewValidationOutcome>;
+
 // The tagged union or sum type for the algebraic type `TaskStatus`.
 export const TaskStatus = __t.enum("TaskStatus", {
   Open: __t.unit(),
@@ -469,3 +576,4 @@ export const VoteType = __t.enum("VoteType", {
   Veto: __t.unit(),
 });
 export type VoteType = __Infer<typeof VoteType>;
+

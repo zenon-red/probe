@@ -10,14 +10,7 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-import { ActionKind } from "./types";
-
 export default {
-  agentId: __t.string(),
-  get kind() {
-    return ActionKind;
-  },
-  targetType: __t.option(__t.string()),
-  targetId: __t.option(__t.string()),
-  reasonCode: __t.string(),
+  actionId: __t.u64(),
+  harness: __t.string(),
 };

@@ -3,7 +3,8 @@ import { defineCommand, runMain } from "citty";
 import auth from "./commands/auth.js";
 import config from "./commands/config.js";
 import doctor from "./commands/doctor.js";
-import next from "./commands/next.js";
+import action from "./commands/action.js";
+import agentCooldown from "./commands/agent-cooldown.js";
 import onboard from "./commands/onboard.js";
 import agent from "./commands/nexus/agent.js";
 import discover from "./commands/nexus/discover.js";
@@ -18,8 +19,15 @@ import token from "./commands/token.js";
 import upgrade from "./commands/upgrade.js";
 import wallet from "./commands/wallet/index.js";
 import whoami from "./commands/whoami.js";
-import { normalizeHelpArgv, printHelp, setForceHelpRequested } from "./utils/help.js";
+import {
+  JSON_FLAG_ARG_DESCRIPTION,
+  JSON_FLAG_HELP_DETAIL,
+  normalizeHelpArgv,
+  printHelp,
+  setForceHelpRequested,
+} from "./utils/help.js";
 import { isJsonMode } from "./utils/output.js";
+import { errorMessage } from "./utils/errors.js";
 
 const topLevelCommands = new Set([
   "wallet",
@@ -39,7 +47,7 @@ const topLevelCommands = new Set([
   "whoami",
   "upgrade",
   "onboard",
-  "next",
+  "action",
 ]);
 
 const applyHelpNormalization = (): void => {
@@ -54,7 +62,7 @@ const { version, description } = require("../package.json");
 const main = defineCommand({
   meta: { name: "probe", version, description },
   args: {
-    json: { type: "boolean", description: "Output JSON only", default: false },
+    json: { type: "boolean", description: JSON_FLAG_ARG_DESCRIPTION, default: false },
   },
   run() {
     const firstPositional = process.argv.slice(2).find((arg) => !arg.startsWith("-"));
@@ -77,21 +85,32 @@ const main = defineCommand({
         { name: "sign", detail: "Sign text payloads" },
         {
           name: "nexus",
-          detail: "Run persistent Nexus daemon (keepalive + event logs)",
+          detail: "Run persistent Nexus daemon (action executor + heartbeat)",
+        },
+        { name: "agent", detail: "Agent identity and status" },
+        {
+          name: "agent cooldown",
+          detail: "Dispatch cadence after onboard: show, set, off, inherit",
         },
         {
-          name: "agent, task, idea, discover, message, project",
+          name: "task, idea, discover, message, project",
           detail: "Nexus workspace commands",
+        },
+        {
+          name: "action",
+          detail: "Action lifecycle: show, complete, fail, skip, review, validate-review",
         },
         { name: "query", detail: "Execute SQL queries against Nexus" },
         { name: "doctor", detail: "Run setup and connectivity diagnostics" },
         { name: "onboard", detail: "Idempotent agent setup for autonomous participation" },
-        { name: "next", detail: "Deterministic router for one bounded action per wake" },
         { name: "upgrade", detail: "Upgrade Probe to the latest version" },
         { name: "config", detail: "Read/write CLI configuration" },
       ],
-      options: [{ name: "--json", detail: "JSON output mode for agents" }],
-      notes: ["Nexus commands connect to SpacetimeDB (the realtime database backing Nexus)."],
+      options: [{ name: "--json", detail: JSON_FLAG_HELP_DETAIL }],
+      notes: [
+        "Command output defaults to TOON (token-efficient; preferred for agents). Use --json only when a tool requires JSON.",
+        "Nexus commands connect to SpacetimeDB (the realtime database backing Nexus).",
+      ],
     });
   },
   subCommands: {
@@ -101,7 +120,7 @@ const main = defineCommand({
     token,
     config,
     nexus: nexusDaemon,
-    agent,
+    agent: { ...agent, subCommands: { ...agent.subCommands, cooldown: agentCooldown } },
     task,
     message,
     idea,
@@ -110,7 +129,7 @@ const main = defineCommand({
     query,
     doctor,
     onboard,
-    next,
+    action,
     upgrade,
     whoami,
   },
@@ -143,12 +162,12 @@ process.on("unhandledRejection", (err: unknown) => {
         success: false,
         error: {
           code: "UNEXPECTED_ERROR",
-          message: err instanceof Error ? err.message : String(err),
+          message: errorMessage(err),
         },
       }),
     );
   } else {
-    console.error(err instanceof Error ? err.message : String(err));
+    console.error(errorMessage(err));
   }
   process.exit(1);
 });

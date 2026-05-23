@@ -1,5 +1,6 @@
 import { getConfig } from "~/utils/config.js";
 import {
+  AGENT_SUBSCRIBE,
   type Agent,
   CommandContext,
   callReducer,
@@ -7,7 +8,7 @@ import {
   withAuth,
 } from "~/utils/context.js";
 import { AgentRole, AgentStatus } from "~/utils/enums.js";
-import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
+import { errorMessage, failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { error, isJsonMode, success } from "~/utils/output.js";
 import { formatTimestamp, toMicros } from "~/utils/time.js";
 import { toonList } from "~/utils/toon.js";
@@ -101,9 +102,12 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
 
         try {
           await withAuth(
-            { host: args.host, module: args.module, wallet: walletName },
+            {
+              wallet: walletName,
+              subscribe: AGENT_SUBSCRIBE,
+            },
             async (ctx) => {
-              await callReducer(ctx, "registerAgent", {
+              await callReducer(ctx, ctx.conn.reducers.registerAgent, {
                 agentId,
                 name,
                 role: AgentRole.fromString(role),
@@ -111,7 +115,7 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
               });
 
               if (capabilities.length > 0) {
-                await callReducer(ctx, "updateAgentCapabilities", {
+                await callReducer(ctx, ctx.conn.reducers.updateAgentCapabilities, {
                   capabilities,
                 });
               }
@@ -148,7 +152,7 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
             );
           }
         } catch (err) {
-          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+          error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
         break;
       }
@@ -162,7 +166,10 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
         }
 
         await withAuth(
-          { host: args.host, module: args.module, wallet: args.wallet },
+          {
+            wallet: args.wallet,
+            subscribe: AGENT_SUBSCRIBE,
+          },
           async (ctx) => {
             const myAgent = currentAgentForIdentity(ctx);
             if (!myAgent)
@@ -209,9 +216,12 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
 
         try {
           await withAuth(
-            { host: args.host, module: args.module, wallet: args.wallet },
+            {
+              wallet: args.wallet,
+              subscribe: AGENT_SUBSCRIBE,
+            },
             async (ctx) => {
-              await callReducer(ctx, "setAgentStatus", {
+              await callReducer(ctx, ctx.conn.reducers.setAgentStatus, {
                 status: mapped,
                 taskId: isWorking ? BigInt(args.task as string) : undefined,
               });
@@ -234,7 +244,7 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
             );
           }
         } catch (err) {
-          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+          error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
         break;
       }
@@ -245,9 +255,12 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
         const capabilities = normalizeCapabilities(args.set);
         try {
           await withAuth(
-            { host: args.host, module: args.module, wallet: args.wallet },
+            {
+              wallet: args.wallet,
+              subscribe: AGENT_SUBSCRIBE,
+            },
             async (ctx) => {
-              await callReducer(ctx, "updateAgentCapabilities", {
+              await callReducer(ctx, ctx.conn.reducers.updateAgentCapabilities, {
                 capabilities,
               });
               const myAgent = currentAgentForIdentity(ctx);
@@ -265,14 +278,17 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
             },
           );
         } catch (err) {
-          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+          error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
         break;
       }
 
       case "me": {
         await withAuth(
-          { host: args.host, module: args.module, wallet: args.wallet },
+          {
+            wallet: args.wallet,
+            subscribe: AGENT_SUBSCRIBE,
+          },
           async (ctx) => {
             const myAgent = currentAgentForIdentity(ctx);
             if (!myAgent)
@@ -316,9 +332,12 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
           const bio = hasClear ? "" : (hasSet ? args.set : bioFromPositional) || "";
           try {
             await withAuth(
-              { host: args.host, module: args.module, wallet: args.wallet },
+              {
+                wallet: args.wallet,
+                subscribe: AGENT_SUBSCRIBE,
+              },
               async (ctx) => {
-                await callReducer(ctx, "updateAgentBio", { bio });
+                await callReducer(ctx, ctx.conn.reducers.updateAgentBio, { bio });
                 const myAgent = currentAgentForIdentity(ctx);
                 success({
                   updated: true,
@@ -331,15 +350,14 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
               },
             );
           } catch (err) {
-            error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+            error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }
           break;
         }
 
         if (targetAgentId) {
           await using ctx = await CommandContext.create({
-            host: args.host,
-            module: args.module,
+            subscribe: AGENT_SUBSCRIBE,
           });
           const agent = ctx.iter<Agent>("agents").find((a) => a.id === targetAgentId);
           if (!agent) {
@@ -353,7 +371,10 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
         }
 
         await withAuth(
-          { host: args.host, module: args.module, wallet: args.wallet },
+          {
+            wallet: args.wallet,
+            subscribe: AGENT_SUBSCRIBE,
+          },
           async (ctx) => {
             const myAgent = currentAgentForIdentity(ctx);
             if (!myAgent)
@@ -371,12 +392,15 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
       case "heartbeat": {
         try {
           await withAuth(
-            { host: args.host, module: args.module, wallet: args.wallet },
+            {
+              wallet: args.wallet,
+              subscribe: AGENT_SUBSCRIBE,
+            },
             async (ctx) => {
               const myAgent = currentAgentForIdentity(ctx);
               if (!myAgent) error("NOT_REGISTERED", "Agent not registered");
 
-              await callReducer(ctx, "heartbeat", {
+              await callReducer(ctx, ctx.conn.reducers.heartbeat, {
                 agentId: myAgent.id,
               });
               success({ heartbeat: true });
@@ -393,16 +417,13 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
             },
           );
         } catch (err) {
-          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+          error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
         break;
       }
 
       case "list": {
-        await using ctx = await CommandContext.create({
-          host: args.host,
-          module: args.module,
-        });
+        await using ctx = await CommandContext.create();
         const limit = args.limit ? parseInt(args.limit, 10) : undefined;
         if (limit !== undefined && (!Number.isFinite(limit) || limit <= 0)) {
           error("INVALID_LIMIT", "--limit must be a positive integer");
@@ -440,7 +461,10 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
 
       case "identity": {
         await withAuth(
-          { host: args.host, module: args.module, wallet: args.wallet },
+          {
+            wallet: args.wallet,
+            subscribe: AGENT_SUBSCRIBE,
+          },
           async (ctx) => {
             const identityHex = ctx.identity?.toHexString();
             success({ identity: identityHex, wallet: args.wallet });
@@ -479,14 +503,21 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
 
         try {
           await withAuth(
-            { host: args.host, module: args.module, wallet: args.wallet },
+            {
+              wallet: args.wallet,
+              subscribe: AGENT_SUBSCRIBE,
+            },
             async (ctx) => {
               const contextType = args.contextType || DEFAULT_VOICE_CONTEXT_TYPE;
-              const result = await callProcedure<GenerateVoiceResult>(ctx, "generate_voice", {
-                transcript,
-                audioUrl: args.audioUrl,
-                contextType,
-              });
+              const result = await callProcedure<GenerateVoiceResult>(
+                ctx,
+                ctx.conn.procedures.generateVoice,
+                {
+                  transcript,
+                  audioUrl: args.audioUrl,
+                  contextType,
+                },
+              );
 
               const data = {
                 ok: true,
@@ -515,7 +546,7 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
             },
           );
         } catch (err) {
-          error("PROCEDURE_FAILED", err instanceof Error ? err.message : "Unknown error");
+          error("PROCEDURE_FAILED", errorMessage(err, "Unknown error"));
         }
         break;
       }
@@ -528,7 +559,7 @@ export const runAgentAction = async (args: AgentCommandArgs): Promise<void> => {
         );
     }
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = errorMessage(err);
     failWithConnectionOrUnexpected(message);
   }
 };

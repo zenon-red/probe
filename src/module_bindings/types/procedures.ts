@@ -10,3 +10,4 @@ import * as GenerateVoiceProcedure from "../generate_voice_procedure";
 
 export type GenerateVoiceArgs = __Infer<typeof GenerateVoiceProcedure.params>;
 export type GenerateVoiceResult = __Infer<typeof GenerateVoiceProcedure.returnType>;
+

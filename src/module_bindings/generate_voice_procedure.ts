@@ -10,11 +10,13 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-import { GenerateVoiceResult } from "./types";
+import {
+  GenerateVoiceResult,
+} from "./types";
 
 export const params = {
   transcript: __t.string(),
   audioUrl: __t.option(__t.string()),
   contextType: __t.option(__t.string()),
 };
-export const returnType = __t.result(GenerateVoiceResult, __t.string());
+export const returnType = __t.result(GenerateVoiceResult, __t.string())

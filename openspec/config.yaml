@@ -1,2 +1,5 @@
 schema: zenon-red-sdd
 created: 2026-05-14
+
+context: |
+  Main spec is only `openspec/specs/probe.md`. Do not create `openspec/specs/<capability>/`; merge change deltas into probe.md on archive/sync.

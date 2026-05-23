@@ -10,7 +10,9 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-import { AgentRole } from "./types";
+import {
+  AgentRole,
+} from "./types";
 
 export default {
   agentId: __t.string(),

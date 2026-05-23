@@ -2,15 +2,21 @@ import { execSync } from "node:child_process";
 import { access, mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { callReducer, type Agent, withAuth } from "~/utils/context.js";
+import { AGENT_SUBSCRIBE, callReducer, type Agent, withAuth } from "~/utils/context.js";
 import { AgentRole } from "~/utils/enums.js";
 import { createWallet, getWalletInfo, walletExists } from "~/utils/wallet.js";
 import { authenticateWallet } from "~/utils/auth-flow.js";
 import { installSkills } from "~/utils/skills-install.js";
 import { daemonAdapters, detectDaemon, type DaemonAdapter } from "~/utils/daemon.js";
-import { detectRuntime, runtimeAdapters } from "~/utils/runtime-detection.js";
+import {
+  autoDetectHarness,
+  detectHarnesses,
+  type HarnessDetectionResult,
+} from "~/utils/harness-detection.js";
 import { runHealthChecks } from "~/utils/health.js";
 import { loadUserConfig, saveUserConfig } from "~/utils/user-config.js";
+import { errorMessage } from "~/utils/errors.js";
+import { SHELL_TIMEOUT } from "~/utils/timeouts.js";
 import type { OnboardStep } from "./types.js";
 
 export interface OnboardState {
@@ -25,7 +31,8 @@ export interface OnboardState {
     capabilities?: string;
     bio?: string;
     daemon: string;
-    scheduler: string;
+    harness: string;
+    "harness-command"?: string;
     "dry-run": boolean;
     json: boolean;
   };
@@ -84,7 +91,7 @@ export async function resolveIdentity(state: OnboardState): Promise<boolean> {
   let role = state.args.role || "auto";
   let ghAvailable = false;
   try {
-    execSync("gh auth status", { stdio: "ignore", timeout: 10000 });
+    execSync("gh auth status", { stdio: "ignore", timeout: SHELL_TIMEOUT.MEDIUM });
     ghAvailable = true;
     addStep(state, "github", "pass", "gh CLI authenticated");
   } catch {
@@ -95,7 +102,7 @@ export async function resolveIdentity(state: OnboardState): Promise<boolean> {
     try {
       agentId = execSync("gh api user --jq .login", {
         encoding: "utf-8",
-        timeout: 10000,
+        timeout: SHELL_TIMEOUT.MEDIUM,
       }).trim();
       addStep(state, "agent_id", "pass", `Resolved GitHub username: ${agentId}`);
     } catch {
@@ -119,7 +126,7 @@ export async function resolveIdentity(state: OnboardState): Promise<boolean> {
       try {
         const orgs = execSync("gh org list", {
           encoding: "utf-8",
-          timeout: 10000,
+          timeout: SHELL_TIMEOUT.MEDIUM,
         });
         isMember = orgs.includes("zenon-red");
       } catch {
@@ -200,7 +207,7 @@ export async function authenticateStep(state: OnboardState): Promise<boolean> {
     addStep(state, "auth", "pass", "Token cached");
     return true;
   } catch (err) {
-    addStep(state, "auth", "fail", err instanceof Error ? err.message : "Authentication failed");
+    addStep(state, "auth", "fail", errorMessage(err, "Authentication failed"));
     return false;
   }
 }
@@ -224,6 +231,7 @@ export async function registerAgentStep(state: OnboardState): Promise<boolean> {
         token: state.token,
         host: state.args.host,
         module: state.args.module,
+        subscribe: AGENT_SUBSCRIBE,
       },
       async (ctx) => {
         const existing = ctx
@@ -233,7 +241,7 @@ export async function registerAgentStep(state: OnboardState): Promise<boolean> {
           addStep(state, "registration", "pass", `Agent ${existing.id} already registered`);
           return;
         }
-        await callReducer(ctx, "registerAgent", {
+        await callReducer(ctx, ctx.conn.reducers.registerAgent, {
           agentId: state.agentId,
           name: formatDisplayName(state.args.name, state.role),
           role: AgentRole.fromString(state.role),
@@ -264,12 +272,7 @@ export async function registerAgentStep(state: OnboardState): Promise<boolean> {
     );
     return !state.steps.some((s) => s.step === "registration" && s.status === "fail");
   } catch (err) {
-    addStep(
-      state,
-      "registration",
-      "fail",
-      err instanceof Error ? err.message : "Registration failed",
-    );
+    addStep(state, "registration", "fail", errorMessage(err, "Registration failed"));
     return false;
   }
 }
@@ -290,9 +293,10 @@ export async function setBioStep(state: OnboardState): Promise<void> {
         token: state.token,
         host: state.args.host,
         module: state.args.module,
+        subscribe: [],
       },
       async (ctx) => {
-        await callReducer(ctx, "updateAgentBio", { bio: state.args.bio });
+        await callReducer(ctx, ctx.conn.reducers.updateAgentBio, { bio: state.args.bio! });
       },
     );
     addStep(state, "bio", "pass", "Bio set");
@@ -325,9 +329,10 @@ export async function setCapabilitiesStep(state: OnboardState): Promise<void> {
         token: state.token,
         host: state.args.host,
         module: state.args.module,
+        subscribe: [],
       },
       async (ctx) => {
-        await callReducer(ctx, "updateAgentCapabilities", {
+        await callReducer(ctx, ctx.conn.reducers.updateAgentCapabilities, {
           capabilities: caps,
         });
       },
@@ -408,45 +413,49 @@ export async function configureDaemon(state: OnboardState): Promise<void> {
   }
 }
 
-export async function configureScheduler(state: OnboardState): Promise<void> {
-  let runtime = await detectRuntime();
-  const schedulerArg = state.args.scheduler;
+export async function configureHarness(state: OnboardState): Promise<void> {
+  const harnessArg = state.args.harness || "auto";
+  let harness: HarnessDetectionResult;
 
-  if (schedulerArg === "manual") {
-    runtime = runtimeAdapters.find((r) => r.id === "universal") ?? runtime;
-  } else if (schedulerArg === "managed") {
-    if (runtime.id === "universal") {
-      addStep(
-        state,
-        "scheduler",
-        "manual_required",
-        "No managed runtime detected (hermes/openclaw)",
-      );
+  if (harnessArg === "custom") {
+    const command = state.args["harness-command"];
+    if (!command) {
+      addStep(state, "harness", "fail", "--harness-command required when --harness custom");
       return;
     }
+    harness = { harness: "custom", command, args: [] };
+  } else if (harnessArg === "auto") {
+    try {
+      harness = autoDetectHarness();
+    } catch (err) {
+      addStep(state, "harness", "warn", errorMessage(err, "Harness auto-detection failed"));
+      return;
+    }
+  } else {
+    const detected = detectHarnesses();
+    const match = detected.find((d) => d.harness === harnessArg);
+    if (!match) {
+      addStep(state, "harness", "fail", `Harness "${harnessArg}" not detected`);
+      return;
+    }
+    harness = match;
   }
 
   if (state.args["dry-run"]) {
-    addStep(
-      state,
-      "scheduler",
-      "skip",
-      `Would configure ${runtime.displayName} scheduler (dry-run)`,
-    );
+    addStep(state, "harness", "skip", `Would configure ${harness.harness} harness (dry-run)`);
     return;
   }
-  const scheduleResult = await runtime.scheduler.configure({
-    agentId: state.agentId,
-    role: state.role,
-    intervalMinutes: 30,
-    prompt: `Run probe next and follow its instructions exactly.`,
-  });
-  addStep(
-    state,
-    "scheduler",
-    scheduleResult.success ? "pass" : scheduleResult.mode === "manual" ? "manual_required" : "warn",
-    scheduleResult.detail,
-  );
+
+  // Write harness to config
+  const userConfig = await loadUserConfig();
+  userConfig.harness = harness.harness;
+  if (harness.harness === "custom") {
+    userConfig.harnessCommand = harness.command;
+    userConfig.harnessArgs = harness.args;
+  }
+  await saveUserConfig(userConfig);
+
+  addStep(state, "harness", "pass", `Harness configured: ${harness.harness}`);
 }
 
 export async function sendAnnouncement(state: OnboardState): Promise<void> {
@@ -461,9 +470,10 @@ export async function sendAnnouncement(state: OnboardState): Promise<void> {
         token: state.token,
         host: state.args.host,
         module: state.args.module,
+        subscribe: [],
       },
       async (ctx) => {
-        await callReducer(ctx, "finalizeOnboarding", {
+        await callReducer(ctx, ctx.conn.reducers.finalizeOnboarding, {
           content: `Hi! I'm ${state.args.name}, ready to contribute.`,
           contextId: `onboard:${state.agentId}`,
         });
@@ -471,7 +481,7 @@ export async function sendAnnouncement(state: OnboardState): Promise<void> {
     );
     addStep(state, "onboarding_event", "pass", "Onboarding event finalized");
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to finalize onboarding event";
+    const message = errorMessage(err, "Failed to finalize onboarding event");
     addStep(state, "onboarding_event", "warn", message);
   }
 }

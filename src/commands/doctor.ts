@@ -1,6 +1,6 @@
 import { defineCommand } from "citty";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { isJsonMode, setJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, isJsonMode, success } from "~/utils/output.js";
 import { runHealthChecks } from "~/utils/health.js";
 import { toonList } from "~/utils/toon.js";
 
@@ -29,9 +29,7 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    if (args.json) {
-      setJsonMode(true);
-    }
+    applyJsonMode(args);
 
     if (forceHelpRequested()) {
       printHelp({

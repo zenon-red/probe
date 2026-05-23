@@ -15,6 +15,14 @@ interface HelpSpec {
   notes?: string[];
 }
 
+/** Citty `--json` flag description (shared across commands). */
+export const JSON_FLAG_ARG_DESCRIPTION =
+  "Emit JSON instead of default TOON (compatibility with JSON-only tools)";
+
+/** Help panel line for `--json`. */
+export const JSON_FLAG_HELP_DETAIL =
+  "JSON output (default is TOON — preferred for agents, more token-efficient)";
+
 const actionHelpCommands = new Set([
   "agent",
   "task",

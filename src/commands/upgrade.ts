@@ -1,7 +1,7 @@
 import { defineCommand } from "citty";
 import { confirm } from "@clack/prompts";
 import { printHelp } from "~/utils/help.js";
-import { error, info, isJsonMode, setJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, info, isJsonMode, success } from "~/utils/output.js";
 import { toonList } from "~/utils/toon.js";
 import {
   type InstallMethod,
@@ -15,6 +15,7 @@ import {
   upgradeViaBinary,
   upgradeViaNpm,
 } from "~/utils/upgrade.js";
+import { errorMessage } from "~/utils/errors.js";
 
 const VALID_METHODS = new Set<InstallMethodArg>(["auto", "npm", "binary"]);
 
@@ -78,7 +79,7 @@ export default defineCommand({
     },
   },
   async run({ args }) {
-    if (args.json) setJsonMode(true);
+    applyJsonMode(args);
 
     if (args.target === "--help" || args.target === "-h") {
       printHelp({
@@ -138,7 +139,7 @@ export default defineCommand({
         targetRelease = gh.release;
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to check latest version";
+      const message = errorMessage(err, "Failed to check latest version");
       if (!args.target && method === "binary" && message.includes("GitHub API returned 404")) {
         error(
           "NO_RELEASES_PUBLISHED",
@@ -209,7 +210,7 @@ export default defineCommand({
         await upgradeViaBinary(release, targetVersion);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Upgrade failed";
+      const message = errorMessage(err, "Upgrade failed");
       const code = message.includes("CHECKSUM_MISMATCH")
         ? "CHECKSUM_MISMATCH"
         : message.includes("ROLLBACK_FAILED")

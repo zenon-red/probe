@@ -1,9 +1,9 @@
 import { defineCommand } from "citty";
 import { CommandContext, callReducer, type Project, withAuth } from "~/utils/context.js";
 import { ProjectStatus } from "~/utils/enums.js";
-import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
+import { errorMessage, failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { printHelp } from "~/utils/help.js";
-import { error, isJsonMode, setJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, isJsonMode, success } from "~/utils/output.js";
 import { toMicros } from "~/utils/time.js";
 import { toonList } from "~/utils/toon.js";
 
@@ -33,7 +33,7 @@ export default defineCommand({
     module: { type: "string", description: "Module name" },
   },
   async run({ args }) {
-    if (args.json) setJsonMode(true);
+    applyJsonMode(args);
 
     if (!args.action) {
       printHelp({
@@ -83,10 +83,7 @@ export default defineCommand({
     try {
       switch (action) {
         case "list": {
-          await using ctx = await CommandContext.create({
-            host: args.host,
-            module: args.module,
-          });
+          await using ctx = await CommandContext.create({});
           let projects = ctx.iter<Project>("projects");
           const limit = args.limit ? parseInt(args.limit, 10) : undefined;
 
@@ -129,8 +126,7 @@ export default defineCommand({
           if (!projectId) error("PROJECT_ID_REQUIRED", "Project ID required");
 
           await using ctx = await CommandContext.create({
-            host: args.host,
-            module: args.module,
+            subscribe: ["SELECT * FROM projects"],
           });
           const project = ctx.iter<Project>("projects").find((p) => p.id.toString() === projectId);
           if (!project) error("PROJECT_NOT_FOUND", `Project not found: ${projectId}`);
@@ -157,8 +153,7 @@ export default defineCommand({
           if (!projectId) error("PROJECT_ID_REQUIRED", "Project ID required");
 
           await using ctx = await CommandContext.create({
-            host: args.host,
-            module: args.module,
+            subscribe: ["SELECT * FROM projects"],
           });
           const project = ctx.iter<Project>("projects").find((p) => p.id.toString() === projectId);
           if (!project) error("PROJECT_NOT_FOUND", `Project not found: ${projectId}`);
@@ -185,17 +180,14 @@ export default defineCommand({
           }
 
           try {
-            await withAuth(
-              { host: args.host, module: args.module, wallet: args.wallet },
-              async (ctx) => {
-                await callReducer(ctx, "createProject", {
-                  sourceIdeaId: BigInt(args["source-idea"] as string),
-                  name: args.name,
-                  githubRepo: args["github-repo"],
-                  description: args.description || "",
-                });
-              },
-            );
+            await withAuth({ wallet: args.wallet }, async (ctx) => {
+              await callReducer(ctx, ctx.conn.reducers.createProject, {
+                sourceIdeaId: BigInt(args["source-idea"] as string),
+                name: args.name!,
+                githubRepo: args["github-repo"]!,
+                description: args.description || "",
+              });
+            });
             success({
               created: true,
               name: args.name,
@@ -215,7 +207,7 @@ export default defineCommand({
               );
             }
           } catch (err) {
-            error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+            error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }
           break;
         }
@@ -236,15 +228,12 @@ export default defineCommand({
           }
 
           try {
-            await withAuth(
-              { host: args.host, module: args.module, wallet: args.wallet },
-              async (ctx) => {
-                await callReducer(ctx, "updateProjectStatus", {
-                  projectId: BigInt(projectId),
-                  status: ProjectStatus.fromString(nextStatus),
-                });
-              },
-            );
+            await withAuth({ wallet: args.wallet, subscribe: [] }, async (ctx) => {
+              await callReducer(ctx, ctx.conn.reducers.updateProjectStatus, {
+                projectId: BigInt(projectId),
+                status: ProjectStatus.fromString(nextStatus),
+              });
+            });
 
             success({ updated: true, projectId, status: normalized });
             if (!isJsonMode()) {
@@ -258,7 +247,7 @@ export default defineCommand({
               );
             }
           } catch (err) {
-            error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+            error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
           }
           break;
         }
@@ -271,7 +260,7 @@ export default defineCommand({
           );
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
+      const message = errorMessage(err);
       failWithConnectionOrUnexpected(message);
     }
   },

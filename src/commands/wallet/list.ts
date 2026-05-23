@@ -1,8 +1,9 @@
 import { defineCommand } from "citty";
 import { getConfig } from "~/utils/config.js";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
-import { error, info, isJsonMode, setJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, info, isJsonMode, success } from "~/utils/output.js";
 import { listWallets } from "~/utils/wallet.js";
+import { errorMessage } from "~/utils/errors.js";
 
 export default defineCommand({
   meta: {
@@ -27,9 +28,7 @@ export default defineCommand({
       return;
     }
 
-    if (args.json) {
-      setJsonMode(true);
-    }
+    applyJsonMode(args);
 
     try {
       const wallets = await listWallets();
@@ -62,7 +61,7 @@ export default defineCommand({
         }
       }
     } catch (err) {
-      error("WALLET_LIST_ERROR", err instanceof Error ? err.message : "Failed to list wallets");
+      error("WALLET_LIST_ERROR", errorMessage(err, "Failed to list wallets"));
     }
   },
 });

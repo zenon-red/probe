@@ -10,7 +10,9 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
-import { MessageType } from "./types";
+import {
+  MessageType,
+} from "./types";
 
 export default {
   channelId: __t.u64(),

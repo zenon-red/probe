@@ -9,7 +9,7 @@ import {
   withAuth,
 } from "~/utils/context.js";
 import { MessageType } from "~/utils/enums.js";
-import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
+import { errorMessage, failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { error, isJsonMode, success } from "~/utils/output.js";
 import { formatTimestamp, toMicros } from "~/utils/time.js";
 import { toonList } from "~/utils/toon.js";
@@ -143,8 +143,13 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
         }
 
         await using ctx = await CommandContext.create({
-          host: args.host,
-          module: args.module,
+          subscribe: [
+            "SELECT * FROM messages",
+            "SELECT * FROM channels",
+            "SELECT * FROM projects",
+            "SELECT * FROM project_channels",
+            "SELECT * FROM project_messages",
+          ],
         });
         const channels = ctx.iter<Channel>("channels");
         const projects = ctx.iter<Project>("projects");
@@ -238,8 +243,13 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
         }
 
         await using ctx = await CommandContext.create({
-          host: args.host,
-          module: args.module,
+          subscribe: [
+            "SELECT * FROM messages",
+            "SELECT * FROM channels",
+            "SELECT * FROM projects",
+            "SELECT * FROM project_channels",
+            "SELECT * FROM project_messages",
+          ],
         });
         const channels = ctx.iter<Channel>("channels");
         const projects = ctx.iter<Project>("projects");
@@ -339,7 +349,14 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
 
         try {
           await withAuth(
-            { host: args.host, module: args.module, wallet: args.wallet },
+            {
+              wallet: args.wallet,
+              subscribe: [
+                "SELECT * FROM channels",
+                "SELECT * FROM projects",
+                "SELECT * FROM project_channels",
+              ],
+            },
             async (ctx) => {
               if (isNumeric(targetInput)) {
                 const projectId = BigInt(targetInput);
@@ -359,7 +376,7 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
                   );
                 }
 
-                await callReducer(ctx, "sendProjectMessage", {
+                await callReducer(ctx, ctx.conn.reducers.sendProjectMessage, {
                   projectId,
                   content,
                   messageType: MessageType.fromString("directive"),
@@ -394,7 +411,7 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
                   );
                 }
 
-                await callReducer(ctx, "sendMessage", {
+                await callReducer(ctx, ctx.conn.reducers.sendMessage, {
                   channelId: channel.id,
                   content,
                   messageType: MessageType.fromString("directive"),
@@ -421,7 +438,7 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
             },
           );
         } catch (err) {
-          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+          error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
         break;
       }
@@ -447,7 +464,14 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
 
         try {
           await withAuth(
-            { host: args.host, module: args.module, wallet: args.wallet },
+            {
+              wallet: args.wallet,
+              subscribe: [
+                "SELECT * FROM channels",
+                "SELECT * FROM projects",
+                "SELECT * FROM project_channels",
+              ],
+            },
             async (ctx) => {
               if (isNumeric(targetInput)) {
                 const projectId = BigInt(targetInput);
@@ -467,7 +491,7 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
                   );
                 }
 
-                await callReducer(ctx, "sendProjectMessage", {
+                await callReducer(ctx, ctx.conn.reducers.sendProjectMessage, {
                   projectId,
                   content,
                   messageType: MessageType.fromString(args.type || "user"),
@@ -502,7 +526,7 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
                   );
                 }
 
-                await callReducer(ctx, "sendMessage", {
+                await callReducer(ctx, ctx.conn.reducers.sendMessage, {
                   channelId: channel.id,
                   content,
                   messageType: MessageType.fromString(args.type || "user"),
@@ -529,16 +553,13 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
             },
           );
         } catch (err) {
-          error("REDUCER_FAILED", err instanceof Error ? err.message : "Unknown error");
+          error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
         }
         break;
       }
 
       case "channels": {
-        await using ctx = await CommandContext.create({
-          host: args.host,
-          module: args.module,
-        });
+        await using ctx = await CommandContext.create({});
         const channels = ctx.iter<Channel>("channels");
         const projects = ctx.iter<Project>("projects");
         const projectChannels = ctx.iter<{ projectId: bigint }>("project_channels");
@@ -585,7 +606,7 @@ export const runMessageAction = async (args: MessageCommandArgs): Promise<void> 
         );
     }
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    const message = errorMessage(err);
     failWithConnectionOrUnexpected(message);
   }
 };

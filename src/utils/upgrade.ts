@@ -6,6 +6,8 @@ import { arch, platform } from "node:os";
 import { dirname, resolve } from "node:path";
 import { Readable } from "node:stream";
 import { finished } from "node:stream/promises";
+import { errorMessage } from "~/utils/errors.js";
+import { NETWORK_TIMEOUT, SHELL_TIMEOUT } from "./timeouts.js";
 
 export type InstallMethod = "npm" | "binary" | "unknown";
 export type InstallMethodArg = "auto" | "npm" | "binary";
@@ -14,7 +16,7 @@ const PACKAGE = "@zenon-red/probe";
 const REPO = "zenon-red/probe";
 const NPM_REGISTRY = "https://registry.npmjs.org";
 const GITHUB_API = "https://api.github.com";
-const REQUEST_TIMEOUT = 30_000;
+const REQUEST_TIMEOUT = NETWORK_TIMEOUT.DEFAULT;
 
 const require = createRequire(import.meta.url);
 
@@ -58,7 +60,7 @@ export function detectMethod(explicit?: InstallMethodArg): InstallMethod {
 
   try {
     resolvedProbePath = execSync("command -v probe", {
-      timeout: 5_000,
+      timeout: SHELL_TIMEOUT.SHORT,
       encoding: "utf8",
     }).trim();
   } catch {
@@ -92,7 +94,7 @@ export function detectMethod(explicit?: InstallMethodArg): InstallMethod {
   // Try npm list (only if npm exists)
   try {
     const out = execSync("npm list -g @zenon-red/probe --depth=0 2>/dev/null", {
-      timeout: 10_000,
+      timeout: SHELL_TIMEOUT.MEDIUM,
       encoding: "utf8",
     });
     if (out.includes("@zenon-red/probe")) return "npm";
@@ -143,7 +145,7 @@ export async function fetchGitHubReleaseByVersion(version: string): Promise<GitH
   try {
     return await fetchGitHubRelease(`tags/v${normalized}`);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "";
+    const message = errorMessage(err, "");
     if (!message.includes("404")) {
       throw err;
     }
@@ -217,7 +219,7 @@ export async function upgradeViaNpm(target: string): Promise<void> {
   const version = normalizeVersion(target);
   execSync(`npm install -g ${PACKAGE}@${version}`, {
     stdio: "inherit",
-    timeout: 120_000,
+    timeout: SHELL_TIMEOUT.VERY_LONG,
   });
 }
 
@@ -257,7 +259,7 @@ export async function upgradeViaBinary(release: GitHubRelease, _target: string):
     renameSync(tmpPath, targetPath);
     // Post-upgrade smoke test
     execSync(`"${targetPath}" --version`, {
-      timeout: 10_000,
+      timeout: SHELL_TIMEOUT.MEDIUM,
       encoding: "utf8",
     });
     // Cleanup backup on success
