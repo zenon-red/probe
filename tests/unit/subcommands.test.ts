@@ -3,7 +3,11 @@ import * as contextModule from "../../src/utils/context.js";
 import auth from "../../src/commands/auth/index.js";
 import config from "../../src/commands/config/index.js";
 import message from "../../src/commands/nexus/message.js";
-import { guardUnknownSubcommand } from "../../src/utils/subcommand.js";
+import {
+  guardUnknownSubcommand,
+  resolveKnownSubcommand,
+  scanArgvCommandTokens,
+} from "../../src/utils/subcommand.js";
 import task from "../../src/commands/nexus/task.js";
 import agent from "../../src/commands/nexus/agent.js";
 import project from "../../src/commands/nexus/project.js";
@@ -102,6 +106,43 @@ describe("subcommand-only parent commands", () => {
       throw new Error("expected UNKNOWN_SUBCOMMAND");
     } catch (err) {
       expect((err as { code?: string }).code).toBe("UNKNOWN_SUBCOMMAND");
+    }
+  });
+
+  it("resolveKnownSubcommand skips option values before the real subcommand", () => {
+    const known = new Set(["show", "complete"]);
+    expect(resolveKnownSubcommand("action", known, ["action", "alice", "show", "42"])).toBe("show");
+    expect(resolveKnownSubcommand("action", known, ["action", "show", "42"])).toBe("show");
+  });
+
+  it("guardUnknownSubcommand allows parent options before subcommand", () => {
+    expect(() =>
+      guardUnknownSubcommand(["action", "--wallet", "alice", "show", "42"]),
+    ).not.toThrow();
+    expect(() => guardUnknownSubcommand(["action", "--json", "show", "42"])).not.toThrow();
+  });
+
+  it("scanArgvCommandTokens skips value-flag arguments but not boolean flags", () => {
+    expect(scanArgvCommandTokens(["action", "--wallet", "alice", "show", "42"])).toEqual([
+      "action",
+      "show",
+      "42",
+    ]);
+    expect(scanArgvCommandTokens(["action", "--json", "show", "42"])).toEqual([
+      "action",
+      "show",
+      "42",
+    ]);
+  });
+
+  it("guardUnknownSubcommand reports bogus not option value as unknown subcommand", () => {
+    try {
+      guardUnknownSubcommand(["action", "--wallet", "alice", "bogus"]);
+      throw new Error("expected UNKNOWN_SUBCOMMAND");
+    } catch (err) {
+      expect((err as { code?: string; message?: string }).code).toBe("UNKNOWN_SUBCOMMAND");
+      expect((err as { message?: string }).message).toContain("bogus");
+      expect((err as { message?: string }).message).not.toContain("alice");
     }
   });
 });

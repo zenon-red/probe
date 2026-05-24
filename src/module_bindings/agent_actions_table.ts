@@ -45,4 +45,6 @@ export default __t.row({
   },
   runDurationSecs: __t.option(__t.u64()).name("run_duration_secs"),
   harness: __t.option(__t.string()),
+  inputTokens: __t.u64().name("input_tokens"),
+  outputTokens: __t.u64().name("output_tokens"),
 });

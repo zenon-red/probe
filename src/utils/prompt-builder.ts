@@ -9,14 +9,8 @@ import {
   ACTION_PROMPT_SECURITY,
 } from "./action-prompts.js";
 
-/**
- * Build a harness prompt from an action row.
- *
- * The prompt includes action identity, executable intent, a security
- * boundary warning, and route-specific completion commands.
- */
 export function buildActionPrompt(action: {
-  id: number;
+  id: bigint | number;
   kind: string;
   skill: string;
   instruction: string;

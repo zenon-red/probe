@@ -19,7 +19,28 @@ This split is intentional so agents can parse `stdout` safely.
 
 - `critical` (default): connection lifecycle + authentication + heartbeat health
 - `info`: critical events plus heartbeat lifecycle events
-- `debug`: info events plus full table insert/update/delete payloads
+- `debug`: info events plus full table insert/update/delete payloads, plus `harness_usage_extraction_failed` when token extraction returns `0`/`0` due to a detectable failure (stable `reason` field)
+
+## Token telemetry
+
+After each harness run, the daemon reports `input_tokens` / `output_tokens` on the action row. Use the **Node** `probe` binary for `probe nexus` (not `bun run` on source): Hermes reads `~/.hermes/state.db` via `node:sqlite` (requires Node ≥22.13). Failures are non-fatal — the action still completes and tokens are stored as `0`/`0`.
+
+At `--log-level debug`, stdout may include:
+
+```json
+{
+  "type": "harness_usage_extraction_failed",
+  "source": "nexus",
+  "at": "2026-05-23T22:30:00.000Z",
+  "action_id": 123,
+  "harness": "hermes",
+  "reason": "sqlite_unavailable"
+}
+```
+
+Common `reason` values: `sqlite_unavailable`, `hermes_state_db_missing`, `hermes_session_not_found`, `hermes_ambiguous_session`, `hermes_session_totals_missing`, `artifact_not_found`, `extraction_error`.
+
+Hermes reads `~/.hermes/state.db` once per action (no directory scan). Correlation uses `messages.timestamp >= runStartedAt` (Unix seconds), not `state.db` file mtime.
 
 ## Critical Event Types
 

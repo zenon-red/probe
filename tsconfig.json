@@ -14,6 +14,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
+      "~/daemon/harness-usage.js": ["./src/daemon/harness-usage/index.ts"],
       "~/*": ["./src/*"]
     },
     "types": ["bun-types"]

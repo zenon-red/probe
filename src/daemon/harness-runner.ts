@@ -37,7 +37,8 @@ export async function runHarness(options: {
   try {
     const result = await new Promise<{ exitCode: number | null; signal: string | null }>(
       (resolve, reject) => {
-        const child = spawnFn(command, commandArgs, { shell: false, stdio: "pipe" });
+        // stdio ignored — token data comes from disk; piped stdio without draining can hang pi -p
+        const child = spawnFn(command, commandArgs, { shell: false, stdio: "ignore" });
         options.onChild?.(child);
 
         let settled = false;

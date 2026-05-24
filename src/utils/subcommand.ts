@@ -2,9 +2,11 @@ import type { CommandDef, Resolvable } from "citty";
 import { defineCommand } from "citty";
 import { forceHelpRequested, printHelp, type HelpSpec } from "./help.js";
 import { error } from "./output.js";
-import { SUBCOMMAND_PARENTS } from "./subcommand-registry.js";
-
-export { SUBCOMMAND_PARENTS } from "./subcommand-registry.js";
+import {
+  SUBCOMMAND_PARENT_BOOLEAN_FLAGS,
+  SUBCOMMAND_PARENT_VALUE_FLAGS,
+  SUBCOMMAND_PARENTS,
+} from "./subcommand-registry.js";
 
 export type SubcommandParentSpec = {
   name: string;
@@ -15,6 +17,72 @@ export type SubcommandParentSpec = {
   args?: CommandDef["args"];
 };
 
+type ParsedFlag = { name: string; inlineValue: boolean };
+
+function parseFlagToken(arg: string): ParsedFlag | null {
+  if (!arg.startsWith("-")) return null;
+  if (arg.startsWith("--")) {
+    const eq = arg.indexOf("=");
+    if (eq !== -1) {
+      return { name: arg.slice(2, eq), inlineValue: true };
+    }
+    return { name: arg.slice(2), inlineValue: false };
+  }
+  return { name: arg.slice(1), inlineValue: false };
+}
+
+function flagConsumesNextArgv(flag: ParsedFlag): boolean {
+  if (flag.inlineValue) return false;
+  if (SUBCOMMAND_PARENT_BOOLEAN_FLAGS.has(flag.name)) return false;
+  if (SUBCOMMAND_PARENT_VALUE_FLAGS.has(flag.name)) return true;
+  return flag.name.length > 1;
+}
+
+export function scanArgvCommandTokens(argv: string[]): string[] {
+  const tokens: string[] = [];
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i]!;
+    const flag = parseFlagToken(arg);
+    if (!flag) {
+      tokens.push(arg);
+      continue;
+    }
+    if (flagConsumesNextArgv(flag)) {
+      const next = argv[i + 1];
+      if (next && !next.startsWith("-")) {
+        i += 1;
+      }
+    }
+  }
+  return tokens;
+}
+
+export function resolveKnownSubcommand(
+  parentName: string,
+  subcommandNames: ReadonlySet<string>,
+  tokens: string[],
+): string | undefined {
+  const start = tokens[0] === parentName ? 1 : 0;
+  for (let i = start; i < tokens.length; i++) {
+    const token = tokens[i]!;
+    if (subcommandNames.has(token)) return token;
+  }
+  return undefined;
+}
+
+function firstUnknownSubcommandAfterParent(
+  parentName: string,
+  subcommandNames: ReadonlySet<string>,
+  tokens: string[],
+): string | undefined {
+  const start = tokens[0] === parentName ? 1 : 0;
+  for (let i = start; i < tokens.length; i++) {
+    const token = tokens[i]!;
+    if (!subcommandNames.has(token)) return token;
+  }
+  return undefined;
+}
+
 export function defineSubcommandParent(spec: SubcommandParentSpec) {
   const subcommandNames = new Set(Object.keys(spec.subCommands));
 
@@ -23,12 +91,10 @@ export function defineSubcommandParent(spec: SubcommandParentSpec) {
     args: spec.args,
     subCommands: spec.subCommands,
     run(ctx) {
-      const fromArgs = (ctx.args._ as string[] | undefined) ?? [];
-      const fromArgv = process.argv.slice(2).filter((arg) => !arg.startsWith("-"));
-      const positionals = fromArgs.length > 0 ? fromArgs : fromArgv;
-      const subcommand = positionals[0] === spec.name ? positionals[1] : undefined;
+      const cittyPositionals = (ctx.args._ as string[] | undefined) ?? [];
+      const subcommand = resolveKnownSubcommand(spec.name, subcommandNames, cittyPositionals);
 
-      if (subcommand && subcommandNames.has(subcommand)) {
+      if (subcommand) {
         return;
       }
 
@@ -48,21 +114,29 @@ export function defineSubcommandParent(spec: SubcommandParentSpec) {
 }
 
 export function guardUnknownSubcommand(argv: string[]): void {
-  const positionals = argv.filter((arg) => !arg.startsWith("-"));
-  if (positionals.length < 2) {
+  const tokens = scanArgvCommandTokens(argv);
+  if (tokens.length < 2) {
     return;
   }
 
-  const parent = positionals[0]!;
-  const sub = positionals[1]!;
+  const parent = tokens[0]!;
   const known = SUBCOMMAND_PARENTS[parent];
-  if (!known || known.has(sub)) {
+  if (!known) {
+    return;
+  }
+
+  if (resolveKnownSubcommand(parent, known, tokens)) {
+    return;
+  }
+
+  const unknown = firstUnknownSubcommandAfterParent(parent, known, tokens);
+  if (!unknown) {
     return;
   }
 
   error(
     "UNKNOWN_SUBCOMMAND",
-    `Unknown ${parent} subcommand: ${sub}`,
+    `Unknown ${parent} subcommand: ${unknown}`,
     `Run: probe ${parent} --help`,
   );
 }

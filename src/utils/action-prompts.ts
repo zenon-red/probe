@@ -1,5 +1,4 @@
-/** Machine-readable action correlation marker (grep / session lookup). */
-export function actionCorrelationFlag(actionId: number): string {
+export function actionCorrelationFlag(actionId: bigint | number): string {
   return `zenon.red{action:${actionId}}`;
 }
 
@@ -11,22 +10,22 @@ export const ACTION_PROMPT_SECURITY = [
 
 export const ACTION_PROMPT_RUN_SKILL = "Run the named skill. When finished, call one of:";
 
-export function actionCompleteCommand(actionId: number): string {
+export function actionCompleteCommand(actionId: bigint | number): string {
   return `probe action complete ${actionId}`;
 }
 
-export function actionFailCommand(actionId: number): string {
+export function actionFailCommand(actionId: bigint | number): string {
   return `probe action fail ${actionId} --reason "..."`;
 }
 
-export function actionSkipCommand(actionId: number): string {
+export function actionSkipCommand(actionId: bigint | number): string {
   return `probe action skip ${actionId} --reason "..."`;
 }
 
-export function actionReviewCommand(actionId: number): string {
+export function actionReviewCommand(actionId: bigint | number): string {
   return `probe action review ${actionId} --outcome approved|changes-requested --summary "..."`;
 }
 
-export function actionValidateReviewCommand(actionId: number): string {
+export function actionValidateReviewCommand(actionId: bigint | number): string {
   return `probe action validate-review ${actionId} --outcome valid|invalid --summary "..."`;
 }

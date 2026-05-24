@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 import { afterEach, describe, expect, it, mock } from "bun:test";
 import type { ChildProcess } from "node:child_process";
-import { createActionExecutor, type IssuedAction } from "../../src/daemon/action-executor.js";
+import { createActionExecutor, type ExecutableAction } from "../../src/daemon/action-executor.js";
 import { runDaemonSession } from "../../src/daemon/session.js";
 import type { SpawnRunner } from "../../src/daemon/harness-runner.js";
 
@@ -15,13 +15,16 @@ function createSpawnMock(exitCode: number): SpawnRunner {
   return () => mockChildExit(exitCode);
 }
 
-const baseAction: IssuedAction = {
-  id: 42,
+const baseAction: ExecutableAction = {
+  id: 42n,
   agentId: "agent-1",
-  kind: { tag: "Run" },
-  status: { tag: "Issued" },
+  kind: { tag: "ExecuteTask" },
   skill: "test",
   instruction: "do it",
+  route: { tag: "ContinueOwnedTask" },
+  targetType: undefined,
+  targetId: undefined,
+  triggerType: "dispatch_run",
 };
 
 /** Match production loop sleep — a no-op sleep causes a tight spin in runDaemonSession. */
@@ -48,7 +51,7 @@ function createMockCtx(reducerBehavior: "ok" | "fail" = "ok") {
 describe("createActionExecutor", () => {
   const events: Record<string, unknown>[] = [];
   let runningHarness: ChildProcess | null = null;
-  let runningActionId: number | null = null;
+  let runningActionId: bigint | null = null;
 
   afterEach(() => {
     events.length = 0;
@@ -175,18 +178,34 @@ describe("runDaemonSession invariants", () => {
       await new Promise((r) => setTimeout(r, 5));
     }
 
-    insertHandler?.(null, { ...baseAction, id: 1, status: { tag: "Issued" } });
+    insertHandler?.(null, {
+      ...baseAction,
+      id: 1n,
+      status: { tag: "Issued" },
+      reasonCode: "test",
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+    });
     while (!events.some((e) => e.type === "action_started")) {
       await new Promise((r) => setTimeout(r, 5));
     }
 
-    insertHandler?.(null, { ...baseAction, id: 2, status: { tag: "Issued" } });
+    insertHandler?.(null, {
+      ...baseAction,
+      id: 2n,
+      status: { tag: "Issued" },
+      reasonCode: "test",
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+    });
 
-    expect(events.some((e) => e.type === "action_received" && e.action_id === 2)).toBe(true);
+    expect(events.some((e) => e.type === "action_received" && e.action_id === "2")).toBe(true);
     expect(
       events.some(
         (e) =>
-          e.type === "harness_spawn_violation" && e.action_id === 2 && e.running_action_id === 1,
+          e.type === "harness_spawn_violation" &&
+          e.action_id === "2" &&
+          e.running_action_id === "1",
       ),
     ).toBe(true);
 
@@ -217,7 +236,13 @@ describe("runDaemonSession invariants", () => {
       await new Promise((r) => setTimeout(r, 5));
     }
 
-    insertHandler?.(null, { ...baseAction, status: { tag: "Completed" } });
+    insertHandler?.(null, {
+      ...baseAction,
+      status: { tag: "Completed" },
+      reasonCode: "test",
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+    });
     stop = true;
     await sessionPromise;
 

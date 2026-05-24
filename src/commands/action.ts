@@ -7,44 +7,14 @@ import {
 } from "~/utils/context.js";
 import type { DispatchRoute as DispatchRouteType } from "~/module_bindings/types.js";
 import { DispatchRoute, enumName, identityHex } from "~/utils/enums.js";
+import { parseActionId } from "~/utils/action-id.js";
 import { runReducerCommand } from "~/utils/reducer-command.js";
 import { defineSubcommandParent } from "~/utils/subcommand.js";
 import { applyJsonMode, error, success } from "~/utils/output.js";
 
-/**
- * Action row shape including new central dispatch fields.
- *
- * NOTE: This file assumes the Nexus SpacetimeDB module has been upgraded to
- * the central-dispatch schema. Reducers like `complete_review_action` and
- * `complete_validate_review_action` will throw if the deployed module is
- * older. Upgrade the module and the CLI together.
- */
-interface ActionRow {
-  id: number;
-  agentId: string;
-  kind: unknown;
-  targetType?: string | null;
-  targetId?: string | null;
-  reasonCode: string;
-  status: unknown;
-  createdAt: string;
-  updatedAt: string;
-  skill?: string;
-  instruction?: string;
-  triggerType?: string;
-  triggerId?: string;
-  route?: DispatchRouteType;
-  runOutcome?: unknown;
-  harness?: string;
-}
-
 const ACTION_SUBSCRIBE = ["SELECT * FROM agents", "SELECT * FROM agent_actions"];
 
-function asActionRow(action: AgentAction): ActionRow {
-  return action as unknown as ActionRow;
-}
-
-function buildContextCommands(action: ActionRow): string[] {
+function buildContextCommands(action: AgentAction): string[] {
   const commands: string[] = [];
   if (action.targetType === "idea" && action.targetId) {
     commands.push(`probe idea get ${action.targetId}`);
@@ -59,17 +29,17 @@ function buildContextCommands(action: ActionRow): string[] {
   return commands;
 }
 
-function formatActionRow(action: ActionRow): Record<string, unknown> {
+function formatActionRow(action: AgentAction): Record<string, unknown> {
   return {
-    id: action.id,
+    id: action.id.toString(),
     kind: enumName(action.kind),
     route: enumName(action.route),
-    skill: action.skill ?? "—",
-    instruction: action.instruction ?? "—",
+    skill: action.skill,
+    instruction: action.instruction,
     target_type: action.targetType ?? "—",
     target_id: action.targetId ?? "—",
     reason_code: action.reasonCode,
-    trigger_type: action.triggerType ?? "—",
+    trigger_type: action.triggerType,
     trigger_id: action.triggerId ?? "—",
     status: enumName(action.status),
     created_at: action.createdAt,
@@ -79,8 +49,12 @@ function formatActionRow(action: ActionRow): Record<string, unknown> {
   };
 }
 
-function verifyOwnership(ctx: CommandContext, actionId: number): ActionRow {
-  const action = ctx.agentActions.find((a) => Number(a.id) === actionId);
+function findAction(ctx: CommandContext, actionId: bigint): AgentAction | undefined {
+  return ctx.agentActions.find((a) => a.id === actionId);
+}
+
+function verifyOwnership(ctx: CommandContext, actionId: bigint): AgentAction {
+  const action = findAction(ctx, actionId);
 
   if (!action) {
     error("ACTION_NOT_FOUND", `Action ${actionId} not found.`);
@@ -94,20 +68,21 @@ function verifyOwnership(ctx: CommandContext, actionId: number): ActionRow {
     error("NOT_OWNER", `Action ${actionId} does not belong to you.`);
   }
 
-  return asActionRow(action);
+  return action;
 }
 
-function completionHintForRoute(route: DispatchRouteType | undefined, actionId: number): string {
+function completionHintForRoute(route: DispatchRouteType, actionId: bigint): string {
+  const id = actionId.toString();
   if (DispatchRoute.is.reviewTask(route)) {
-    return `Use: probe action review ${actionId} --outcome approved|changes-requested --summary "..."`;
+    return `Use: probe action review ${id} --outcome approved|changes-requested --summary "..."`;
   }
   if (DispatchRoute.is.validateReview(route)) {
-    return `Use: probe action validate-review ${actionId} --outcome valid|invalid --summary "..."`;
+    return `Use: probe action validate-review ${id} --outcome valid|invalid --summary "..."`;
   }
-  return `Use: probe action complete ${actionId}`;
+  return `Use: probe action complete ${id}`;
 }
 
-function blockGenericCompleteOnReviewRoutes(action: ActionRow): void {
+function blockGenericCompleteOnReviewRoutes(action: AgentAction): void {
   if (DispatchRoute.is.reviewTask(action.route)) {
     error(
       "WRONG_ROUTE",
@@ -124,7 +99,7 @@ function blockGenericCompleteOnReviewRoutes(action: ActionRow): void {
   }
 }
 
-function requireReviewTaskRoute(action: ActionRow): void {
+function requireReviewTaskRoute(action: AgentAction): void {
   if (DispatchRoute.is.reviewTask(action.route)) return;
   error(
     "WRONG_ROUTE",
@@ -133,7 +108,7 @@ function requireReviewTaskRoute(action: ActionRow): void {
   );
 }
 
-function requireValidateReviewRoute(action: ActionRow): void {
+function requireValidateReviewRoute(action: AgentAction): void {
   if (DispatchRoute.is.validateReview(action.route)) return;
   error(
     "WRONG_ROUTE",
@@ -159,19 +134,19 @@ export const actionShowCommand = defineCommand({
   },
   async run({ args }) {
     applyJsonMode(args);
-    const actionId = Number(args.id);
+    const actionId = parseActionId(args.id);
 
     await withAuth(
       commandContextOptions(args as ActionConnectionArgs, { subscribe: ACTION_SUBSCRIBE }),
       async (ctx) => {
-        const action = ctx.agentActions.find((a) => Number(a.id) === actionId);
+        const action = findAction(ctx, actionId);
 
         if (!action) {
           error("ACTION_NOT_FOUND", `Action ${actionId} not found.`);
         }
 
-        const contextCommands = buildContextCommands(asActionRow(action));
-        const row = formatActionRow(asActionRow(action));
+        const contextCommands = buildContextCommands(action);
+        const row = formatActionRow(action);
 
         success({ action: row }, contextCommands);
       },
@@ -190,7 +165,7 @@ export const actionCompleteCommand = defineCommand({
   },
   async run({ args }) {
     applyJsonMode(args);
-    const actionId = Number(args.id);
+    const actionId = parseActionId(args.id);
 
     await runReducerCommand(args as ActionConnectionArgs, {
       subscribe: ACTION_SUBSCRIBE,
@@ -199,7 +174,7 @@ export const actionCompleteCommand = defineCommand({
         const action = verifyOwnership(ctx, actionId);
         blockGenericCompleteOnReviewRoutes(action);
         return {
-          actionId: BigInt(actionId),
+          actionId,
           eventType: { tag: "Completed" as const },
           eventCode: undefined,
           note: undefined,
@@ -207,7 +182,7 @@ export const actionCompleteCommand = defineCommand({
       },
     });
 
-    success({ action_id: actionId, status: "completed" });
+    success({ action_id: actionId.toString(), status: "completed" });
   },
 });
 
@@ -223,7 +198,7 @@ export const actionFailCommand = defineCommand({
   },
   async run({ args }) {
     applyJsonMode(args);
-    const actionId = Number(args.id);
+    const actionId = parseActionId(args.id);
 
     await runReducerCommand(args as ActionConnectionArgs, {
       subscribe: ACTION_SUBSCRIBE,
@@ -231,7 +206,7 @@ export const actionFailCommand = defineCommand({
       params: (ctx) => {
         verifyOwnership(ctx, actionId);
         return {
-          actionId: BigInt(actionId),
+          actionId,
           eventType: { tag: "Failed" as const },
           eventCode: undefined,
           note: args.reason ?? undefined,
@@ -239,7 +214,7 @@ export const actionFailCommand = defineCommand({
       },
     });
 
-    success({ action_id: actionId, status: "failed", reason: args.reason });
+    success({ action_id: actionId.toString(), status: "failed", reason: args.reason });
   },
 });
 
@@ -255,7 +230,7 @@ export const actionSkipCommand = defineCommand({
   },
   async run({ args }) {
     applyJsonMode(args);
-    const actionId = Number(args.id);
+    const actionId = parseActionId(args.id);
 
     await runReducerCommand(args as ActionConnectionArgs, {
       subscribe: ACTION_SUBSCRIBE,
@@ -263,7 +238,7 @@ export const actionSkipCommand = defineCommand({
       params: (ctx) => {
         verifyOwnership(ctx, actionId);
         return {
-          actionId: BigInt(actionId),
+          actionId,
           eventType: { tag: "Skipped" as const },
           eventCode: undefined,
           note: args.reason ?? undefined,
@@ -271,7 +246,7 @@ export const actionSkipCommand = defineCommand({
       },
     });
 
-    success({ action_id: actionId, status: "skipped", reason: args.reason });
+    success({ action_id: actionId.toString(), status: "skipped", reason: args.reason });
   },
 });
 
@@ -298,7 +273,7 @@ export const actionReviewCommand = defineCommand({
   },
   async run({ args }) {
     applyJsonMode(args);
-    const actionId = Number(args.id);
+    const actionId = parseActionId(args.id);
 
     const validOutcomes = ["approved", "changes-requested"];
     if (!validOutcomes.includes(args.outcome)) {
@@ -315,14 +290,14 @@ export const actionReviewCommand = defineCommand({
         const action = verifyOwnership(ctx, actionId);
         requireReviewTaskRoute(action);
         return {
-          actionId: BigInt(actionId),
+          actionId,
           outcome: { tag: outcomeTag },
           summary: args.summary,
         };
       },
     });
 
-    success({ action_id: actionId, status: "completed", review_outcome: args.outcome });
+    success({ action_id: actionId.toString(), status: "completed", review_outcome: args.outcome });
   },
 });
 
@@ -349,7 +324,7 @@ export const actionValidateReviewCommand = defineCommand({
   },
   async run({ args }) {
     applyJsonMode(args);
-    const actionId = Number(args.id);
+    const actionId = parseActionId(args.id);
 
     const validOutcomes = ["valid", "invalid"];
     if (!validOutcomes.includes(args.outcome)) {
@@ -365,14 +340,18 @@ export const actionValidateReviewCommand = defineCommand({
         const action = verifyOwnership(ctx, actionId);
         requireValidateReviewRoute(action);
         return {
-          actionId: BigInt(actionId),
+          actionId,
           outcome: { tag: outcomeTag },
           summary: args.summary,
         };
       },
     });
 
-    success({ action_id: actionId, status: "completed", validation_outcome: args.outcome });
+    success({
+      action_id: actionId.toString(),
+      status: "completed",
+      validation_outcome: args.outcome,
+    });
   },
 });
 
@@ -389,7 +368,7 @@ export default defineSubcommandParent({
     command: "probe action",
     description: "Action lifecycle: show, complete, fail, skip, review, validate-review",
     usage: [
-      "probe action <subcommand> [positionals] [options]",
+      "probe action <subcommand> [positionals] [args]",
       "probe action show 42",
       "probe action complete 42",
     ],

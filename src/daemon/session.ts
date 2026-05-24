@@ -3,7 +3,8 @@ import { enumName } from "~/utils/enums.js";
 import { HEARTBEAT } from "~/utils/timeouts.js";
 import { callReducer, type CommandContext } from "~/utils/context.js";
 import type { HarnessDetectionResult } from "~/utils/harness-detection.js";
-import { createActionExecutor, type IssuedAction } from "./action-executor.js";
+import { createActionExecutor } from "./action-executor.js";
+import { toExecutableAction } from "./executable-action.js";
 import { sanitizeValue, type EventEmitter } from "./events.js";
 import type { SpawnRunner } from "./harness-runner.js";
 
@@ -58,7 +59,7 @@ export async function runDaemonSession(options: DaemonSessionOptions): Promise<S
   });
 
   let runningHarness: ChildProcess | null = null;
-  let runningActionId: number | null = null;
+  let runningActionId: bigint | null = null;
 
   const executeAction = createActionExecutor({
     ctx: options.ctx,
@@ -75,17 +76,21 @@ export async function runDaemonSession(options: DaemonSessionOptions): Promise<S
 
   const actionsTable = options.ctx.db["agent_actions"] as ObservableTable;
   actionsTable.onInsert?.((_ctx, row) => {
-    const action = row as unknown as IssuedAction;
-    if (enumName(action.status) !== "Issued") return;
+    const action = toExecutableAction(row);
+    if (!action) return;
     if (action.agentId !== agentId) return;
 
-    options.emit({ type: "action_received", action_id: action.id, kind: enumName(action.kind) });
+    options.emit({
+      type: "action_received",
+      action_id: action.id.toString(),
+      kind: enumName(action.kind),
+    });
 
     if (runningHarness) {
       options.emit({
         type: "harness_spawn_violation",
-        action_id: action.id,
-        running_action_id: runningActionId,
+        action_id: action.id.toString(),
+        running_action_id: runningActionId?.toString() ?? null,
       });
       return;
     }

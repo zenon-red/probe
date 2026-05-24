@@ -4,36 +4,26 @@ import { enumName } from "~/utils/enums.js";
 import type { HarnessDetectionResult } from "~/utils/harness-detection.js";
 import { buildActionPrompt } from "~/utils/prompt-builder.js";
 import { HARNESS_TIMEOUT_SECS } from "~/utils/timeouts.js";
+import type { ExecutableAction } from "./executable-action.js";
 import type { EventEmitter } from "./events.js";
+import { extractUsage } from "./harness-usage/index.js";
 import { runHarness, type SpawnRunner } from "./harness-runner.js";
 
-export interface IssuedAction {
-  id: number;
-  agentId: string;
-  kind: unknown;
-  skill?: string;
-  instruction?: string;
-  route?: unknown;
-  targetType?: string | null;
-  targetId?: string | null;
-  triggerType?: string | null;
-  triggerId?: string | null;
-  status: unknown;
-}
+export type { ExecutableAction } from "./executable-action.js";
 
 export type ActionExecutorDeps = {
   ctx: CommandContext;
   harness: HarnessDetectionResult;
   emit: EventEmitter;
   setRunningHarness: (child: ChildProcess | null) => void;
-  setRunningActionId: (id: number | null) => void;
+  setRunningActionId: (id: bigint | null) => void;
   spawnFn?: SpawnRunner;
 };
 
 export function createActionExecutor(
   deps: ActionExecutorDeps,
-): (action: IssuedAction) => Promise<void> {
-  return async (action: IssuedAction) => {
+): (action: ExecutableAction) => Promise<void> {
+  return async (action: ExecutableAction) => {
     deps.setRunningActionId(action.id);
 
     const actionKind = enumName(action.kind);
@@ -50,55 +40,80 @@ export function createActionExecutor(
 
     try {
       await callReducer(deps.ctx, deps.ctx.conn.reducers.reportActionRunStarted, {
-        actionId: BigInt(action.id),
+        actionId: action.id,
         harness: deps.harness.harness,
       });
     } catch {
       // non-fatal
     }
 
-    deps.emit({ type: "action_started", action_id: action.id, harness: deps.harness.harness });
-
-    const timeoutSecs = deps.ctx.config.harnessTimeoutSecs ?? HARNESS_TIMEOUT_SECS;
-    const { outcome, durationSecs } = await runHarness({
-      harness: deps.harness,
-      prompt,
-      timeoutSecs,
-      spawnFn: deps.spawnFn,
-      onChild: (child) => {
-        deps.setRunningHarness(child);
-      },
+    deps.emit({
+      type: "action_started",
+      action_id: action.id.toString(),
+      harness: deps.harness.harness,
     });
 
-    deps.setRunningHarness(null);
+    const runStartedAt = new Date();
+    const timeoutSecs = deps.ctx.config.harnessTimeoutSecs ?? HARNESS_TIMEOUT_SECS;
+    let outcome: Awaited<ReturnType<typeof runHarness>>["outcome"];
+    let durationSecs: number;
 
     try {
-      await callReducer(deps.ctx, deps.ctx.conn.reducers.reportActionRunFinished, {
-        actionId: BigInt(action.id),
-        outcome: { tag: outcome },
-        durationSecs: BigInt(durationSecs),
-      });
-    } catch {
-      // non-fatal
-    }
+      ({ outcome, durationSecs } = await runHarness({
+        harness: deps.harness,
+        prompt,
+        timeoutSecs,
+        spawnFn: deps.spawnFn,
+        onChild: (child) => {
+          deps.setRunningHarness(child);
+        },
+      }));
 
-    const eventActionId = action.id;
-    deps.setRunningActionId(null);
+      const extraction = extractUsage({
+        harness: deps.harness.harness,
+        actionId: action.id,
+        runStartedAt,
+      });
+      if (extraction.debugReason) {
+        deps.emit({
+          type: "harness_usage_extraction_failed",
+          action_id: action.id.toString(),
+          harness: deps.harness.harness,
+          reason: extraction.debugReason,
+        });
+      }
+      const { inputTokens, outputTokens } = extraction.usage;
 
-    if (outcome === "Clean") {
-      deps.emit({
-        type: "action_completed",
-        action_id: eventActionId,
-        outcome,
-        duration_secs: durationSecs,
-      });
-    } else {
-      deps.emit({
-        type: "action_failed_infra",
-        action_id: eventActionId,
-        outcome,
-        duration_secs: durationSecs,
-      });
+      try {
+        await callReducer(deps.ctx, deps.ctx.conn.reducers.reportActionRunFinished, {
+          actionId: action.id,
+          outcome: { tag: outcome },
+          durationSecs: BigInt(durationSecs),
+          inputTokens: BigInt(inputTokens),
+          outputTokens: BigInt(outputTokens),
+        });
+      } catch {
+        // non-fatal
+      }
+
+      if (outcome === "Clean") {
+        deps.emit({
+          type: "action_completed",
+          action_id: action.id.toString(),
+          outcome,
+          duration_secs: durationSecs,
+        });
+      } else {
+        deps.emit({
+          type: "action_failed_infra",
+          action_id: action.id.toString(),
+          outcome,
+          duration_secs: durationSecs,
+        });
+      }
+    } finally {
+      deps.setRunningHarness(null);
+      deps.setRunningActionId(null);
     }
   };
 }

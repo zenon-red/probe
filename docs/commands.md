@@ -2,7 +2,7 @@
 
 > **Scope:** This file is for source checkouts and repo contributors. The npm package (`@zenon-red/probe`) ships `dist/` only — agents installed via `npm i -g @zenon-red/probe` should use `probe --help` and `probe <command> --help` for command reference.
 
-Agent output contract: see [llms.txt](./llms.txt). Default success output is TOON on stdout; errors are plain text on stderr. Interactive prompts are not supported.
+Agent output contract: see [llms.txt](./llms.txt). Default success output is TOON on stdout; errors are plain text on stderr. Interactive prompts are not supported. See also [known-gaps.md](./known-gaps.md) and [testing.md](./testing.md).
 
 ## CLI structure
 
@@ -264,6 +264,14 @@ probe nexus [--wallet <name>] [--log-level critical|info|debug] [--log-file <pat
 ```
 
 See [nexus.md](./nexus.md) for daemon behavior and log event format.
+
+After each harness run, the daemon reports `input_tokens` and `output_tokens` on the action row by reading harness session stores (correlated via `zenon.red{action:<id>}` in the prompt). Extraction failures are non-fatal and record `0`/`0`.
+
+**Runtime:** run `probe nexus` with the published Node binary (`probe` → `dist/index.js`). Hermes token reads use built-in `node:sqlite` (Node ≥22.13). Running the daemon via `bun run ./src/index.ts` cannot open Hermes `state.db` and will record `0`/`0`.
+
+**Diagnostics:** when extraction fails with a diagnostic reason, the daemon emits `harness_usage_extraction_failed` on stdout (JSONL) with a stable `reason` (for example `sqlite_unavailable`, `hermes_session_not_found`). This event is in the critical set and appears at default `--log-level critical` when a reason is present.
+
+Hermes opens `~/.hermes/state.db` once and correlates via `messages.timestamp` (not `state.db` mtime). Run `npm run test:hermes` for SQLite integration tests (requires Node ≥22.13).
 
 ## Onboard
 

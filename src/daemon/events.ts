@@ -28,6 +28,7 @@ export const CRITICAL_EVENTS = new Set([
   "action_completed",
   "action_failed_infra",
   "harness_spawn_violation",
+  "harness_usage_extraction_failed",
 ]);
 
 export const jsonReplacer = (_key: string, value: unknown): unknown => {

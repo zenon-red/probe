@@ -98,6 +98,8 @@ export const AgentAction = __t.object("AgentAction", {
   },
   runDurationSecs: __t.option(__t.u64()),
   harness: __t.option(__t.string()),
+  inputTokens: __t.u64(),
+  outputTokens: __t.u64(),
 });
 export type AgentAction = __Infer<typeof AgentAction>;
 

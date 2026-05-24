@@ -20,4 +20,6 @@ export default {
     return AgentRunOutcome;
   },
   durationSecs: __t.u64(),
+  inputTokens: __t.u64(),
+  outputTokens: __t.u64(),
 };
