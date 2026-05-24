@@ -1,6 +1,7 @@
 import { defineCommand } from "citty";
 import { printHelp } from "~/utils/help.js";
-import { applyJsonMode, error, success } from "~/utils/output.js";
+import { applyJsonMode, error } from "~/utils/output.js";
+import { emitUpgradeFinish } from "~/utils/upgrade-skills-output.js";
 import {
   type InstallMethodArg,
   detectMethod,
@@ -125,18 +126,23 @@ export default defineCommand({
 
     const updateAvailable = targetVersion !== currentVersion;
 
-    const upgradeResult = (updated: boolean, checkOnly: boolean) => ({
-      method,
-      currentVersion,
-      targetVersion,
-      latestVersion: latestVersion || targetVersion,
-      updateAvailable,
-      updated,
-      checkOnly,
-    });
+    const finishUpgrade = (updated: boolean, checkOnly: boolean) => {
+      emitUpgradeFinish(
+        {
+          method,
+          currentVersion,
+          targetVersion,
+          latestVersion: latestVersion || targetVersion,
+          updateAvailable,
+          updated,
+          checkOnly,
+        },
+        updated,
+      );
+    };
 
     if (args.check) {
-      success(upgradeResult(false, true));
+      finishUpgrade(false, true);
       return;
     }
 
@@ -149,7 +155,7 @@ export default defineCommand({
     }
 
     if (!updateAvailable) {
-      success(upgradeResult(false, false));
+      finishUpgrade(false, false);
       return;
     }
 
@@ -181,6 +187,6 @@ export default defineCommand({
       error(code, message);
     }
 
-    success(upgradeResult(true, false));
+    finishUpgrade(true, false);
   },
 });

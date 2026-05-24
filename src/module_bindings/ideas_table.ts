@@ -24,7 +24,6 @@ export default __t.row({
   },
   activeAgentCount: __t.u32().name("active_agent_count"),
   quorum: __t.u16(),
-  approvalThreshold: __t.u16().name("approval_threshold"),
   vetoThreshold: __t.u16().name("veto_threshold"),
   upVotes: __t.u16().name("up_votes"),
   downVotes: __t.u16().name("down_votes"),

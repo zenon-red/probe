@@ -284,7 +284,6 @@ export const Idea = __t.object("Idea", {
   },
   activeAgentCount: __t.u32(),
   quorum: __t.u16(),
-  approvalThreshold: __t.u16(),
   vetoThreshold: __t.u16(),
   upVotes: __t.u16(),
   downVotes: __t.u16(),

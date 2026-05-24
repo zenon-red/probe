@@ -1,0 +1,9 @@
+{
+  "version": 3,
+  "skills": {
+    "other-skill": {
+      "source": "anthropics/skills",
+      "ref": "main"
+    }
+  }
+}

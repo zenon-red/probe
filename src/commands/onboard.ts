@@ -76,7 +76,11 @@ export default defineCommand({
     },
     "harness-command": {
       type: "string",
-      description: "Custom harness command (required when --harness custom)",
+      description: "Custom harness binary (required when --harness custom)",
+    },
+    "harness-args": {
+      type: "string",
+      description: "Comma-separated args placed before the dispatch prompt (with --harness custom)",
     },
     "dry-run": {
       type: "boolean",
@@ -112,6 +116,7 @@ export default defineCommand({
         usage: [
           'probe onboard --name "Alpha Centauri"',
           'probe onboard --name "Alpha Centauri" --role zeno --harness opencode --dry-run',
+          'probe onboard --name "Alpha Centauri" --harness custom --harness-command cmd --harness-args "-p"',
         ],
         options: [
           { name: "--name", detail: "Required display name" },
@@ -127,6 +132,10 @@ export default defineCommand({
           {
             name: "--harness-command",
             detail: "Custom harness binary (required with --harness custom)",
+          },
+          {
+            name: "--harness-args",
+            detail: "Comma-separated args before prompt (with --harness custom)",
           },
           { name: "--dry-run", detail: "Plan only, no side effects" },
           { name: "--json", detail: "JSON output" },

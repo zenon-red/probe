@@ -33,6 +33,7 @@ export interface OnboardState {
     daemon: string;
     harness: string;
     "harness-command"?: string;
+    "harness-args"?: string;
     "dry-run": boolean;
     json: boolean;
   };
@@ -414,7 +415,11 @@ export async function configureHarness(state: OnboardState): Promise<void> {
       addStep(state, "harness", "fail", "--harness-command required when --harness custom");
       return;
     }
-    harness = { harness: "custom", command, args: [] };
+    const harnessArgs = (state.args["harness-args"] ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    harness = { harness: "custom", command, args: harnessArgs };
   } else if (harnessArg === "auto") {
     try {
       harness = autoDetectHarness();

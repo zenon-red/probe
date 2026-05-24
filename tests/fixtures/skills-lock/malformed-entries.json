@@ -1,0 +1,10 @@
+{
+  "version": 3,
+  "skills": {
+    "bad": null,
+    "zr-vote": {
+      "source": "zenon-red/skills",
+      "ref": "v0.3.3"
+    }
+  }
+}

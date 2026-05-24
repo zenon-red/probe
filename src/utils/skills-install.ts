@@ -1,4 +1,5 @@
 import { execSync } from "node:child_process";
+import { SKILLS_INSTALL_CMD } from "./skills-check.js";
 import { commandExists } from "./system.js";
 import { SHELL_TIMEOUT } from "./timeouts.js";
 
@@ -26,7 +27,7 @@ export async function installSkills(): Promise<SkillsResult> {
     };
   }
   try {
-    execSync("npx skills add zenon-red/skills --skill='*' -y -g", {
+    execSync(SKILLS_INSTALL_CMD, {
       stdio: "ignore",
       timeout: SHELL_TIMEOUT.VERY_LONG,
     });
@@ -38,7 +39,7 @@ export async function installSkills(): Promise<SkillsResult> {
     return {
       installed: false,
       detail: "skills add command failed",
-      recovery: "Run manually: npx skills add zenon-red/skills --skill='*' -y -g",
+      recovery: `Run manually: ${SKILLS_INSTALL_CMD}`,
     };
   }
 }
@@ -60,7 +61,7 @@ export async function verifySkills(): Promise<SkillsResult> {
     return {
       installed: false,
       detail: "skills CLI not available or empty",
-      recovery: "Run: npx skills add zenon-red/skills --skill='*' -y -g",
+      recovery: `Run: ${SKILLS_INSTALL_CMD}`,
     };
   }
 }
