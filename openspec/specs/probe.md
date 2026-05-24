@@ -1830,7 +1830,7 @@ The daemon SHALL spawn harnesses using `shell: false` with known command arrays:
 The daemon SHALL build the harness prompt from the action row:
 
 ```
-Action #<id>
+zenon.red{action:<id>}
 Skill: <skill>
 Kind: <kind>
 Route: <route>

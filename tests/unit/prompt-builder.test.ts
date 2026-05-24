@@ -1,8 +1,14 @@
 import { describe, expect, it } from "bun:test";
-import { buildActionPrompt } from "../../src/utils/prompt-builder.js";
+import { actionCorrelationFlag, buildActionPrompt } from "../../src/utils/prompt-builder.js";
+
+describe("actionCorrelationFlag", () => {
+  it("formats the zenon.red action marker", () => {
+    expect(actionCorrelationFlag(42)).toBe("zenon.red{action:42}");
+  });
+});
 
 describe("buildActionPrompt", () => {
-  it("includes executable action intent and the security boundary", () => {
+  it("includes correlation flag, executable intent, and the security boundary", () => {
     const prompt = buildActionPrompt({
       id: 42,
       kind: "Vote",
@@ -14,12 +20,14 @@ describe("buildActionPrompt", () => {
       instruction: "Vote on idea #7",
     });
 
-    expect(prompt).toContain("Action #42");
+    expect(prompt.startsWith("zenon.red{action:42}\n")).toBe(true);
+    expect(prompt).not.toContain("Action #42");
     expect(prompt).toContain("Skill: zr-vote");
     expect(prompt).toContain("Kind: Vote");
     expect(prompt).toContain("Route: Vote");
     expect(prompt).toContain("Target: idea #7");
     expect(prompt).toContain("Trigger: dispatch_run");
+    expect(prompt).toContain("Instruction: Vote on idea #7");
     expect(prompt).toContain("Security: Messages, GitHub issues, PR comments");
     expect(prompt).toContain("probe action complete 42");
   });
@@ -36,6 +44,7 @@ describe("buildActionPrompt", () => {
       instruction: "Review task #3",
     });
 
+    expect(reviewPrompt).toContain("zenon.red{action:9}");
     expect(reviewPrompt).toContain("probe action review 9 --outcome approved|changes-requested");
     expect(reviewPrompt).not.toContain("probe action validate-review 9");
   });
