@@ -1,0 +1,95 @@
+tests/unit/upgrade-skills-compat.test.ts
+  s_c23efc67f97a87::t_f2af562c7d427f 1,3-39,41-49,51-57,61-62,64-85,87-90,92-98,100-102
+  s_c23efc67f97a87::t_f7b75b4391f1ae 50,58-60
+  s_c23efc67f97a87::t_10fc5c2a4ab456 86
+  s_c23efc67f97a87::t_a7af9878ed5500 2,40,63,91,99,103-104
+tests/fixtures/skills-lock/warn-missing-ref.json
+  s_c23efc67f97a87::t_97ee981a7eab33 1-9
+tests/fixtures/skills-lock/ok.json
+  s_c23efc67f97a87::t_e8fd610f621ad2 1-15
+src/utils/upgrade-skills-output.ts
+  s_c23efc67f97a87::t_c4bf1869ef7c13 2-28,37-39
+  s_c23efc67f97a87::t_b1cd6de79f2acb 29-36
+tests/fixtures/skills-lock/warn-mixed-refs.json
+  s_c23efc67f97a87::t_7ce4fd38f676c0 1-15
+openspec/specs/probe-cli/spec.md
+  s_c23efc67f97a87::t_6fec360a2fcd77 122-256
+scripts/check-skills-ref.ts
+  s_c23efc67f97a87::t_69e723f70f7de0 1,4-10,13-31,33-41,43,46-47
+  s_c23efc67f97a87::t_123ebbb8bc4436 2-3,42,44-45,48
+src/utils/onboard/steps.ts
+  s_c23efc67f97a87::t_62aa7ec093648f 36
+  s_c23efc67f97a87::t_644500616b3754 418-422
+tests/unit/skills-ref-release.test.ts
+  s_c23efc67f97a87::t_e4064c7e8f7e44 1-34,36-38,40-41,53-54
+  s_c23efc67f97a87::t_d75cff3cbefa7f 35,39,42-52
+tests/fixtures/skills-lock/invalid-lock.txt
+  s_c23efc67f97a87::t_cf831316d9ac85 1
+tsconfig.json
+  s_c23efc67f97a87::t_b2468427f4df28 22
+docs/commands.md
+  s_c23efc67f97a87::t_55d78103cea3ca 319-321,325-327,330,332,334,336,338,340-342,344-354,356-360
+  s_c23efc67f97a87::t_8f718f855b2ec4 405-414
+  s_c23efc67f97a87::t_d4d717ab57bd0d 305
+tests/unit/skills-check.test.ts
+  s_c23efc67f97a87::t_195e1d4fbe23ea 1-8,10-48,50-51,58-62,64-65,67,69-71,73,75-86
+  s_c23efc67f97a87::t_f85116215cecc0 63,66,68,72,74
+  s_c23efc67f97a87::t_6ea1d551783e91 49
+  s_c23efc67f97a87::t_a44b21284508ce 9
+  s_c23efc67f97a87::t_8bc324d35bb737 52-57
+openspec/specs/probe-onboarding/spec.md
+  s_c23efc67f97a87::t_da8db559dce08c 36-49
+src/commands/onboard.ts
+  s_c23efc67f97a87::t_f538460db3364b 136-139
+  s_c23efc67f97a87::t_45053b4461136f 79-83
+  s_c23efc67f97a87::t_5587c6e180b754 119
+src/utils/skills-ref-release.ts
+  s_c23efc67f97a87::t_f1861ebae4f47b 1-13,15-16,22-24,26
+  s_c23efc67f97a87::t_bb91319ef35911 14,17-21,25
+.github/workflows/release-binaries.yml
+  s_c23efc67f97a87::t_f6a108f6af2cca 62-73
+src/utils/skills-install.ts
+  s_c23efc67f97a87::t_508057f51487c8 2
+  s_c23efc67f97a87::t_bc99e5ea44317e 64
+  s_c23efc67f97a87::t_3ae33d9b83512e 30,42
+tests/fixtures/skills-lock/malformed-entries.json
+  s_c23efc67f97a87::t_1648fb3046d3b0 1-10
+tests/unit/skills-install.test.ts
+  s_c23efc67f97a87::t_9e8b11047fedff 2
+  s_c23efc67f97a87::t_0f21f42e381728 1,3-10
+package.json
+  s_c23efc67f97a87::t_186e5e5e16e32e 41-42
+tests/fixtures/skills-lock/warn-mismatch.json
+  s_c23efc67f97a87::t_59e2bb4304589a 1-10
+src/utils/skills-check.ts
+  s_c23efc67f97a87::t_d1814abed985cf 151,157,160-162,166,169
+  s_c23efc67f97a87::t_bc1338d5e93699 24-33,35,38-41,43-48,50-52,54-62,64
+  s_c23efc67f97a87::t_ae7a0bbf6df505 1-3,5-7,9,11-17,19-22,65,67-73,75-77,84,99-100,109-132,136-137,145,147,153-156,158-159,163-165,167-168,170-172,174-180,182-184,186-188,190-196,198-206,208-215
+  s_c23efc67f97a87::t_dbb1193e97563f 78,80,89,98
+src/commands/upgrade.ts
+  s_c23efc67f97a87::t_0bb711ae68fd78 145
+  s_c23efc67f97a87::t_59435ba23b6745 190
+  s_c23efc67f97a87::t_bcc7273d3236b7 129
+  s_c23efc67f97a87::t_9effc23fb1a6cc 3-4
+  s_c23efc67f97a87::t_19747a9977b0dc 158
+  s_c23efc67f97a87::t_e8ab18089427c1 130-139,141
+  s_c23efc67f97a87::t_3ae9e12a56b405 140,142
+tests/fixtures/skills-lock/empty-skills.json
+  s_c23efc67f97a87::t_157bd8f0ff1936 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "f949476810c03ac9689591fca9224db1fc8ced8c",
+  "prompts": {},
+  "sessions": {
+    "s_c23efc67f97a87": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "683a16ab-43e8-4b13-8a3c-5ac4fbd542c6",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
