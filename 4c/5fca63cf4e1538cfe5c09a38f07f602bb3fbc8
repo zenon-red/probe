@@ -1,0 +1,27 @@
+openspec/specs/probe.md
+  s_c23efc67f97a87::t_87ee8a9d03c735 1833
+openspec/changes/archive/2026-05-23-central-dispatch/specs/daemon-executor/spec.md
+  s_c23efc67f97a87::t_128c8b1e416a20 134
+src/utils/prompt-builder.ts
+  s_c23efc67f97a87::t_ae49e63662aa02 1-11,29,37,39-42,46,48,53-54
+src/utils/action-prompts.ts
+  s_c23efc67f97a87::t_767c817d38bb49 1-32
+tests/unit/prompt-builder.test.ts
+  s_c23efc67f97a87::t_8c468c882b96c2 4-8,11,23-24,30,47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "4c5fca63cf4e1538cfe5c09a38f07f602bb3fbc8",
+  "prompts": {},
+  "sessions": {
+    "s_c23efc67f97a87": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "683a16ab-43e8-4b13-8a3c-5ac4fbd542c6",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
