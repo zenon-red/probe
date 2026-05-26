@@ -3,6 +3,8 @@ import { join } from "node:path";
 import { getConfig } from "~/utils/config.js";
 import { CommandContext, commandContextOptions, type Agent } from "~/utils/context.js";
 import { countIssues, doctorOk, type DoctorIssue } from "~/utils/doctor-issues.js";
+import { runGenesisDoctorChecks } from "~/utils/genesis-doctor.js";
+import { loadUserConfig } from "~/utils/user-config.js";
 import { isPathWritable } from "~/utils/path-writable.js";
 import { getCachedToken } from "~/utils/token-cache.js";
 import { getWalletInfo } from "~/utils/wallet.js";
@@ -167,12 +169,19 @@ export async function runHealthChecks(options: {
 
     if (tokenValid) {
       try {
+        const genesisSubscribe = [
+          "SELECT * FROM applied_genesis",
+          "SELECT * FROM dispatch_route_config",
+          "SELECT * FROM agent_runtime_status",
+        ];
         await using ctx = await CommandContext.create(
           commandContextOptions(
             { wallet: walletName, host: options.host, module: options.module },
             {
               token,
-              subscribe: includeAgent ? ["SELECT * FROM agents", "SELECT * FROM config"] : [],
+              subscribe: includeAgent
+                ? ["SELECT * FROM agents", "SELECT * FROM config", ...genesisSubscribe]
+                : genesisSubscribe,
             },
           ),
         );
@@ -192,6 +201,9 @@ export async function runHealthChecks(options: {
             });
           }
         }
+
+        const localConfig = { ...config, ...(await loadUserConfig()) };
+        runGenesisDoctorChecks(ctx, localConfig, agent, addIssue);
       } catch (err) {
         addIssue({
           code: "NEXUS_CONNECTION_FAILED",

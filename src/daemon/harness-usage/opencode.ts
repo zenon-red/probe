@@ -9,7 +9,7 @@ import {
   readJsonFile,
 } from "./fs.js";
 import { getNumber } from "./json.js";
-import { MARKER_PREFIX, recordContainsOtherActionMarker } from "./marker-scope.js";
+import { recordContainsOtherActionMarker, resolveMarkerPrefix } from "./marker-scope.js";
 import { sqliteNumber, withReadonlySqlite } from "./sqlite.js";
 import { EMPTY_USAGE, type HarnessUsage, type HarnessUsageExtraction } from "./types.js";
 
@@ -24,9 +24,24 @@ type OpencodeMarkerMatch = { sessionId: string; markerPath: string; mtimeMs: num
 
 export function extractOpencodeUsageExtraction(
   marker: string,
-  runStartedAt: Date,
-  options?: OpencodeExtractionOptions,
+  markerPrefixOrRunStartedAt: string | Date,
+  runStartedAtOrOptions?: Date | OpencodeExtractionOptions,
+  optionsMaybe?: OpencodeExtractionOptions,
 ): HarnessUsageExtraction {
+  const markerPrefix =
+    typeof markerPrefixOrRunStartedAt === "string"
+      ? markerPrefixOrRunStartedAt
+      : resolveMarkerPrefix();
+  const runStartedAt =
+    markerPrefixOrRunStartedAt instanceof Date ? markerPrefixOrRunStartedAt : runStartedAtOrOptions;
+  const options =
+    markerPrefixOrRunStartedAt instanceof Date
+      ? (runStartedAtOrOptions as OpencodeExtractionOptions | undefined)
+      : optionsMaybe;
+  if (!(runStartedAt instanceof Date)) {
+    return { usage: EMPTY_USAGE, debugReason: "run_started_at_missing" };
+  }
+
   const locations = options?.storageDir
     ? [{ baseDir: options.baseDir ?? options.storageDir, storageDir: options.storageDir }]
     : resolveOpencodeLocations();
@@ -48,7 +63,7 @@ export function extractOpencodeUsageExtraction(
   }
 
   const { sessionId, markerPath, storageDir, baseDir } = match;
-  const markerCount = countOpencodeDispatchMarkers(storageDir, sessionId, minMtimeMs);
+  const markerCount = countOpencodeDispatchMarkers(storageDir, sessionId, markerPrefix, minMtimeMs);
 
   if (markerCount <= 1) {
     const dbUsage = queryOpencodeSessionTokens(baseDir, sessionId, minMtimeMs);
@@ -61,6 +76,7 @@ export function extractOpencodeUsageExtraction(
     storageDir,
     sessionId,
     marker,
+    markerPrefix,
     minMtimeMs,
     markerPath,
     match.mtimeMs,
@@ -139,6 +155,7 @@ function extractOpencodeSessionId(path: string): string | null {
 function countOpencodeDispatchMarkers(
   storageDir: string,
   sessionId: string,
+  markerPrefix: string,
   minMtimeMs: number,
 ): number {
   let count = 0;
@@ -147,7 +164,7 @@ function countOpencodeDispatchMarkers(
     for (const path of listFiles(messageSessionDir)) {
       const mtimeMs = fileMtimeMs(path);
       if (mtimeMs === null || mtimeMs < minMtimeMs) continue;
-      if (fileContainsMarker(path, MARKER_PREFIX)) count += 1;
+      if (fileContainsMarker(path, markerPrefix)) count += 1;
     }
   }
 
@@ -169,7 +186,7 @@ function countOpencodeDispatchMarkers(
       try {
         const record = readJsonFile(partPath) as Record<string, unknown>;
         if (record.sessionID !== sessionId) continue;
-        if (fileContainsMarker(partPath, MARKER_PREFIX)) count += 1;
+        if (fileContainsMarker(partPath, markerPrefix)) count += 1;
       } catch {
         continue;
       }
@@ -206,6 +223,7 @@ function sumOpencodePartsForSession(
   storageDir: string,
   sessionId: string,
   marker: string,
+  markerPrefix: string,
   minMtimeMs: number,
   markerPath: string,
   markerMtimeMs: number,
@@ -243,6 +261,7 @@ function sumOpencodePartsForSession(
     sessionId,
     markerMtimeMs,
     marker,
+    markerPrefix,
   );
 
   let startIndex = files.findIndex((f) => f.path === markerPath);
@@ -264,7 +283,7 @@ function sumOpencodePartsForSession(
     } catch {
       continue;
     }
-    if (i > 0 && recordContainsOtherActionMarker(parsed, marker)) break;
+    if (i > 0 && recordContainsOtherActionMarker(parsed, marker, markerPrefix)) break;
     const usage = sumOpencodeUsageFromObject(parsed);
     inputTokens += usage.inputTokens;
     outputTokens += usage.outputTokens;
@@ -277,6 +296,7 @@ function nextOpencodeDispatchMarkerMtime(
   sessionId: string,
   afterMtimeMs: number,
   marker: string,
+  markerPrefix: string,
 ): number | null {
   let next: number | null = null;
   const messageSessionDir = join(storageDir, "message", sessionId);
@@ -291,7 +311,7 @@ function nextOpencodeDispatchMarkerMtime(
     } catch {
       continue;
     }
-    if (!recordContainsOtherActionMarker(parsed, marker)) continue;
+    if (!recordContainsOtherActionMarker(parsed, marker, markerPrefix)) continue;
     if (next === null || mtimeMs < next) next = mtimeMs;
   }
   return next;

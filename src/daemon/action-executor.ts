@@ -8,6 +8,7 @@ import type { ExecutableAction } from "./executable-action.js";
 import type { EventEmitter } from "./events.js";
 import { extractUsage } from "./harness-usage/index.js";
 import { runHarness, type SpawnRunner } from "./harness-runner.js";
+import { loadUserConfig } from "~/utils/user-config.js";
 
 export type { ExecutableAction } from "./executable-action.js";
 
@@ -27,16 +28,22 @@ export function createActionExecutor(
     deps.setRunningActionId(action.id);
 
     const actionKind = enumName(action.kind);
-    const prompt = buildActionPrompt({
-      id: action.id,
-      kind: actionKind,
-      skill: action.skill || actionKind.toLowerCase(),
-      instruction: action.instruction || `Execute ${actionKind}`,
-      route: enumName(action.route),
-      targetType: action.targetType,
-      targetId: action.targetId,
-      triggerType: action.triggerType,
-    });
+    const localConfig = await loadUserConfig();
+    const promptMarkerTemplate =
+      localConfig.promptMarkerTemplate ?? deps.ctx.config.promptMarkerTemplate;
+    const prompt = buildActionPrompt(
+      {
+        id: action.id,
+        kind: actionKind,
+        skill: action.skill || actionKind.toLowerCase(),
+        instruction: action.instruction || `Execute ${actionKind}`,
+        route: enumName(action.route),
+        targetType: action.targetType,
+        targetId: action.targetId,
+        triggerType: action.triggerType,
+      },
+      { promptMarkerTemplate },
+    );
 
     try {
       await callReducer(deps.ctx, deps.ctx.conn.reducers.reportActionRunStarted, {
@@ -73,6 +80,7 @@ export function createActionExecutor(
         harness: deps.harness.harness,
         actionId: action.id,
         runStartedAt,
+        promptMarkerTemplate,
       });
       if (extraction.debugReason) {
         deps.emit({

@@ -4,9 +4,13 @@ import { DbConnection, type ErrorContext } from "~/module_bindings/index.js";
 export type {
   Agent,
   AgentAction,
+  AgentRuntimeStatus,
+  AppliedGenesis,
+  Artifact,
   Channel,
   Config,
   DiscoveredTask,
+  DispatchRouteConfig,
   EvaluationDimension,
   Idea,
   IdentityRole,
@@ -151,6 +155,22 @@ export class CommandContext implements AsyncDisposable {
 
   get discoveredTasks() {
     return Array.from(this.conn.db.discovered_tasks.iter());
+  }
+
+  get appliedGenesis() {
+    return Array.from(this.conn.db.applied_genesis.iter());
+  }
+
+  get dispatchRouteConfig() {
+    return Array.from(this.conn.db.dispatch_route_config.iter());
+  }
+
+  get artifacts() {
+    return Array.from(this.conn.db.artifact.iter());
+  }
+
+  get agentRuntimeStatus() {
+    return Array.from(this.conn.db.agent_runtime_status.iter());
   }
 
   /** STDB config table rows (named to avoid clashing with probe `config` settings). */

@@ -30,7 +30,9 @@ Endpoint construction: `src/utils/sql.ts:buildSqlEndpoint()` (the CLI config key
 
 ## Schema
 
-All tables are public. Source definitions live in the Nexus backend repo under `stdb/src/tables/`.
+This section is a contributor-facing snapshot, not the canonical schema. The canonical table definitions live in the Nexus backend repo under `stdb/src/tables/`; generated Probe bindings live under `src/module_bindings/`.
+
+Use `probe query --tables` against the target Nexus module for the live table list.
 
 ### agents
 

@@ -20,4 +20,7 @@ export default {
     return TaskReviewValidationOutcome;
   },
   summary: __t.string(),
+  artifactKind: __t.string(),
+  artifactUrl: __t.string(),
+  artifactMetadata: __t.option(__t.string()),
 };

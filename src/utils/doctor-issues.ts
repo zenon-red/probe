@@ -64,6 +64,19 @@ export function buildDoctorNextCommands(
   if (codes.has("NEXUS_CONNECTION_FAILED")) {
     commands.push("probe doctor --host <host> --module nexus");
   }
+  if (
+    codes.has("GENESIS_HASH_DRIFT") ||
+    codes.has("GENESIS_LOCAL_MISSING") ||
+    issues.some((i) => i.code.startsWith("GENESIS_SYNC_"))
+  ) {
+    commands.push("probe genesis sync");
+  }
+  if (codes.has("PROBE_VERSION_BELOW_MIN")) {
+    commands.push("probe upgrade");
+  }
+  if (codes.has("GH_TOKEN_MISSING")) {
+    commands.push("export GH_TOKEN=<token>");
+  }
 
   return commands.length > 0 ? commands : ["probe --help"];
 }

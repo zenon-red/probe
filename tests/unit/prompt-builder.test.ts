@@ -45,7 +45,7 @@ describe("buildActionPrompt", () => {
     });
 
     expect(reviewPrompt).toContain("zenon.red{action:9}");
-    expect(reviewPrompt).toContain("probe action review 9 --outcome approved|changes-requested");
-    expect(reviewPrompt).not.toContain("probe action validate-review 9");
+    expect(reviewPrompt).toContain("probe review complete 9 --outcome approved|changes-requested");
+    expect(reviewPrompt).not.toContain("probe review validate 9");
   });
 });

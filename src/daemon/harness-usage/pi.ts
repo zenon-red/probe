@@ -1,3 +1,4 @@
+import { resolveMarkerPrefix } from "./marker-scope.js";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -10,8 +11,19 @@ export const PI_ROOT = () => join(homedir(), ".pi", "agent", "sessions");
 export function extractPiUsageExtraction(
   piRoot: string,
   marker: string,
-  runStartedAt: Date,
+  markerPrefixOrRunStartedAt: string | Date,
+  runStartedAtMaybe?: Date,
 ): HarnessUsageExtraction {
+  const markerPrefix =
+    typeof markerPrefixOrRunStartedAt === "string"
+      ? markerPrefixOrRunStartedAt
+      : resolveMarkerPrefix();
+  const runStartedAt =
+    markerPrefixOrRunStartedAt instanceof Date ? markerPrefixOrRunStartedAt : runStartedAtMaybe;
+  if (!runStartedAt) {
+    return { usage: EMPTY_USAGE, debugReason: "run_started_at_missing" };
+  }
+
   if (!existsSync(piRoot)) {
     return { usage: EMPTY_USAGE, debugReason: "pi_root_missing" };
   }
@@ -21,11 +33,15 @@ export function extractPiUsageExtraction(
     return { usage: EMPTY_USAGE, debugReason: "pi_session_not_found" };
   }
 
-  return { usage: sumPiUsageFromScopedJsonl(sessionPath, marker) };
+  return { usage: sumPiUsageFromScopedJsonl(sessionPath, marker, markerPrefix) };
 }
 
-function sumPiUsageFromScopedJsonl(path: string, marker: string): HarnessUsage {
-  return sumPiUsageFromLines(collectScopedJsonlLines(path, marker));
+function sumPiUsageFromScopedJsonl(
+  path: string,
+  marker: string,
+  markerPrefix: string,
+): HarnessUsage {
+  return sumPiUsageFromLines(collectScopedJsonlLines(path, marker, markerPrefix));
 }
 
 export function sumPiUsageFromLines(lines: string[]): HarnessUsage {

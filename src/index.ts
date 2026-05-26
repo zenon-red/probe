@@ -7,6 +7,9 @@ import doctor from "./commands/doctor.js";
 import action from "./commands/action.js";
 import agentCooldown from "./commands/agent-cooldown.js";
 import onboard from "./commands/onboard.js";
+import genesis from "./commands/genesis/index.js";
+import artifact from "./commands/artifact/index.js";
+import review from "./commands/review/index.js";
 import agent from "./commands/nexus/agent.js";
 import discover from "./commands/nexus/discover.js";
 import idea from "./commands/nexus/idea.js";
@@ -56,6 +59,9 @@ const topLevelCommands = new Set([
   "upgrade",
   "onboard",
   "action",
+  "genesis",
+  "artifact",
+  "review",
 ]);
 
 const require = createRequire(import.meta.url);
@@ -101,11 +107,14 @@ const main = defineCommand({
           { name: "project", detail: "Project management" },
           {
             name: "action",
-            detail: "Action lifecycle: show, complete, fail, skip, review, validate-review",
+            detail: "Action lifecycle: show, complete, fail, skip",
           },
+          { name: "artifact", detail: "Register and list action artifacts" },
+          { name: "review", detail: "Complete review and validation actions" },
           { name: "query", detail: "Execute SQL queries against Nexus" },
           { name: "doctor", detail: "Run setup and connectivity diagnostics" },
           { name: "onboard", detail: "Idempotent agent setup for autonomous participation" },
+          { name: "genesis", detail: "Apply and sync org/environment Genesis manifest" },
           { name: "whoami", detail: "Show current authenticated agent profile" },
           { name: "upgrade", detail: "Upgrade Probe to the latest version" },
           { name: "config", detail: "Read/write CLI configuration" },
@@ -139,6 +148,9 @@ const main = defineCommand({
     doctor,
     cooldown: agentCooldown,
     onboard,
+    genesis,
+    artifact,
+    review,
     action,
     upgrade,
     whoami,

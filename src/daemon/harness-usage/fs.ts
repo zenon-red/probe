@@ -1,6 +1,5 @@
-import { closeSync, existsSync, openSync, readSync, readdirSync, statSync } from "node:fs";
+import { closeSync, openSync, readSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { MARKER_PREFIX } from "./types.js";
 
 export type FileMatch = { path: string; mtimeMs: number };
 
@@ -110,7 +109,11 @@ export function forEachLineSync(path: string, onLine: (line: string) => false | 
   }
 }
 
-export function collectScopedJsonlLines(path: string, marker: string): string[] {
+export function collectScopedJsonlLines(
+  path: string,
+  marker: string,
+  markerPrefix: string,
+): string[] {
   const scoped: string[] = [];
   let capturing = false;
   forEachLineSync(path, (line) => {
@@ -120,7 +123,7 @@ export function collectScopedJsonlLines(path: string, marker: string): string[] 
       return;
     }
     if (capturing) {
-      if (line.includes(MARKER_PREFIX)) return false;
+      if (line.includes(markerPrefix)) return false;
       scoped.push(line);
     }
   });

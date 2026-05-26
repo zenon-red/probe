@@ -1,7 +1,7 @@
+import { resolveMarkerPrefix } from "./marker-scope.js";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { MARKER_PREFIX } from "./marker-scope.js";
 import { collectScopedJsonlLines, findNewestFileWithMarker, forEachLineSync } from "./fs.js";
 import { getNested, getNumber } from "./json.js";
 import { EMPTY_USAGE, type HarnessUsage, type HarnessUsageExtraction } from "./types.js";
@@ -11,8 +11,19 @@ export const OPENCLAW_ROOT = () => join(homedir(), ".openclaw", "sessions");
 export function extractOpenclawUsageExtraction(
   openclawRoot: string,
   marker: string,
-  runStartedAt: Date,
+  markerPrefixOrRunStartedAt: string | Date,
+  runStartedAtMaybe?: Date,
 ): HarnessUsageExtraction {
+  const markerPrefix =
+    typeof markerPrefixOrRunStartedAt === "string"
+      ? markerPrefixOrRunStartedAt
+      : resolveMarkerPrefix();
+  const runStartedAt =
+    markerPrefixOrRunStartedAt instanceof Date ? markerPrefixOrRunStartedAt : runStartedAtMaybe;
+  if (!runStartedAt) {
+    return { usage: EMPTY_USAGE, debugReason: "run_started_at_missing" };
+  }
+
   if (!existsSync(openclawRoot)) {
     return { usage: EMPTY_USAGE, debugReason: "openclaw_root_missing" };
   }
@@ -25,17 +36,25 @@ export function extractOpenclawUsageExtraction(
   }
 
   const usage = artifact.path.endsWith(".jsonl")
-    ? sumOpenclawUsageFromScopedJsonl(artifact.path, marker)
-    : sumOpenclawUsageFromScopedJson(artifact.path, marker);
+    ? sumOpenclawUsageFromScopedJsonl(artifact.path, marker, markerPrefix)
+    : sumOpenclawUsageFromScopedJson(artifact.path, marker, markerPrefix);
   return { usage };
 }
 
-export function sumOpenclawUsageFromScopedJsonl(path: string, marker: string): HarnessUsage {
-  return sumOpenclawUsageFromJsonlLines(collectScopedJsonlLines(path, marker));
+export function sumOpenclawUsageFromScopedJsonl(
+  path: string,
+  marker: string,
+  markerPrefix: string,
+): HarnessUsage {
+  return sumOpenclawUsageFromJsonlLines(collectScopedJsonlLines(path, marker, markerPrefix));
 }
 
-function sumOpenclawUsageFromScopedJson(path: string, marker: string): HarnessUsage {
-  const fromJsonl = sumOpenclawUsageFromScopedJsonl(path, marker);
+function sumOpenclawUsageFromScopedJson(
+  path: string,
+  marker: string,
+  markerPrefix: string,
+): HarnessUsage {
+  const fromJsonl = sumOpenclawUsageFromScopedJsonl(path, marker, markerPrefix);
   if (fromJsonl.inputTokens > 0 || fromJsonl.outputTokens > 0) return fromJsonl;
 
   let scoped = "";
@@ -47,7 +66,7 @@ function sumOpenclawUsageFromScopedJson(path: string, marker: string): HarnessUs
       return;
     }
     if (capturing) {
-      if (line.includes(MARKER_PREFIX)) return false;
+      if (line.includes(markerPrefix)) return false;
       scoped += `${line}\n`;
     }
   });

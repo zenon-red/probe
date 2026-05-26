@@ -4,6 +4,7 @@ import { HEARTBEAT } from "~/utils/timeouts.js";
 import { callReducer, type CommandContext } from "~/utils/context.js";
 import type { HarnessDetectionResult } from "~/utils/harness-detection.js";
 import { createActionExecutor } from "./action-executor.js";
+import { ensureGenesisSyncedBeforeHarness } from "./genesis-gate.js";
 import { toExecutableAction } from "./executable-action.js";
 import { sanitizeValue, type EventEmitter } from "./events.js";
 import type { SpawnRunner } from "./harness-runner.js";
@@ -95,7 +96,11 @@ export async function runDaemonSession(options: DaemonSessionOptions): Promise<S
       return;
     }
 
-    executeAction(action);
+    void (async () => {
+      const ok = await ensureGenesisSyncedBeforeHarness(options.ctx, options.emit);
+      if (!ok) return;
+      await executeAction(action);
+    })();
   });
 
   let heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
@@ -146,6 +151,8 @@ async function subscribeToActions(ctx: CommandContext, agentId: string): Promise
         // support enum literals in WHERE). Client-side onInsert handler filters by
         // checking `enumName(action.status) !== "Issued"`.
         `SELECT * FROM agent_actions WHERE agent_id = '${agentId}'`,
+        "SELECT * FROM applied_genesis",
+        "SELECT * FROM agent_runtime_status",
       ]);
   });
 }

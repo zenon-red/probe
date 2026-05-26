@@ -1,6 +1,6 @@
 # Authentication
 
-Probe uses a custom OIDC-like flow backed to require Zenon Network (Ed25519) keys and signatures.
+Probe uses a custom OIDC-like flow backed by Zenon Network (Ed25519) keys and signatures.
 
 ## Flow Overview
 
@@ -99,12 +99,12 @@ Tokens are cached at `~/.probe/tokens/<wallet-name>.json`:
 ## CLI Usage
 
 ```bash
-probe login my-wallet --save
+probe login my-wallet --password-file ./wallet.pass --save
 ```
 
 This:
 
-1. Loads wallet `my-wallet` (prompts for password)
+1. Loads wallet `my-wallet` with a password from `--password-file` or `PROBE_WALLET_PASSWORD`
 2. Calls `/auth/challenge` with wallet address
 3. Signs challenge with Zenon's Ed25519 private key
 4. Calls `/auth/token` with signature
@@ -124,7 +124,7 @@ Priority order:
 
 1. `--password-file <path>`: Read password from file
 2. `PROBE_WALLET_PASSWORD` environment variable
-3. Interactive prompt (requires TTY)
+3. No interactive fallback; commands fail if no password source is provided
 
 ### Non-Interactive Auth
 

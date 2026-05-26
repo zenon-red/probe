@@ -1,27 +1,26 @@
-# process.exit inventory
+# Process exit boundary
 
-Verified via `rg 'process\.exit' src/` on 2026-05-23 (wave 6.5).
+Probe centralizes process termination so command code stays testable and errors are rendered consistently.
 
-## Direct call sites
+## Invariant
 
-| File                    | Role                                                                                                |
-| ----------------------- | --------------------------------------------------------------------------------------------------- |
-| `src/utils/boundary.ts` | Sole direct `process.exit` usage — `installProbeExitHook`, `renderProbeErrorAndExit`, `exitProcess` |
+Only `src/utils/boundary.ts` should call `process.exit` directly.
 
-## Boundary consumers (no direct `process.exit`)
+Command handlers should either:
 
-| File                           | Mechanism                                                           |
-| ------------------------------ | ------------------------------------------------------------------- |
-| `src/index.ts`                 | `renderProbeErrorAndExit` for unhandled rejections; citty exit hook |
-| `src/commands/doctor.ts`       | `exitProcess(1)` when checks fail after success output              |
-| `src/commands/nexus-daemon.ts` | `renderProbeErrorAndExit` on harness startup failure                |
+- throw a `ProbeError` via `error()` for failures, or
+- call `exitProcess(code)` when a command must emit a successful payload before returning a failing exit code.
 
-## Migrated away
+## Boundary consumers
 
-| File                  | Notes                                                   |
-| --------------------- | ------------------------------------------------------- |
-| `src/utils/output.ts` | `error()` throws `ProbeError`; boundary renders at exit |
+| File                           | Mechanism                                               |
+| ------------------------------ | ------------------------------------------------------- |
+| `src/index.ts`                 | Installs the citty exit hook and renders fatal errors   |
+| `src/commands/doctor.ts`       | Uses `exitProcess(1)` when diagnostics contain failures |
+| `src/commands/nexus-daemon.ts` | Renders startup failures through the boundary           |
 
 ## Citty integration
 
-`installProbeExitHook()` intercepts `process.exit` when a `ProbeError` was thrown so citty's catch path renders JSON/text via `renderProbeError` before exiting.
+`installProbeExitHook()` intercepts citty's `process.exit` path after a `ProbeError` so `renderProbeErrorAndExit()` can render the structured Probe error before terminating.
+
+When adding new commands, do not call `process.exit` directly from command logic.

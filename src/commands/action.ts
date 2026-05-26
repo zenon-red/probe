@@ -5,14 +5,22 @@ import {
   commandContextOptions,
   withAuth,
 } from "~/utils/context.js";
-import type { DispatchRoute as DispatchRouteType } from "~/module_bindings/types.js";
 import { DispatchRoute, enumName, identityHex } from "~/utils/enums.js";
 import { parseActionId } from "~/utils/action-id.js";
+import { completionGuideForAction } from "~/utils/action-completion.js";
+import { loadUserConfig } from "~/utils/user-config.js";
 import { runReducerCommand } from "~/utils/reducer-command.js";
 import { defineSubcommandParent } from "~/utils/subcommand.js";
 import { applyJsonMode, error, success } from "~/utils/output.js";
 
-const ACTION_SUBSCRIBE = ["SELECT * FROM agents", "SELECT * FROM agent_actions"];
+const ACTION_SUBSCRIBE = [
+  "SELECT * FROM agents",
+  "SELECT * FROM agent_actions",
+  "SELECT * FROM tasks",
+  "SELECT * FROM projects",
+  "SELECT * FROM dispatch_route_config",
+  "SELECT * FROM applied_genesis",
+];
 
 function buildContextCommands(action: AgentAction): string[] {
   const commands: string[] = [];
@@ -29,15 +37,35 @@ function buildContextCommands(action: AgentAction): string[] {
   return commands;
 }
 
-function formatActionRow(action: AgentAction): Record<string, unknown> {
+function targetRepoForAction(ctx: CommandContext, action: AgentAction): string | undefined {
+  if (action.targetType !== "task" || !action.targetId) return undefined;
+  const taskId = BigInt(action.targetId);
+  const task = ctx.tasks.find((t) => t.id === taskId);
+  if (!task) return undefined;
+  const project = ctx.projects.find((p) => p.id === task.projectId);
+  return project?.githubRepo;
+}
+
+function formatActionRow(
+  ctx: CommandContext,
+  action: AgentAction,
+  extras?: { githubOrg?: string },
+): Record<string, unknown> {
+  const routeTag = enumName(action.route);
+  const routeConfig = ctx.dispatchRouteConfig.find((r) => enumName(r.route) === routeTag);
   return {
     id: action.id.toString(),
     kind: enumName(action.kind),
-    route: enumName(action.route),
+    route: routeTag,
+    capability: routeConfig?.capability ?? "—",
     skill: action.skill,
     instruction: action.instruction,
     target_type: action.targetType ?? "—",
     target_id: action.targetId ?? "—",
+    target_repo: targetRepoForAction(ctx, action) ?? "—",
+    "org.github_org": extras?.githubOrg ?? "—",
+    result_idea_id: action.resultIdeaId?.toString() ?? "—",
+    result_vote_id: action.resultVoteId?.toString() ?? "—",
     reason_code: action.reasonCode,
     trigger_type: action.triggerType,
     trigger_id: action.triggerId ?? "—",
@@ -46,6 +74,7 @@ function formatActionRow(action: AgentAction): Record<string, unknown> {
     updated_at: action.updatedAt,
     run_outcome: enumName(action.runOutcome),
     harness: action.harness ?? "—",
+    completion: completionGuideForAction(action),
   };
 }
 
@@ -71,13 +100,14 @@ function verifyOwnership(ctx: CommandContext, actionId: bigint): AgentAction {
   return action;
 }
 
-function completionHintForRoute(route: DispatchRouteType, actionId: bigint): string {
-  const id = actionId.toString();
+function completionHintForAction(action: AgentAction): string {
+  const route = action.route;
+  const id = action.id.toString();
   if (DispatchRoute.is.reviewTask(route)) {
-    return `Use: probe action review ${id} --outcome approved|changes-requested --summary "..."`;
+    return `Use: probe review complete ${id} --outcome approved|changes-requested --summary "..." --artifact-kind review --artifact-url <url>`;
   }
   if (DispatchRoute.is.validateReview(route)) {
-    return `Use: probe action validate-review ${id} --outcome valid|invalid --summary "..."`;
+    return `Use: probe review validate ${id} --outcome valid|invalid --summary "..." --artifact-kind review_comment --artifact-url <url>`;
   }
   return `Use: probe action complete ${id}`;
 }
@@ -87,34 +117,16 @@ function blockGenericCompleteOnReviewRoutes(action: AgentAction): void {
     error(
       "WRONG_ROUTE",
       `Action ${action.id} is a peer review (ReviewTask).`,
-      completionHintForRoute(action.route, action.id),
+      completionHintForAction(action),
     );
   }
   if (DispatchRoute.is.validateReview(action.route)) {
     error(
       "WRONG_ROUTE",
       `Action ${action.id} is a review validation (ValidateReview).`,
-      completionHintForRoute(action.route, action.id),
+      completionHintForAction(action),
     );
   }
-}
-
-function requireReviewTaskRoute(action: AgentAction): void {
-  if (DispatchRoute.is.reviewTask(action.route)) return;
-  error(
-    "WRONG_ROUTE",
-    `Action ${action.id} has route ${enumName(action.route)}, not ReviewTask.`,
-    completionHintForRoute(action.route, action.id),
-  );
-}
-
-function requireValidateReviewRoute(action: AgentAction): void {
-  if (DispatchRoute.is.validateReview(action.route)) return;
-  error(
-    "WRONG_ROUTE",
-    `Action ${action.id} has route ${enumName(action.route)}, not ValidateReview.`,
-    completionHintForRoute(action.route, action.id),
-  );
 }
 
 type ActionConnectionArgs = {
@@ -145,8 +157,12 @@ export const actionShowCommand = defineCommand({
           error("ACTION_NOT_FOUND", `Action ${actionId} not found.`);
         }
 
+        const local = await loadUserConfig();
+        const applied = ctx.appliedGenesis.find((r) => r.id === "active");
         const contextCommands = buildContextCommands(action);
-        const row = formatActionRow(action);
+        const row = formatActionRow(ctx, action, {
+          githubOrg: applied?.githubOrg ?? local.githubOrg,
+        });
 
         success({ action: row }, contextCommands);
       },
@@ -250,114 +266,9 @@ export const actionSkipCommand = defineCommand({
   },
 });
 
-export const actionReviewCommand = defineCommand({
-  meta: { name: "review", description: "Complete a ReviewTask action with outcome" },
-  args: {
-    id: { type: "positional", name: "id", description: "Action ID", required: true },
-    outcome: {
-      type: "string",
-      description: "Review outcome: approved or changes-requested",
-      required: true,
-      alias: "o",
-    },
-    summary: {
-      type: "string",
-      description: "Review summary",
-      required: true,
-      alias: "s",
-    },
-    wallet: { type: "string", description: "Wallet name" },
-    host: { type: "string", description: "SpacetimeDB host" },
-    module: { type: "string", description: "Module name" },
-    json: { type: "boolean", description: "JSON output", default: false },
-  },
-  async run({ args }) {
-    applyJsonMode(args);
-    const actionId = parseActionId(args.id);
-
-    const validOutcomes = ["approved", "changes-requested"];
-    if (!validOutcomes.includes(args.outcome)) {
-      error("INVALID_OUTCOME", `Outcome must be one of: ${validOutcomes.join(", ")}`);
-    }
-
-    const outcomeTag =
-      args.outcome === "approved" ? ("Approved" as const) : ("ChangesRequested" as const);
-
-    await runReducerCommand(args as ActionConnectionArgs, {
-      subscribe: ACTION_SUBSCRIBE,
-      reducer: (ctx) => ctx.conn.reducers.completeReviewAction,
-      params: (ctx) => {
-        const action = verifyOwnership(ctx, actionId);
-        requireReviewTaskRoute(action);
-        return {
-          actionId,
-          outcome: { tag: outcomeTag },
-          summary: args.summary,
-        };
-      },
-    });
-
-    success({ action_id: actionId.toString(), status: "completed", review_outcome: args.outcome });
-  },
-});
-
-export const actionValidateReviewCommand = defineCommand({
-  meta: { name: "validate-review", description: "Complete a ValidateReview action with outcome" },
-  args: {
-    id: { type: "positional", name: "id", description: "Action ID", required: true },
-    outcome: {
-      type: "string",
-      description: "Validation outcome: valid or invalid",
-      required: true,
-      alias: "o",
-    },
-    summary: {
-      type: "string",
-      description: "Validation summary",
-      required: true,
-      alias: "s",
-    },
-    wallet: { type: "string", description: "Wallet name" },
-    host: { type: "string", description: "SpacetimeDB host" },
-    module: { type: "string", description: "Module name" },
-    json: { type: "boolean", description: "JSON output", default: false },
-  },
-  async run({ args }) {
-    applyJsonMode(args);
-    const actionId = parseActionId(args.id);
-
-    const validOutcomes = ["valid", "invalid"];
-    if (!validOutcomes.includes(args.outcome)) {
-      error("INVALID_OUTCOME", `Outcome must be one of: ${validOutcomes.join(", ")}`);
-    }
-
-    const outcomeTag = args.outcome === "valid" ? ("Valid" as const) : ("Invalid" as const);
-
-    await runReducerCommand(args as ActionConnectionArgs, {
-      subscribe: ACTION_SUBSCRIBE,
-      reducer: (ctx) => ctx.conn.reducers.completeValidateReviewAction,
-      params: (ctx) => {
-        const action = verifyOwnership(ctx, actionId);
-        requireValidateReviewRoute(action);
-        return {
-          actionId,
-          outcome: { tag: outcomeTag },
-          summary: args.summary,
-        };
-      },
-    });
-
-    success({
-      action_id: actionId.toString(),
-      status: "completed",
-      validation_outcome: args.outcome,
-    });
-  },
-});
-
 export default defineSubcommandParent({
   name: "action",
-  description: "Manage action lifecycle — show, complete, fail, skip, review, validate-review",
+  description: "Manage action lifecycle — show, complete, fail, skip",
   args: {
     wallet: { type: "string", description: "Wallet name" },
     host: { type: "string", description: "SpacetimeDB host" },
@@ -366,7 +277,7 @@ export default defineSubcommandParent({
   },
   help: {
     command: "probe action",
-    description: "Action lifecycle: show, complete, fail, skip, review, validate-review",
+    description: "Action lifecycle: show, complete, fail, skip",
     usage: [
       "probe action <subcommand> [positionals] [args]",
       "probe action show 42",
@@ -377,8 +288,6 @@ export default defineSubcommandParent({
       { name: "complete <id>", detail: "Mark an action completed" },
       { name: "fail <id>", detail: "Mark an action failed" },
       { name: "skip <id>", detail: "Skip an action" },
-      { name: "review <id>", detail: "Complete a review action" },
-      { name: "validate-review <id>", detail: "Complete a review validation action" },
     ],
   },
   subCommands: {
@@ -386,7 +295,5 @@ export default defineSubcommandParent({
     complete: actionCompleteCommand,
     fail: actionFailCommand,
     skip: actionSkipCommand,
-    review: actionReviewCommand,
-    "validate-review": actionValidateReviewCommand,
   },
 });

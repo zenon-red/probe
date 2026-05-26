@@ -10,11 +10,12 @@ import {
 } from "~/daemon/harness-usage.js";
 
 const MARKER = "zenon.red{action:42}";
+const MARKER_PREFIX = "zenon.red{action:";
 
 describe("scopeTextByMarker", () => {
   test("scopes until next action marker", () => {
     const text = `before\n${MARKER}\nusage here\nzenon.red{action:99}\nafter`;
-    expect(scopeTextByMarker(text, MARKER)).toBe(`${MARKER}\nusage here\n`);
+    expect(scopeTextByMarker(text, MARKER, MARKER_PREFIX)).toBe(`${MARKER}\nusage here\n`);
   });
 });
 
@@ -27,7 +28,7 @@ describe("scopeJsonlLines", () => {
       '{"text":"zenon.red{action:99}"}',
       '{"message":{"usage":{"input":999,"output":999}}}',
     ];
-    const scoped = scopeJsonlLines(lines, MARKER);
+    const scoped = scopeJsonlLines(lines, MARKER, MARKER_PREFIX);
     expect(scoped).toHaveLength(2);
     expect(sumPiUsageFromLines(scoped)).toEqual({ inputTokens: 10, outputTokens: 5 });
   });

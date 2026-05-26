@@ -16,6 +16,17 @@ export interface NexusConfig {
     host: string;
     module: string;
   };
+  genesisSource?: string;
+  genesisUrl?: string;
+  genesisHash?: string;
+  genesisId?: string;
+  genesisVersion?: string;
+  githubOrg?: string;
+  orgName?: string;
+  skillsSource?: string;
+  skillsRef?: string;
+  minProbeVersion?: string;
+  promptMarkerTemplate?: string;
 }
 
 export const DEFAULT_CONFIG: NexusConfig = {

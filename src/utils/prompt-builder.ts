@@ -2,25 +2,29 @@ import {
   actionCompleteCommand,
   actionCorrelationFlag,
   actionFailCommand,
-  actionReviewCommand,
   actionSkipCommand,
-  actionValidateReviewCommand,
   ACTION_PROMPT_RUN_SKILL,
   ACTION_PROMPT_SECURITY,
+  reviewCompleteCommand,
+  reviewValidateCommand,
 } from "./action-prompts.js";
 
-export function buildActionPrompt(action: {
-  id: bigint | number;
-  kind: string;
-  skill: string;
-  instruction: string;
-  route: string;
-  targetType?: string | null;
-  targetId?: string | null;
-  triggerType?: string | null;
-}): string {
+export function buildActionPrompt(
+  action: {
+    id: bigint | number;
+    kind: string;
+    skill: string;
+    instruction: string;
+    route: string;
+    targetType?: string | null;
+    targetId?: string | null;
+    triggerType?: string | null;
+  },
+  options?: { promptMarkerTemplate?: string },
+): string {
+  const markerTemplate = options?.promptMarkerTemplate;
   const lines: string[] = [
-    actionCorrelationFlag(action.id),
+    actionCorrelationFlag(action.id, markerTemplate),
     `Skill: ${action.skill}`,
     `Kind: ${action.kind}`,
     `Route: ${action.route}`,
@@ -37,9 +41,9 @@ export function buildActionPrompt(action: {
   ];
 
   if (action.kind === "ReviewTask") {
-    lines.push(`- ${actionReviewCommand(action.id)}`);
+    lines.push(`- ${reviewCompleteCommand(action.id)}`);
   } else if (action.kind === "ValidateReview") {
-    lines.push(`- ${actionValidateReviewCommand(action.id)}`);
+    lines.push(`- ${reviewValidateCommand(action.id)}`);
   }
 
   return lines.join("\n");

@@ -47,4 +47,6 @@ export default __t.row({
   harness: __t.option(__t.string()),
   inputTokens: __t.u64().name("input_tokens"),
   outputTokens: __t.u64().name("output_tokens"),
+  resultIdeaId: __t.option(__t.u64()).name("result_idea_id"),
+  resultVoteId: __t.option(__t.u64()).name("result_vote_id"),
 });

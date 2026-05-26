@@ -35,10 +35,12 @@ import {
 
 // Import all reducer arg schemas
 import AddTaskDependencyReducer from "./add_task_dependency_reducer";
+import ApplyGenesisReducer from "./apply_genesis_reducer";
 import AssignHumanRoleReducer from "./assign_human_role_reducer";
 import ClaimTaskReducer from "./claim_task_reducer";
 import CompleteReviewActionReducer from "./complete_review_action_reducer";
 import CompleteValidateReviewActionReducer from "./complete_validate_review_action_reducer";
+import ConfigureLabReducer from "./configure_lab_reducer";
 import CreateProjectReducer from "./create_project_reducer";
 import CreateTaskReducer from "./create_task_reducer";
 import DiscoverTaskReducer from "./discover_task_reducer";
@@ -49,9 +51,12 @@ import HeartbeatReducer from "./heartbeat_reducer";
 import MarkIdeaImplementedReducer from "./mark_idea_implemented_reducer";
 import OpenIdeaVotingReducer from "./open_idea_voting_reducer";
 import ProposeIdeaReducer from "./propose_idea_reducer";
+import ProposeIdeaForActionReducer from "./propose_idea_for_action_reducer";
 import RegisterAgentReducer from "./register_agent_reducer";
+import RegisterArtifactReducer from "./register_artifact_reducer";
 import ReportActionRunFinishedReducer from "./report_action_run_finished_reducer";
 import ReportActionRunStartedReducer from "./report_action_run_started_reducer";
+import ReportAgentRuntimeStatusReducer from "./report_agent_runtime_status_reducer";
 import ResubmitIdeaRevisionReducer from "./resubmit_idea_revision_reducer";
 import ReviewDiscoveredTaskReducer from "./review_discovered_task_reducer";
 import ReviewIdeaHumanReducer from "./review_idea_human_reducer";
@@ -70,6 +75,7 @@ import UpdateAgentCapabilitiesReducer from "./update_agent_capabilities_reducer"
 import UpdateProjectStatusReducer from "./update_project_status_reducer";
 import UpdateTaskStatusReducer from "./update_task_status_reducer";
 import VoteIdeaReducer from "./vote_idea_reducer";
+import VoteIdeaForActionReducer from "./vote_idea_for_action_reducer";
 
 // Import all procedure arg schemas
 import * as GenerateVoiceProcedure from "./generate_voice_procedure";
@@ -77,12 +83,17 @@ import * as GenerateVoiceProcedure from "./generate_voice_procedure";
 // Import all table schema definitions
 import AgentActionEventsRow from "./agent_action_events_table";
 import AgentActionsRow from "./agent_actions_table";
+import AgentRuntimeStatusRow from "./agent_runtime_status_table";
 import AgentsRow from "./agents_table";
+import AppliedGenesisRow from "./applied_genesis_table";
+import ArtifactRow from "./artifact_table";
 import ChannelsRow from "./channels_table";
 import ConfigRow from "./config_table";
 import DiscoveredTasksRow from "./discovered_tasks_table";
+import DispatchRouteConfigRow from "./dispatch_route_config_table";
 import DispatchRunsRow from "./dispatch_runs_table";
 import EvaluationDimensionsRow from "./evaluation_dimensions_table";
+import FeedChannelConfigRow from "./feed_channel_config_table";
 import IdeaFeedbackRow from "./idea_feedback_table";
 import IdeasRow from "./ideas_table";
 import IdentityRolesRow from "./identity_roles_table";
@@ -139,6 +150,17 @@ const tablesSchema = __schema({
       { name: 'agent_actions_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, AgentActionsRow),
+  agent_runtime_status: __table({
+    name: 'agent_runtime_status',
+    indexes: [
+      { accessor: 'agent_id', name: 'agent_runtime_status_agent_id_idx_btree', algorithm: 'btree', columns: [
+        'agentId',
+      ] },
+    ],
+    constraints: [
+      { name: 'agent_runtime_status_agent_id_key', constraint: 'unique', columns: ['agentId'] },
+    ],
+  }, AgentRuntimeStatusRow),
   agents: __table({
     name: 'agents',
     indexes: [
@@ -154,6 +176,31 @@ const tablesSchema = __schema({
       { name: 'agents_identity_key', constraint: 'unique', columns: ['identity'] },
     ],
   }, AgentsRow),
+  applied_genesis: __table({
+    name: 'applied_genesis',
+    indexes: [
+      { accessor: 'id', name: 'applied_genesis_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'applied_genesis_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, AppliedGenesisRow),
+  artifact: __table({
+    name: 'artifact',
+    indexes: [
+      { accessor: 'by_action_id', name: 'artifact_action_id_idx_btree', algorithm: 'btree', columns: [
+        'actionId',
+      ] },
+      { accessor: 'id', name: 'artifact_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
+    ],
+    constraints: [
+      { name: 'artifact_id_key', constraint: 'unique', columns: ['id'] },
+    ],
+  }, ArtifactRow),
   channels: __table({
     name: 'channels',
     indexes: [
@@ -199,6 +246,17 @@ const tablesSchema = __schema({
       { name: 'discovered_tasks_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, DiscoveredTasksRow),
+  dispatch_route_config: __table({
+    name: 'dispatch_route_config',
+    indexes: [
+      { accessor: 'route', name: 'dispatch_route_config_route_idx_btree', algorithm: 'btree', columns: [
+        'route',
+      ] },
+    ],
+    constraints: [
+      { name: 'dispatch_route_config_route_key', constraint: 'unique', columns: ['route'] },
+    ],
+  }, DispatchRouteConfigRow),
   dispatch_runs: __table({
     name: 'dispatch_runs',
     indexes: [
@@ -225,6 +283,17 @@ const tablesSchema = __schema({
       { name: 'evaluation_dimensions_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, EvaluationDimensionsRow),
+  feed_channel_config: __table({
+    name: 'feed_channel_config',
+    indexes: [
+      { accessor: 'channel_name', name: 'feed_channel_config_channel_name_idx_btree', algorithm: 'btree', columns: [
+        'channelName',
+      ] },
+    ],
+    constraints: [
+      { name: 'feed_channel_config_channel_name_key', constraint: 'unique', columns: ['channelName'] },
+    ],
+  }, FeedChannelConfigRow),
   idea_feedback: __table({
     name: 'idea_feedback',
     indexes: [
@@ -442,10 +511,12 @@ const tablesSchema = __schema({
 /** The schema information for all reducers in this module. This is defined the same way as the reducers would have been defined in the server, except the body of the reducer is omitted in code generation. */
 const reducersSchema = __reducers(
   __reducerSchema("add_task_dependency", AddTaskDependencyReducer),
+  __reducerSchema("apply_genesis", ApplyGenesisReducer),
   __reducerSchema("assign_human_role", AssignHumanRoleReducer),
   __reducerSchema("claim_task", ClaimTaskReducer),
   __reducerSchema("complete_review_action", CompleteReviewActionReducer),
   __reducerSchema("complete_validate_review_action", CompleteValidateReviewActionReducer),
+  __reducerSchema("configure_lab", ConfigureLabReducer),
   __reducerSchema("create_project", CreateProjectReducer),
   __reducerSchema("create_task", CreateTaskReducer),
   __reducerSchema("discover_task", DiscoverTaskReducer),
@@ -456,9 +527,12 @@ const reducersSchema = __reducers(
   __reducerSchema("mark_idea_implemented", MarkIdeaImplementedReducer),
   __reducerSchema("open_idea_voting", OpenIdeaVotingReducer),
   __reducerSchema("propose_idea", ProposeIdeaReducer),
+  __reducerSchema("propose_idea_for_action", ProposeIdeaForActionReducer),
   __reducerSchema("register_agent", RegisterAgentReducer),
+  __reducerSchema("register_artifact", RegisterArtifactReducer),
   __reducerSchema("report_action_run_finished", ReportActionRunFinishedReducer),
   __reducerSchema("report_action_run_started", ReportActionRunStartedReducer),
+  __reducerSchema("report_agent_runtime_status", ReportAgentRuntimeStatusReducer),
   __reducerSchema("resubmit_idea_revision", ResubmitIdeaRevisionReducer),
   __reducerSchema("review_discovered_task", ReviewDiscoveredTaskReducer),
   __reducerSchema("review_idea_human", ReviewIdeaHumanReducer),
@@ -477,6 +551,7 @@ const reducersSchema = __reducers(
   __reducerSchema("update_project_status", UpdateProjectStatusReducer),
   __reducerSchema("update_task_status", UpdateTaskStatusReducer),
   __reducerSchema("vote_idea", VoteIdeaReducer),
+  __reducerSchema("vote_idea_for_action", VoteIdeaForActionReducer),
 );
 
 /** The schema information for all procedures in this module. This is defined the same way as the procedures would have been defined in the server. */

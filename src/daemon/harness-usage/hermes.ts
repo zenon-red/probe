@@ -1,8 +1,8 @@
+import { resolveMarkerPrefix } from "./marker-scope.js";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { fileContainsMarker, forEachLineSync, walkFiles } from "./fs.js";
-import { MARKER_PREFIX } from "./marker-scope.js";
 import { sumOpenclawUsageFromScopedJsonl, sumOpenclawUsageFromScopedText } from "./openclaw.js";
 import {
   querySessionTotals,
@@ -22,8 +22,19 @@ function runStartedAtToHermesTimestamp(runStartedAt: Date): number {
 export function extractHermesUsageExtraction(
   hermesRoot: string,
   marker: string,
-  runStartedAt: Date,
+  markerPrefixOrRunStartedAt: string | Date,
+  runStartedAtMaybe?: Date,
 ): HarnessUsageExtraction {
+  const markerPrefix =
+    typeof markerPrefixOrRunStartedAt === "string"
+      ? markerPrefixOrRunStartedAt
+      : resolveMarkerPrefix();
+  const runStartedAt =
+    markerPrefixOrRunStartedAt instanceof Date ? markerPrefixOrRunStartedAt : runStartedAtMaybe;
+  if (!runStartedAt) {
+    return { usage: EMPTY_USAGE, debugReason: "run_started_at_missing" };
+  }
+
   const dbPath = join(hermesRoot, "state.db");
   if (!existsSync(dbPath)) {
     return { usage: EMPTY_USAGE, debugReason: "hermes_state_db_missing" };
@@ -36,9 +47,9 @@ export function extractHermesUsageExtraction(
       return { usage: EMPTY_USAGE, debugReason: "hermes_session_not_found" };
     }
 
-    const markerCount = countHermesSessionMarkersInDb(db, sessionId, minTimestamp);
+    const markerCount = countHermesSessionMarkersInDb(db, sessionId, markerPrefix, minTimestamp);
     if (markerCount > 1) {
-      const snapshotUsage = sumHermesJsonSnapshots(hermesRoot, marker);
+      const snapshotUsage = sumHermesJsonSnapshots(hermesRoot, marker, markerPrefix);
       if (snapshotUsage.inputTokens > 0 || snapshotUsage.outputTokens > 0) {
         return { usage: snapshotUsage };
       }
@@ -58,7 +69,11 @@ export function extractHermesUsageExtraction(
   return result;
 }
 
-function sumHermesJsonSnapshots(hermesRoot: string, marker: string): HarnessUsage {
+function sumHermesJsonSnapshots(
+  hermesRoot: string,
+  marker: string,
+  markerPrefix: string,
+): HarnessUsage {
   const sessionsDir = join(hermesRoot, "sessions");
   if (!existsSync(sessionsDir)) {
     return EMPTY_USAGE;
@@ -68,7 +83,7 @@ function sumHermesJsonSnapshots(hermesRoot: string, marker: string): HarnessUsag
   for (const path of walkFiles(sessionsDir)) {
     if (!/\.(jsonl?|json)$/i.test(path)) continue;
     if (!fileContainsMarker(path, marker)) continue;
-    const fromJsonl = sumOpenclawUsageFromScopedJsonl(path, marker);
+    const fromJsonl = sumOpenclawUsageFromScopedJsonl(path, marker, markerPrefix);
     if (fromJsonl.inputTokens > 0 || fromJsonl.outputTokens > 0) {
       inputTokens += fromJsonl.inputTokens;
       outputTokens += fromJsonl.outputTokens;
@@ -83,7 +98,7 @@ function sumHermesJsonSnapshots(hermesRoot: string, marker: string): HarnessUsag
         return;
       }
       if (capturing) {
-        if (line.includes(MARKER_PREFIX)) return false;
+        if (line.includes(markerPrefix)) return false;
         scoped += `${line}\n`;
       }
     });
@@ -114,6 +129,7 @@ function findHermesSessionIdInDb(
 function countHermesSessionMarkersInDb(
   db: ReadonlySqliteDb,
   sessionId: string,
+  markerPrefix: string,
   minTimestamp: number,
 ): number {
   const row = db
@@ -121,6 +137,6 @@ function countHermesSessionMarkersInDb(
       `SELECT COUNT(*) AS count FROM messages
        WHERE session_id = ? AND content LIKE ? AND timestamp >= ?`,
     )
-    .get(sessionId, `%${MARKER_PREFIX}%`, minTimestamp);
+    .get(sessionId, `%${markerPrefix}%`, minTimestamp);
   return row ? (sqliteNumber(row, "count") ?? 0) : 0;
 }

@@ -6,5 +6,3 @@ export type HarnessUsageExtraction = {
 };
 
 export const EMPTY_USAGE: HarnessUsage = { inputTokens: 0, outputTokens: 0 };
-
-export const MARKER_PREFIX = "zenon.red{action:";

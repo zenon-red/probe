@@ -1,10 +1,7 @@
 import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
 import * as contextModule from "../../src/utils/context.js";
-import {
-  actionCompleteCommand,
-  actionFailCommand,
-  actionReviewCommand,
-} from "../../src/commands/action.js";
+import { actionCompleteCommand, actionFailCommand } from "../../src/commands/action.js";
+import { reviewCompleteCommand } from "../../src/commands/review/index.js";
 
 const updateAgentAction = mock(async () => {});
 const completeReviewAction = mock(async () => {});
@@ -30,6 +27,7 @@ function baseAction(overrides: Record<string, unknown> = {}) {
 function ownedContext(actionOverrides: Record<string, unknown> = {}) {
   mockCtx = {
     auth: { identity: OWN_IDENTITY },
+    identity: OWN_IDENTITY,
     agents: [{ id: "agent-1", identity: OWN_IDENTITY }],
     agentActions: [baseAction(actionOverrides)],
     conn: {
@@ -136,12 +134,13 @@ describe("action ownership verification", () => {
     installActionMocks();
 
     await expect(
-      actionReviewCommand.run?.({
+      reviewCompleteCommand.run?.({
         args: {
           _: [],
           id: "42",
           outcome: "approved",
           summary: "looks good",
+          "artifact-url": "https://github.com/zenon-red/probe/pull/1#pullrequestreview-2",
           wallet: "w",
           json: false,
         },
@@ -153,12 +152,13 @@ describe("action ownership verification", () => {
     ownedContext({ route: { tag: "ReviewTask" } });
     installActionMocks();
 
-    await actionReviewCommand.run?.({
+    await reviewCompleteCommand.run?.({
       args: {
         _: [],
         id: "42",
         outcome: "approved",
         summary: "looks good",
+        "artifact-url": "https://github.com/zenon-red/probe/pull/1#pullrequestreview-2",
         wallet: "w",
         json: false,
       },
@@ -168,6 +168,9 @@ describe("action ownership verification", () => {
       actionId: 42n,
       outcome: { tag: "Approved" },
       summary: "looks good",
+      artifactKind: "review",
+      artifactUrl: "https://github.com/zenon-red/probe/pull/1#pullrequestreview-2",
+      artifactMetadata: undefined,
     });
   });
 
@@ -176,12 +179,13 @@ describe("action ownership verification", () => {
     installActionMocks();
 
     await expect(
-      actionReviewCommand.run?.({
+      reviewCompleteCommand.run?.({
         args: {
           _: [],
           id: "42",
           outcome: "maybe",
           summary: "looks good",
+          "artifact-url": "https://github.com/zenon-red/probe/pull/1#pullrequestreview-2",
           wallet: "w",
           json: false,
         },

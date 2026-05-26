@@ -15,6 +15,10 @@
 | `emit.test.ts`                              | TOON/JSON output and error rendering                                     |
 | `help.test.ts`                              | Plain-text help (root and subcommand parents)                            |
 | `host-module-command.test.ts`               | `--host` / `--module` forwarding                                         |
+| `genesis-hash.test.ts`                      | Canonical Genesis hash stability                                         |
+| `genesis-manifest.test.ts`                  | Genesis manifest parsing and validation                                  |
+| `genesis-runtime.test.ts`                   | Probe/skills/genesis sync status decisions                               |
+| `github-artifact.test.ts`                   | GitHub artifact URL parsing and kind matching                            |
 | `message-list.test.ts`                      | Shared list/directives sort and kind filter                              |
 | `message-send.test.ts`                      | Content validation and directive type policy                             |
 | `message-target.test.ts`                    | Project/channel target resolution                                        |

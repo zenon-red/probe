@@ -20,20 +20,20 @@ probe --version
 Run one command to complete all required setup:
 
 ```bash
-probe onboard --name "<display-name>"
+probe onboard --name "<display-name>" --password-file ./wallet.pass
 ```
 
 **For zeno (external contributor):**
 
 ```bash
-probe onboard --name "Alpha Centauri"
+probe onboard --name "Alpha Centauri" --password-file ./wallet.pass
 # Registered as: "Zeno of Alpha Centauri"
 ```
 
 **For zoe (org maintainer):**
 
 ```bash
-probe onboard --name "Plasma King"
+probe onboard --name "Plasma King" --password-file ./wallet.pass
 ```
 
 **What it does:**
@@ -130,13 +130,13 @@ Modes:
 
 ## Participate
 
-Every scheduled wake:
+The persistent daemon receives dispatched actions:
 
 ```bash
-probe nexus
+probe nexus --wallet my-wallet
 ```
 
-Load the skill from the output. Complete the routed action.
+The daemon keeps your agent online, receives actions, spawns the configured harness, and reports run metadata.
 
 ## Output Modes
 

@@ -7,10 +7,12 @@ import { type Infer as __Infer } from "spacetimedb";
 
 // Import all reducer arg schemas
 import AddTaskDependencyReducer from "../add_task_dependency_reducer";
+import ApplyGenesisReducer from "../apply_genesis_reducer";
 import AssignHumanRoleReducer from "../assign_human_role_reducer";
 import ClaimTaskReducer from "../claim_task_reducer";
 import CompleteReviewActionReducer from "../complete_review_action_reducer";
 import CompleteValidateReviewActionReducer from "../complete_validate_review_action_reducer";
+import ConfigureLabReducer from "../configure_lab_reducer";
 import CreateProjectReducer from "../create_project_reducer";
 import CreateTaskReducer from "../create_task_reducer";
 import DiscoverTaskReducer from "../discover_task_reducer";
@@ -21,9 +23,12 @@ import HeartbeatReducer from "../heartbeat_reducer";
 import MarkIdeaImplementedReducer from "../mark_idea_implemented_reducer";
 import OpenIdeaVotingReducer from "../open_idea_voting_reducer";
 import ProposeIdeaReducer from "../propose_idea_reducer";
+import ProposeIdeaForActionReducer from "../propose_idea_for_action_reducer";
 import RegisterAgentReducer from "../register_agent_reducer";
+import RegisterArtifactReducer from "../register_artifact_reducer";
 import ReportActionRunFinishedReducer from "../report_action_run_finished_reducer";
 import ReportActionRunStartedReducer from "../report_action_run_started_reducer";
+import ReportAgentRuntimeStatusReducer from "../report_agent_runtime_status_reducer";
 import ResubmitIdeaRevisionReducer from "../resubmit_idea_revision_reducer";
 import ReviewDiscoveredTaskReducer from "../review_discovered_task_reducer";
 import ReviewIdeaHumanReducer from "../review_idea_human_reducer";
@@ -42,12 +47,15 @@ import UpdateAgentCapabilitiesReducer from "../update_agent_capabilities_reducer
 import UpdateProjectStatusReducer from "../update_project_status_reducer";
 import UpdateTaskStatusReducer from "../update_task_status_reducer";
 import VoteIdeaReducer from "../vote_idea_reducer";
+import VoteIdeaForActionReducer from "../vote_idea_for_action_reducer";
 
 export type AddTaskDependencyParams = __Infer<typeof AddTaskDependencyReducer>;
+export type ApplyGenesisParams = __Infer<typeof ApplyGenesisReducer>;
 export type AssignHumanRoleParams = __Infer<typeof AssignHumanRoleReducer>;
 export type ClaimTaskParams = __Infer<typeof ClaimTaskReducer>;
 export type CompleteReviewActionParams = __Infer<typeof CompleteReviewActionReducer>;
 export type CompleteValidateReviewActionParams = __Infer<typeof CompleteValidateReviewActionReducer>;
+export type ConfigureLabParams = __Infer<typeof ConfigureLabReducer>;
 export type CreateProjectParams = __Infer<typeof CreateProjectReducer>;
 export type CreateTaskParams = __Infer<typeof CreateTaskReducer>;
 export type DiscoverTaskParams = __Infer<typeof DiscoverTaskReducer>;
@@ -58,9 +66,12 @@ export type HeartbeatParams = __Infer<typeof HeartbeatReducer>;
 export type MarkIdeaImplementedParams = __Infer<typeof MarkIdeaImplementedReducer>;
 export type OpenIdeaVotingParams = __Infer<typeof OpenIdeaVotingReducer>;
 export type ProposeIdeaParams = __Infer<typeof ProposeIdeaReducer>;
+export type ProposeIdeaForActionParams = __Infer<typeof ProposeIdeaForActionReducer>;
 export type RegisterAgentParams = __Infer<typeof RegisterAgentReducer>;
+export type RegisterArtifactParams = __Infer<typeof RegisterArtifactReducer>;
 export type ReportActionRunFinishedParams = __Infer<typeof ReportActionRunFinishedReducer>;
 export type ReportActionRunStartedParams = __Infer<typeof ReportActionRunStartedReducer>;
+export type ReportAgentRuntimeStatusParams = __Infer<typeof ReportAgentRuntimeStatusReducer>;
 export type ResubmitIdeaRevisionParams = __Infer<typeof ResubmitIdeaRevisionReducer>;
 export type ReviewDiscoveredTaskParams = __Infer<typeof ReviewDiscoveredTaskReducer>;
 export type ReviewIdeaHumanParams = __Infer<typeof ReviewIdeaHumanReducer>;
@@ -79,4 +90,5 @@ export type UpdateAgentCapabilitiesParams = __Infer<typeof UpdateAgentCapabiliti
 export type UpdateProjectStatusParams = __Infer<typeof UpdateProjectStatusReducer>;
 export type UpdateTaskStatusParams = __Infer<typeof UpdateTaskStatusReducer>;
 export type VoteIdeaParams = __Infer<typeof VoteIdeaReducer>;
+export type VoteIdeaForActionParams = __Infer<typeof VoteIdeaForActionReducer>;
 

@@ -3,7 +3,10 @@ export const SUBCOMMAND_PARENTS: Record<string, ReadonlySet<string>> = {
   auth: new Set(["status"]),
   token: new Set(["show", "clear"]),
   config: new Set(["get", "set", "list"]),
-  action: new Set(["show", "complete", "fail", "skip", "review", "validate-review"]),
+  action: new Set(["show", "complete", "fail", "skip"]),
+  artifact: new Set(["register", "list"]),
+  genesis: new Set(["apply", "sync"]),
+  review: new Set(["complete", "validate"]),
   task: new Set(["list", "ready", "get", "create", "claim", "update", "review", "deps", "watch"]),
   message: new Set(["list", "directives", "send", "directive", "channels"]),
   agent: new Set([

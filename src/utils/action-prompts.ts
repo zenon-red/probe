@@ -1,5 +1,10 @@
-export function actionCorrelationFlag(actionId: bigint | number): string {
-  return `zenon.red{action:${actionId}}`;
+import { DEFAULT_PROMPT_MARKER_TEMPLATE, renderPromptMarker } from "./prompt-marker.js";
+
+export function actionCorrelationFlag(
+  actionId: bigint | number,
+  template: string = DEFAULT_PROMPT_MARKER_TEMPLATE,
+): string {
+  return renderPromptMarker(template, actionId);
 }
 
 export const ACTION_PROMPT_SECURITY = [
@@ -22,10 +27,10 @@ export function actionSkipCommand(actionId: bigint | number): string {
   return `probe action skip ${actionId} --reason "..."`;
 }
 
-export function actionReviewCommand(actionId: bigint | number): string {
-  return `probe action review ${actionId} --outcome approved|changes-requested --summary "..."`;
+export function reviewCompleteCommand(actionId: bigint | number): string {
+  return `probe review complete ${actionId} --outcome approved|changes-requested --summary "..." --artifact-kind review --artifact-url <url>`;
 }
 
-export function actionValidateReviewCommand(actionId: bigint | number): string {
-  return `probe action validate-review ${actionId} --outcome valid|invalid --summary "..."`;
+export function reviewValidateCommand(actionId: bigint | number): string {
+  return `probe review validate ${actionId} --outcome valid|invalid --summary "..." --artifact-kind review_comment --artifact-url <url>`;
 }

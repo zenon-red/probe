@@ -67,8 +67,8 @@ probe action show <id>
 probe action complete <id>
 probe action fail <id> --reason "..."
 probe action skip <id> --reason "..."
-probe action review <id> --outcome approved|changes-requested --summary "..."
-probe action validate-review <id> --outcome valid|invalid --summary "..."
+probe review complete <id> --outcome approved|changes-requested --summary "..." --artifact-kind review --artifact-url <url>
+probe review validate <id> --outcome valid|invalid --summary "..." --artifact-kind review_comment --artifact-url <url>
 ```
 
 Use context commands from `probe action show <id>` before acting. Keep writes scoped to the assigned action.

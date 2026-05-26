@@ -100,6 +100,8 @@ export const AgentAction = __t.object("AgentAction", {
   harness: __t.option(__t.string()),
   inputTokens: __t.u64(),
   outputTokens: __t.u64(),
+  resultIdeaId: __t.option(__t.u64()),
+  resultVoteId: __t.option(__t.u64()),
 });
 export type AgentAction = __Infer<typeof AgentAction>;
 
@@ -134,6 +136,20 @@ export const AgentRunOutcome = __t.enum("AgentRunOutcome", {
 });
 export type AgentRunOutcome = __Infer<typeof AgentRunOutcome>;
 
+export const AgentRuntimeStatus = __t.object("AgentRuntimeStatus", {
+  agentId: __t.string(),
+  reportedGenesisHash: __t.option(__t.string()),
+  reportedProbeVersion: __t.option(__t.string()),
+  reportedSkillsSource: __t.option(__t.string()),
+  reportedSkillsRef: __t.option(__t.string()),
+  get syncStatus() {
+    return AgentSyncStatus;
+  },
+  syncError: __t.option(__t.string()),
+  syncedAt: __t.option(__t.timestamp()),
+});
+export type AgentRuntimeStatus = __Infer<typeof AgentRuntimeStatus>;
+
 // The tagged union or sum type for the algebraic type `AgentStatus`.
 export const AgentStatus = __t.enum("AgentStatus", {
   Online: __t.unit(),
@@ -141,6 +157,16 @@ export const AgentStatus = __t.enum("AgentStatus", {
   Working: __t.unit(),
 });
 export type AgentStatus = __Infer<typeof AgentStatus>;
+
+// The tagged union or sum type for the algebraic type `AgentSyncStatus`.
+export const AgentSyncStatus = __t.enum("AgentSyncStatus", {
+  Synced: __t.unit(),
+  GenesisDrift: __t.unit(),
+  SkillsUpgradeRequired: __t.unit(),
+  ProbeUpgradeRequired: __t.unit(),
+  SyncFailed: __t.unit(),
+});
+export type AgentSyncStatus = __Infer<typeof AgentSyncStatus>;
 
 export const AgentVoiceCounter = __t.object("AgentVoiceCounter", {
   agentId: __t.identity(),
@@ -155,6 +181,41 @@ export const AnnouncementStatus = __t.enum("AnnouncementStatus", {
   Failed: __t.unit(),
 });
 export type AnnouncementStatus = __Infer<typeof AnnouncementStatus>;
+
+export const AppliedGenesis = __t.object("AppliedGenesis", {
+  id: __t.string(),
+  genesisId: __t.string(),
+  genesisVersion: __t.string(),
+  genesisHash: __t.string(),
+  githubOrg: __t.string(),
+  orgName: __t.string(),
+  promptMarkerTemplate: __t.string(),
+  skillsSource: __t.string(),
+  skillsRef: __t.string(),
+  genesisUrl: __t.option(__t.string()),
+  minProbeVersion: __t.option(__t.string()),
+  manifestJson: __t.string(),
+  appliedAt: __t.timestamp(),
+});
+export type AppliedGenesis = __Infer<typeof AppliedGenesis>;
+
+export const Artifact = __t.object("Artifact", {
+  id: __t.u64(),
+  actionId: __t.u64(),
+  taskId: __t.option(__t.u64()),
+  reviewId: __t.option(__t.u64()),
+  agentId: __t.string(),
+  kind: __t.string(),
+  url: __t.string(),
+  repo: __t.string(),
+  number: __t.option(__t.u64()),
+  headBranch: __t.option(__t.string()),
+  baseBranch: __t.option(__t.string()),
+  title: __t.option(__t.string()),
+  summary: __t.string(),
+  createdAt: __t.timestamp(),
+});
+export type Artifact = __Infer<typeof Artifact>;
 
 export const Channel = __t.object("Channel", {
   id: __t.u64(),
@@ -237,6 +298,18 @@ export const DispatchRoute = __t.enum("DispatchRoute", {
 });
 export type DispatchRoute = __Infer<typeof DispatchRoute>;
 
+export const DispatchRouteConfig = __t.object("DispatchRouteConfig", {
+  get route() {
+    return DispatchRoute;
+  },
+  get kind() {
+    return ActionKind;
+  },
+  capability: __t.string(),
+  skill: __t.string(),
+});
+export type DispatchRouteConfig = __Infer<typeof DispatchRouteConfig>;
+
 export const DispatchRun = __t.object("DispatchRun", {
   id: __t.u64(),
   startedAt: __t.timestamp(),
@@ -265,6 +338,11 @@ export const EvaluationDimension = __t.object("EvaluationDimension", {
   sortOrder: __t.u16(),
 });
 export type EvaluationDimension = __Infer<typeof EvaluationDimension>;
+
+export const FeedChannelConfig = __t.object("FeedChannelConfig", {
+  channelName: __t.string(),
+});
+export type FeedChannelConfig = __Infer<typeof FeedChannelConfig>;
 
 export const GenerateVoiceResult = __t.object("GenerateVoiceResult", {
   id: __t.u64(),
@@ -577,4 +655,3 @@ export const VoteType = __t.enum("VoteType", {
   Veto: __t.unit(),
 });
 export type VoteType = __Infer<typeof VoteType>;
-

@@ -221,8 +221,8 @@ probe action show <id> [--wallet <name>] [--host <url>] [--module <name>] [--jso
 probe action complete <id>
 probe action fail <id> --reason "..."
 probe action skip <id> --reason "..."
-probe action review <id> --outcome approved|changes-requested --summary "..."
-probe action validate-review <id> --outcome valid|invalid --summary "..."
+probe review complete <id> --outcome approved|changes-requested --summary "..." --artifact-kind review --artifact-url <url>
+probe review validate <id> --outcome valid|invalid --summary "..." --artifact-kind review_comment --artifact-url <url>
 ```
 
 Use these commands to inspect and complete centrally dispatched actions.

@@ -4,9 +4,9 @@
 
 - Draft
 - Owner: Probe maintainers
-- Scope: `probe/src/daemon/harness-runner.ts`, `probe/src/utils/harness-detection.ts`, `probe/src/daemon/harness-usage.ts`
-- Depends on: [Agent telemetry](prd-agent-telemetry.md) (session-store token extraction)
-- Related: [Dev lab PRD](../../nexus/docs/todo/prd-dev-lab.md) (harness audit mounts)
+- Scope: `probe/src/daemon/harness-runner.ts`, `probe/src/utils/harness-detection.ts`, `probe/src/daemon/harness-usage/`
+- Depends on: existing session-store token extraction architecture
+- Related: Nexus lab harness audit mounts
 
 ## Context
 
@@ -84,7 +84,7 @@ if (harness.harness === "codex") return ["codex", "exec", "--full-auto", prompt]
 
 No change to `runHarness` signature — `stdio: "pipe"` is sufficient for both. Both emit structured output to stdout and persist sessions to disk independently.
 
-### 3. Token Extraction (`harness-usage.ts` — tracked in telemetry PRD)
+### 3. Token Extraction (`daemon/harness-usage/`)
 
 Add parsers for claude and codex session stores:
 
@@ -114,17 +114,17 @@ Both harnesses require a single API key env var — simpler than hermes (which m
 - `ANTHROPIC_API_KEY` for claude containers
 - `OPENAI_API_KEY` for codex containers
 
-Probe does not manage keys — the agent operator configures them. The daemon's `--bare` flag for claude means no OAuth/keychain reads — pure env var.
+Probe does not manage keys — the agent operator configures them.
 
 ## Risks and Mitigations
 
-| Risk                                                                         | Mitigation                                                                                                                                     |
-| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Claude `--bare` mode may strip needed context that interactive mode provides | `-p` prompt carries all needed instruction. Bare mode is explicitly designed for scripted/CI use.                                              |
-| Codex `--full-auto` may behave differently across versions                   | Pin codex version in Docker image. Test with one real action before general rollout.                                                           |
-| Codex token field names undocumented                                         | Run `codex exec --json` with a simple prompt, inspect `~/.codex/sessions/` JSONL output, document fields.                                      |
-| Claude CWD encoding for session path                                         | `~/.claude/projects/` uses URL-encoded cwd. Probe daemon cwd is known at spawn. Same cwd per agent (container working dir).                    |
-| Both are closed-source — behavior could change                               | Docs are public and actively maintained. CLI flags (`--bare`, `-p`, `--output-format`, `exec`, `--json`, `--full-auto`) are stable interfaces. |
+| Risk                                                                  | Mitigation                                                                                                                                |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Claude headless mode may strip context that interactive mode provides | The `-p` prompt carries all needed instruction and skills remain discoverable from the working tree/global install.                       |
+| Codex `--full-auto` may behave differently across versions            | Pin codex version in Docker image. Test with one real action before general rollout.                                                      |
+| Codex token field names undocumented                                  | Run `codex exec --json` with a simple prompt, inspect `~/.codex/sessions/` JSONL output, document fields.                                 |
+| Claude CWD encoding for session path                                  | `~/.claude/projects/` uses URL-encoded cwd. Probe daemon cwd is known at spawn. Same cwd per agent (container working dir).               |
+| Both are closed-source — behavior could change                        | Docs are public and actively maintained. CLI flags (`-p`, `--dangerously-skip-permissions`, `exec`, `--full-auto`) are stable interfaces. |
 
 ## Implementation Phases
 
@@ -135,10 +135,10 @@ Probe does not manage keys — the agent operator configures them. The daemon's 
 - Update `HarnessType` union
 - Smoke test: `probe nexus --harness claude --wallet <test>` and `--harness codex`
 
-### Phase 2: Token Extraction (telemetry PRD)
+### Phase 2: Token Extraction
 
-- Add claude session store parser to `harness-usage.ts`
-- Add codex session store parser to `harness-usage.ts`
+- Add claude session store parser under `daemon/harness-usage/`
+- Add codex session store parser under `daemon/harness-usage/`
 - Unit tests with fixture JSONL from real runs
 
 ### Phase 3: Documentation
@@ -148,8 +148,8 @@ Probe does not manage keys — the agent operator configures them. The daemon's 
 
 ## Acceptance Criteria
 
-- `probe nexus --harness claude` spawns `claude --bare -p --output-format json <prompt>` and runs to completion
-- `probe nexus --harness codex` spawns `codex exec --json --full-auto <prompt>` and runs to completion
+- `probe nexus --harness claude` spawns `claude -p --dangerously-skip-permissions <prompt>` and runs to completion
+- `probe nexus --harness codex` spawns `codex exec --full-auto <prompt>` and runs to completion
 - Harness detection discovers claude and codex when installed
 - Session correlation via `grep -rF 'zenon.red{action:N}'` works against both `~/.claude/projects/` and `~/.codex/sessions/`
 - Token counts extractable from session stores (telemetry PRD phase)
