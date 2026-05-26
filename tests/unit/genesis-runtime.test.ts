@@ -14,7 +14,7 @@ describe("genesis runtime", () => {
       applied: {
         genesisHash: "def",
         skillsSource: "zenon-red/skills",
-        skillsRef: "v0.0.0-dev",
+        skillsRef: "v0.3.4",
         githubOrg: "zenon-red",
       },
       localProbeVersion: "1.2.7",

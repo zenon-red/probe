@@ -3,13 +3,13 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseGenesisManifestJson } from "../../src/utils/genesis-manifest.js";
 
-const fixturesDir = join(import.meta.dirname, "../../../nexus/stdb/fixtures/genesis");
+const fixturesDir = join(import.meta.dirname, "../fixtures/genesis");
 
 describe("genesis manifest parse", () => {
-  test("minimal-lab fixture parses", async () => {
-    const raw = await readFile(join(fixturesDir, "minimal-lab.manifest.json"), "utf8");
+  test("zenon-red-lab fixture parses", async () => {
+    const raw = await readFile(join(fixturesDir, "zenon-red-lab.manifest.json"), "utf8");
     const expected = (
-      await readFile(join(fixturesDir, "minimal-lab.expected-hash.txt"), "utf8")
+      await readFile(join(fixturesDir, "zenon-red-lab.expected-hash.txt"), "utf8")
     ).trim();
     const parsed = parseGenesisManifestJson(raw);
     expect(parsed.genesisHash).toBe(expected);
@@ -24,7 +24,7 @@ describe("genesis manifest parse", () => {
   });
 
   test("rejects prompt markers without a stable prefix", async () => {
-    const raw = await readFile(join(fixturesDir, "minimal-lab.manifest.json"), "utf8");
+    const raw = await readFile(join(fixturesDir, "zenon-red-lab.manifest.json"), "utf8");
     const manifest = JSON.parse(raw);
     manifest.org.promptMarker = "%ACTION_ID%";
     expect(() => parseGenesisManifestJson(JSON.stringify(manifest))).toThrow(/non-empty prefix/);

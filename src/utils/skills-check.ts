@@ -3,7 +3,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 
 export const EXPECTED_SKILLS_SOURCE = "zenon-red/skills";
-export const EXPECTED_SKILLS_REF = "v0.3.3";
+export const EXPECTED_SKILLS_REF = "v0.3.4";
 export const SKILLS_INSTALL_CMD = `npx skills add ${EXPECTED_SKILLS_SOURCE}#${EXPECTED_SKILLS_REF} --skill='*' -y -g`;
 
 export type SkillsCompatStatus = "ok" | "warn" | "unknown";

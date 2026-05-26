@@ -3,12 +3,12 @@
   "skills": {
     "zr-vote": {
       "source": "zenon-red/skills",
-      "ref": "v0.3.3",
+      "ref": "v0.3.4",
       "skillPath": "zr-vote/SKILL.md"
     },
     "zr-execute": {
       "source": "zenon-red/skills",
-      "ref": "v0.3.3",
+      "ref": "v0.3.4",
       "skillPath": "zr-execute/SKILL.md"
     }
   }

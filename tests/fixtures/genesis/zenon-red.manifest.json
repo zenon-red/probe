@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "genesis": {
+    "id": "zenon-red",
+    "version": "2026-05-25",
+    "url": "https://raw.githubusercontent.com/zenon-red/nexus/main/orgs/zenon-red/genesis.json"
+  },
+  "minProbeVersion": "1.3.0",
+  "org": {
+    "githubOrg": "zenon-red",
+    "name": "Zenon Red",
+    "promptMarker": "zenon.red{action:%ACTION_ID%}"
+  },
+  "endpoints": {
+    "issuer": "https://api.zenon.red",
+    "spacetimeHost": "wss://db.zenon.red",
+    "spacetimeModule": "nexus"
+  },
+  "skills": {
+    "source": "zenon-red/skills",
+    "ref": "v0.3.4"
+  },
+  "messaging": {
+    "feedChannels": ["general"]
+  },
+  "dispatch": {
+    "routes": {
+      "authorized_directive": {
+        "kind": "inbox",
+        "capability": "directive.read",
+        "skill": "zr-inbox"
+      },
+      "continue_owned_task": {
+        "kind": "execute_task",
+        "capability": "task.execute",
+        "skill": "zr-execute"
+      },
+      "assign_open_task": {
+        "kind": "execute_task",
+        "capability": "task.execute",
+        "skill": "zr-execute"
+      },
+      "review_task": {
+        "kind": "review_task",
+        "capability": "task.review",
+        "skill": "zr-execute"
+      },
+      "validate_review": {
+        "kind": "validate_review",
+        "capability": "review.validate",
+        "skill": "zr-validate"
+      },
+      "merge_ready_task": {
+        "kind": "merge_ready_task",
+        "capability": "task.merge_ready",
+        "skill": "zr-validate"
+      },
+      "vote": {
+        "kind": "vote",
+        "capability": "idea.vote",
+        "skill": "zr-vote"
+      },
+      "proposal_scout": {
+        "kind": "propose",
+        "capability": "idea.propose",
+        "skill": "zr-propose"
+      },
+      "project_setup": {
+        "kind": "project_setup",
+        "capability": "project.setup",
+        "skill": "zr-project-setup"
+      },
+      "create_tasks": {
+        "kind": "create_tasks",
+        "capability": "task.create",
+        "skill": "zr-create-tasks"
+      },
+      "review_discovery": {
+        "kind": "review_discovery",
+        "capability": "discovery.review",
+        "skill": "zr-review-discoveries"
+      }
+    }
+  }
+}
