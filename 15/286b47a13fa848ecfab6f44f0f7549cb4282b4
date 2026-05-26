@@ -1,0 +1,48 @@
+tests/fixtures/skills-lock/ok.json
+  s_66902cb124bf6c::t_ef38267e86f3e1 6,11
+src/utils/skills-check.ts
+  s_66902cb124bf6c::t_34b44cd7882fa9 6
+tests/unit/genesis-manifest.test.ts
+  s_66902cb124bf6c::t_9b98b3b93c6e1c 6
+  s_66902cb124bf6c::t_bdafe1dba133f4 9-10,12
+  s_66902cb124bf6c::t_9312f286c588e9 27
+tests/unit/genesis-hash.test.ts
+  s_66902cb124bf6c::t_8d183786027f43 15-16,18
+  s_5ab62ff3b5ef4f::t_f523736070e6a0 21-23
+  s_66902cb124bf6c::t_573ee96bfcc50c 7
+tests/unit/genesis-runtime.test.ts
+  s_66902cb124bf6c::t_c6a424e2b7e4cf 17
+tests/fixtures/genesis/README.md
+  s_66902cb124bf6c::t_f648366a7e07a9 1-4,12
+  s_5ab62ff3b5ef4f::t_394b1b5013300b 7-9
+  s_66902cb124bf6c::t_e5a30b6b1e83c2 5,10-11
+  s_5ab62ff3b5ef4f::t_01305c1ad4b5e6 13-18
+tests/fixtures/genesis/zenon-red-lab.manifest.json
+  s_66902cb124bf6c::t_008cfffd14b943 1-6,8-9,11-26,51-84
+tests/fixtures/skills-lock/malformed-entries.json
+  s_66902cb124bf6c::t_f3db5044ab317a 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "15286b47a13fa848ecfab6f44f0f7549cb4282b4",
+  "prompts": {},
+  "sessions": {
+    "s_5ab62ff3b5ef4f": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "3df99db8-e210-44a5-867f-15a5e661e747",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_66902cb124bf6c": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "431e25fe-38a3-4877-953f-c46e263924e3",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
