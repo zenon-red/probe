@@ -1,0 +1,117 @@
+src/utils/skills-check.ts
+  s_6caf54a3ac3f93::t_e5e6fa9c361012 9,16,35,74,76,83,87-90,94
+src/utils/action-prompts.ts
+  s_59786efc376eec::t_75e814c8637a65 16-17,23-32
+scripts/check-skills-ref.ts
+  s_6caf54a3ac3f93::t_2e03e380201a65 1-3,9-13,18-25,38,59-72
+tests/fixtures/genesis/README.md
+  s_4335448cb7b07b::t_368bc9c06d9608 14
+src/utils/action-completion.ts
+  s_59786efc376eec::t_dbf2b5fcb7c87d 26,32,38
+src/utils/onboard/steps.ts
+  s_6caf54a3ac3f93::t_6f0ad035dfffb3 101-106,149-150,152-160,163-166,171-179
+  s_6caf54a3ac3f93::t_30d3bf69042572 9-10
+  s_6caf54a3ac3f93::t_9d9a29a5d864ab 47
+  s_6caf54a3ac3f93::t_444d1ad0720152 405-406,408-410,412-427,429-439,441,444-446,448-449
+  s_4c21571de975ae::t_79841702ad288f 11
+src/utils/skills-install.ts
+  s_6caf54a3ac3f93::t_3407a7714e16be 2,4-6,14-16,30,40,46,51
+src/commands/nexus/idea/propose.ts
+  s_6caf54a3ac3f93::t_a01cc7d944ce33 14-18,34,48-51,56,63-67
+tests/unit/skills-check.test.ts
+  s_6caf54a3ac3f93::t_234f9a95df25f7 99-120
+  s_6caf54a3ac3f93::t_3c3c811f79a3a4 7,10
+  s_6caf54a3ac3f93::t_f8ff828d2a52f2 4-6,16,22,24-25,29-31,34,38-40,45-47,51-54,59-61,66-68,73-75,77,83,88,94
+  s_6caf54a3ac3f93::t_3fc69e53853f6d 14-15,18-21
+src/commands/nexus/idea/vote.ts
+  s_6caf54a3ac3f93::t_06b8a3b7b5c88e 16-20,31,42-51
+tests/unit/skills-ref-release.test.ts
+  s_6caf54a3ac3f93::t_9c91d9e78b1594 5,7-9,14,16-18,22,25,27-29
+skills/probe/SKILL.md
+  s_59786efc376eec::t_67b57a50e48282 13,75
+tests/fixtures/genesis/zenon-red.manifest.json
+  s_6caf54a3ac3f93::t_b2d994e4653e4a 66
+src/utils/genesis-skills.ts
+  s_6caf54a3ac3f93::t_3183e3377d7985 3,8-12,55,65,76,88,96,99,101-114,121,123,129
+  s_6caf54a3ac3f93::t_f2fab5b298b80e 43-48
+src/utils/skills-ref-release.ts
+  s_6caf54a3ac3f93::t_a6144673649824 1,3,6,9-10,12,14-15,18,20-21,23
+src/utils/upgrade-skills-output.ts
+  s_6caf54a3ac3f93::t_9885d8e201bdbc 2-3,19,24,26-27,30-45
+  s_6caf54a3ac3f93::t_14bc5e3e051b2c 28-29
+package.json
+  s_6caf54a3ac3f93::t_306896fe0757c1 41
+src/utils/prompt-builder.ts
+  s_59786efc376eec::t_75e814c8637a65 8-9,12,41,54-61
+  s_59786efc376eec::t_27d29dac99fa7d 49-53
+tests/unit/skills-install.test.ts
+  s_6caf54a3ac3f93::t_0100474b383102 4-9
+tests/fixtures/genesis/zenon-red-lab.manifest.json
+  s_6caf54a3ac3f93::t_b2d994e4653e4a 65
+docs/commands.md
+  s_6caf54a3ac3f93::t_863d6add7b7ecc 438
+  s_6caf54a3ac3f93::t_f759d1c71ce536 329
+  s_6caf54a3ac3f93::t_ca3899f897006d 430
+  s_59786efc376eec::t_f6169270f25767 298,354-355
+  s_6caf54a3ac3f93::t_b2d994e4653e4a 376
+  s_6caf54a3ac3f93::t_d8232f5a8cad03 435
+src/utils/genesis-skills-spec.ts
+  s_6caf54a3ac3f93::t_33577680dc6acd 1,3-10,12-16
+tests/unit/upgrade-skills-compat.test.ts
+  s_6caf54a3ac3f93::t_057b1deb4995f6 3
+  s_6caf54a3ac3f93::t_0148f0acfbd6a0 6-10,12,22-30,33-37,40,43,46,53-54,58-65,67,71-72,75
+  s_6caf54a3ac3f93::t_435c822f0b3f9e 76,85-87,90,92-93
+src/utils/genesis-apply.ts
+  s_6caf54a3ac3f93::t_68de761a7aaa80 88-97
+  s_4c21571de975ae::t_79841702ad288f 120-127
+src/commands/onboard.ts
+  s_6caf54a3ac3f93::t_97d2b5e5796924 185
+  s_6caf54a3ac3f93::t_f58a33bb7fb45a 6
+  s_4c21571de975ae::t_79841702ad288f 145-148
+  s_6caf54a3ac3f93::t_dd06868bc5da97 96-99
+src/commands/upgrade.ts
+  s_6caf54a3ac3f93::t_a13d6ce627da61 129-130
+  s_6caf54a3ac3f93::t_bd78423d8056a5 145
+  s_6caf54a3ac3f93::t_4dd0941b3d58ef 158
+  s_6caf54a3ac3f93::t_edaca929c0efeb 190
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "0f70fdc8d28d3f3c69d308c251afd67ab2b1776c",
+  "prompts": {},
+  "sessions": {
+    "s_4335448cb7b07b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "2fe6dc04-4e56-4d02-a10d-0d2117d0fb33",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_4c21571de975ae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_19a68c443ffeyKW5k4NIbR51eS",
+        "model": "gpt-5.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_59786efc376eec": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_19a56c1dcffeXT8dIhiGuHFjKv",
+        "model": "gpt-5.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_6caf54a3ac3f93": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "770267c0-67e3-4733-8621-97c0769d9db4",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
