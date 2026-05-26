@@ -1,0 +1,57 @@
+src/utils/action-prompts.ts
+  s_288b4747d82169::t_c0c3d651fdb6fa 50-65
+src/utils/prompt-builder.ts
+  s_880d9d4fd75a1e::t_5302ade0e1b2e3 8
+tests/unit/action-ownership.test.ts
+  s_288b4747d82169::t_2d114ca0e3274f 100-110
+package.json
+  s_288b4747d82169::t_04b1f657f6acdc 53
+tests/unit/action-completion.test.ts
+  s_288b4747d82169::t_3ecb3515b1a524 3,6-8,13
+  s_880d9d4fd75a1e::t_a1ef6906354983 2,48-55
+  s_288b4747d82169::t_e44b284cc0e45f 1,4-5,9-12,14-47,56-57
+tests/unit/prompt-builder.test.ts
+  s_288b4747d82169::t_01cd6853f9cd5e 32-33
+src/utils/subcommand-registry.ts
+  s_288b4747d82169::t_af615260a8975b 6-15
+docs/commands.md
+  s_288b4747d82169::t_c47d5259b8ec5c 353
+  s_288b4747d82169::t_660c3e83fb2eca 350-352,359
+src/utils/action-completion.ts
+  s_288b4747d82169::t_53740538e15bc9 53,60
+  s_880d9d4fd75a1e::t_1eac5e7766e450 2-14,21-24,31-41,43-45,47,50-52,55-59,62-65,67-69,71-90,93
+  s_288b4747d82169::t_9ee35aea0a121f 26-30,42,46,48-49,54,61,66,70
+src/commands/action.ts
+  s_288b4747d82169::t_c62c624509e7e3 108-109,112-113,115-120
+  s_880d9d4fd75a1e::t_7ae02d2d3f5f48 26
+  s_288b4747d82169::t_5c540e911bde14 182
+  s_288b4747d82169::t_c9c2ed164b5f5f 425-428
+  s_880d9d4fd75a1e::t_bb69b2ec516c1b 8-9,114
+  s_880d9d4fd75a1e::t_f1fcf084a07044 38-40,392,406-409,414-417
+  s_288b4747d82169::t_bc96c7f19926fb 228-357
+  s_288b4747d82169::t_e0a0fcc7c2fff3 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "3d9f08a9b1390556f2fd85c4c058e11cf7678b80",
+  "prompts": {},
+  "sessions": {
+    "s_288b4747d82169": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8651ae04-8db8-405a-8f51-1dc482df6863",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_880d9d4fd75a1e": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_199fd25f0ffedoiJ7IYh1yfJZh",
+        "model": "gpt-5.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
