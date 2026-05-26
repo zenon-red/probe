@@ -1,0 +1,19 @@
+package.json
+  s_c23efc67f97a87::t_186e5e5e16e32e 42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "220903858fe8eeac2d572931bae5e9948d1091a1",
+  "prompts": {},
+  "sessions": {
+    "s_c23efc67f97a87": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "683a16ab-43e8-4b13-8a3c-5ac4fbd542c6",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
