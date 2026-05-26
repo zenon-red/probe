@@ -1,0 +1,229 @@
+src/utils/subcommand-registry.ts
+  s_bca1180080a6ae::t_d0164a34455ca7 6-9
+src/utils/genesis-apply.ts
+  s_5ab62ff3b5ef4f::t_99049cf4fff90d 1-36,38-64,67-104,107-136,139,142-153
+  s_bca1180080a6ae::t_7bf8a9994c8a93 37
+  s_bca1180080a6ae::t_1a4a5946145a08 105-106
+  s_5b1e0d2c67c133::t_063bb44a959062 137
+  s_5ab62ff3b5ef4f::t_28ecbafcead975 65-66,140-141
+src/daemon/harness-usage/openclaw.ts
+  s_5ab62ff3b5ef4f::t_6b3a3bf2076428 39-40,44-49,52-57
+  s_5b1e0d2c67c133::t_68900e68dae779 1,14-15,17-26
+  s_5ab62ff3b5ef4f::t_3c85614567ed52 69
+src/utils/genesis-skills.ts
+  s_5ab62ff3b5ef4f::t_2b323a2b95020a 1-98
+src/daemon/harness-usage/index.ts
+  s_5ab62ff3b5ef4f::t_95253721f2479b 3
+  s_5ab62ff3b5ef4f::t_a1171c74145a52 26
+  s_5ab62ff3b5ef4f::t_b2a792b4c68e3e 42,51,53-54,58,60,62
+  s_5ab62ff3b5ef4f::t_0c738a0ce5de46 30-35
+src/types/config.ts
+  s_5ab62ff3b5ef4f::t_6ff356e0a73955 29
+  s_5ab62ff3b5ef4f::t_c5f5c03adf808f 19-28
+src/utils/prompt-builder.ts
+  s_bca1180080a6ae::t_56af5dcaf1378a 8-9,44,46
+  s_5ab62ff3b5ef4f::t_14a23e9d6f0750 12-25,27
+skills/probe/SKILL.md
+  s_bca1180080a6ae::t_c5e2817cae0585 70-71
+tests/unit/genesis-manifest.test.ts
+  s_5ab62ff3b5ef4f::t_6c2fb4ea27dd27 1-15,18-24,32
+  s_bca1180080a6ae::t_238aea38112d8c 25-31
+  s_5ab62ff3b5ef4f::t_005cc487d2c628 17
+  s_5ab62ff3b5ef4f::t_3ecf78ff15b954 16
+tests/unit/action-ownership.test.ts
+  s_bca1180080a6ae::t_4ca7a0f6cbe5f1 4,30,137,143,155,161,171-173,182,188
+  s_bca1180080a6ae::t_616d71265eab38 3
+src/utils/github-artifact.ts
+  s_bca1180080a6ae::t_20ba3f6ca8a93a 5,28-88,90,109-116
+  s_bca1180080a6ae::t_616d71265eab38 107-108
+  s_bca1180080a6ae::t_f284b5ce76db5d 18-26
+  s_5ab62ff3b5ef4f::t_81328f8dccfcce 1-4,6-17,27,89,91-106,117-121
+src/daemon/harness-usage/pi.ts
+  s_5b1e0d2c67c133::t_68900e68dae779 1,14-15,17-26
+  s_5ab62ff3b5ef4f::t_efc4130eb739f8 36,39-44
+src/utils/genesis-manifest.ts
+  s_5ab62ff3b5ef4f::t_3dea987b5d6b30 2,5
+  s_5ab62ff3b5ef4f::t_5096603ac141df 1,3-4,6-108,114-171,173-232
+  s_bca1180080a6ae::t_616d71265eab38 110-112
+  s_bca1180080a6ae::t_bf49208867f975 109,113
+  s_5ab62ff3b5ef4f::t_5b4c9484d73c1a 172
+src/utils/health.ts
+  s_5ab62ff3b5ef4f::t_e41029ec3df71d 172-176,182-184,204-206
+  s_5ab62ff3b5ef4f::t_e002a3c3dc6d54 6-7
+tests/unit/genesis-runtime.test.ts
+  s_5ab62ff3b5ef4f::t_d385818f45b899 1-24
+src/commands/action.ts
+  s_bca1180080a6ae::t_abbebd0e45ac5c 105
+  s_5ab62ff3b5ef4f::t_71c2d210ff43e8 40-55,59-60,65-68,77
+  s_5ab62ff3b5ef4f::t_98a89f4dbb92f6 10-11
+  s_bca1180080a6ae::t_56af5dcaf1378a 103-104,107,110,120,127,271,280
+  s_5ab62ff3b5ef4f::t_19c33ec1141325 16-23
+  s_5ab62ff3b5ef4f::t_b3872a4d84e7bd 160-161,163-165
+src/module_bindings/applied_genesis_table.ts
+  s_bca1180080a6ae::t_52e6fe80e4d52f 25
+tests/unit/harness-usage.test.ts
+  s_5ab62ff3b5ef4f::t_2eee6214bfc67b 13,18,31
+src/commands/nexus/idea/propose.ts
+  s_5ab62ff3b5ef4f::t_d0bc742234ab4a 14
+  s_5ab62ff3b5ef4f::t_13051616360d3f 30,38-40,42,46-72
+src/module_bindings/dispatch_route_config_table.ts
+  s_5b1e0d2c67c133::t_fd8efb9a886e00 1-27
+tests/unit/prompt-builder.test.ts
+  s_bca1180080a6ae::t_d0164a34455ca7 48-49
+docs/sql.md
+  s_bca1180080a6ae::t_bced0dcc8182dd 33-35
+src/commands/nexus/idea/vote.ts
+  s_5ab62ff3b5ef4f::t_8d573bff1219a9 16
+  s_5ab62ff3b5ef4f::t_a1aaf36a6123f2 28-29,39-49,51-54,61-63
+docs/todo/prd-probe-claude-codex-support.md
+  s_bca1180080a6ae::t_15a2c2fc643531 121-127
+  s_bca1180080a6ae::t_9cced5fae6c669 87,138,140-141
+  s_bca1180080a6ae::t_bced0dcc8182dd 7-9,117,151-152
+tests/unit/genesis-hash.test.ts
+  s_5ab62ff3b5ef4f::t_99239f4eb9dd4e 1-4,6-25
+  s_5b1e0d2c67c133::t_063bb44a959062 5
+src/commands/artifact/index.ts
+  s_bca1180080a6ae::t_f284b5ce76db5d 7,45-48
+  s_5b1e0d2c67c133::t_c7c022290601d7 98-101
+  s_5ab62ff3b5ef4f::t_bde422954486e2 1-6,8-22,24-44,49-94,107-111
+  s_5b1e0d2c67c133::t_fd8efb9a886e00 95-97,102-106
+src/module_bindings/types.ts
+  s_bca1180080a6ae::t_52e6fe80e4d52f 197
+src/commands/review/index.ts
+  s_5ab62ff3b5ef4f::t_edb12db3557021 121
+  s_bca1180080a6ae::t_4ca7a0f6cbe5f1 43,91,155-156
+  s_5ab62ff3b5ef4f::t_ef1ed5be92bc4d 26-33
+  s_5ab62ff3b5ef4f::t_c1b2344c8082f5 1-8,15-18,34-42,44-66,68-72,76-90,92-114,116-120,124-141,154,157-158
+  s_bca1180080a6ae::t_3039cf5e69ff4f 9,11-14
+  s_5b1e0d2c67c133::t_fd8efb9a886e00 75,123,142-144,149-153
+  s_5ab62ff3b5ef4f::t_ebb6322ec874a4 73
+  s_5b1e0d2c67c133::t_c7c022290601d7 145-148
+  s_bca1180080a6ae::t_f284b5ce76db5d 10,19-25,67,115
+  s_5ab62ff3b5ef4f::t_ec4091baf9e98d 122
+  s_5ab62ff3b5ef4f::t_771b328c706d17 74
+src/daemon/action-executor.ts
+  s_5ab62ff3b5ef4f::t_da5d4de5bc4d3b 34-44,46
+  s_bca1180080a6ae::t_91fa8d8cee3200 11,31-33,45
+  s_bca1180080a6ae::t_5e27c53fe5d6e0 83
+src/utils/genesis-runtime.ts
+  s_bca1180080a6ae::t_e5a17824944293 4
+  s_5ab62ff3b5ef4f::t_953648d7f2b154 85
+  s_5ab62ff3b5ef4f::t_27b124c223ca70 24
+  s_5ab62ff3b5ef4f::t_8c96357bce9852 1-3,5-23,25-48,50-84,86-174
+skills/probe/references/commands.md
+  s_bca1180080a6ae::t_c5e2817cae0585 224-225
+src/utils/prompt-marker.ts
+  s_5ab62ff3b5ef4f::t_6a39893c436944 1-5,7-20
+src/utils/context.ts
+  s_5ab62ff3b5ef4f::t_bd5772483a5b47 7-9,13
+  s_5ab62ff3b5ef4f::t_9650bddda5fc6a 160-175
+docs/testing.md
+  s_bca1180080a6ae::t_bced0dcc8182dd 18-21
+src/index.ts
+  s_bca1180080a6ae::t_d0164a34455ca7 110,112-113
+  s_5ab62ff3b5ef4f::t_6c125aa3af86a1 63-64
+  s_5ab62ff3b5ef4f::t_6f5185b9b183aa 62
+  s_5ab62ff3b5ef4f::t_fe991ef01471ed 151
+  s_5ab62ff3b5ef4f::t_21294ed30090c6 11-12
+  s_5ab62ff3b5ef4f::t_20ea93cb9df4ed 10
+  s_5ab62ff3b5ef4f::t_7584799daed0d6 117
+  s_5ab62ff3b5ef4f::t_59d51d843f85cf 152-153
+docs/internal/process-exit-inventory.md
+  s_bca1180080a6ae::t_8b1ebfb5488086 1,3,5,7,9,11-12,14,19,24-26
+  s_bca1180080a6ae::t_ca546d6bc7ea0e 16-18,20
+src/utils/genesis-hash.ts
+  s_5ab62ff3b5ef4f::t_f620adebcee9be 1-12
+src/utils/action-completion.ts
+  s_5ab62ff3b5ef4f::t_15b3f19a02fa99 1-42
+src/utils/action-prompts.ts
+  s_5ab62ff3b5ef4f::t_d705717094e1e5 1-7
+  s_bca1180080a6ae::t_56af5dcaf1378a 30-31,34-35
+src/daemon/harness-usage/fs.ts
+  s_5ab62ff3b5ef4f::t_749cd2a7a08303 112-116,126
+  s_bca1180080a6ae::t_e5a17824944293 1
+src/daemon/harness-usage/hermes.ts
+  s_5ab62ff3b5ef4f::t_6aa1d238f5ae3c 132,140
+  s_5ab62ff3b5ef4f::t_82e9b1338bffc2 52
+  s_5ab62ff3b5ef4f::t_5e77258d044395 101
+  s_5ab62ff3b5ef4f::t_22ab37201c2125 50
+  s_5ab62ff3b5ef4f::t_f054634498cb16 86
+  s_5b1e0d2c67c133::t_68900e68dae779 1,25-26,28-37
+  s_5ab62ff3b5ef4f::t_db3088470ba9b3 72-76
+src/daemon/harness-usage/opencode.ts
+  s_5ab62ff3b5ef4f::t_c838ad043ef82a 158
+  s_5ab62ff3b5ef4f::t_912c04f9c0633a 66
+  s_5ab62ff3b5ef4f::t_f25d3368707d09 167
+  s_5ab62ff3b5ef4f::t_954e317ba43f92 189
+  s_5ab62ff3b5ef4f::t_04d8479715e5c4 226
+  s_5ab62ff3b5ef4f::t_31574af57c9c14 314
+  s_5ab62ff3b5ef4f::t_e2212d414d8f51 299
+  s_5ab62ff3b5ef4f::t_f66eadd8d07455 79
+  s_5b1e0d2c67c133::t_68900e68dae779 12,27-29,31-44
+  s_5ab62ff3b5ef4f::t_356be839e04b36 264
+  s_5ab62ff3b5ef4f::t_1f091e249cc014 286
+docs/auth.md
+  s_bca1180080a6ae::t_bced0dcc8182dd 3,102,107,127
+src/daemon/session.ts
+  s_5ab62ff3b5ef4f::t_5cba5ef7b21cb2 99-103
+  s_5ab62ff3b5ef4f::t_3f344bddcd6b66 7
+  s_5ab62ff3b5ef4f::t_475e34554f2499 154-155
+src/daemon/genesis-gate.ts
+  s_bca1180080a6ae::t_cc9b1b80b58209 13-14
+  s_5ab62ff3b5ef4f::t_ae655293a1ce27 1-12,17-36,38-47,49-53,56-57,60-69,71-73
+  s_bca1180080a6ae::t_7bf8a9994c8a93 15-16
+  s_bca1180080a6ae::t_19fad0423cf804 37,48,70
+  s_bca1180080a6ae::t_1a4a5946145a08 54-55,58-59
+src/daemon/harness-usage/marker-scope.ts
+  s_5ab62ff3b5ef4f::t_9cfe9b091bf41b 3-5,7-11,14,18,22,36
+docs/getting-started.md
+  s_bca1180080a6ae::t_bced0dcc8182dd 23,29,36,133,136,139
+src/utils/doctor-issues.ts
+  s_5ab62ff3b5ef4f::t_23777e718bb6cb 67-69,71-79
+  s_5ab62ff3b5ef4f::t_c0356b3fc88054 70
+src/commands/genesis/index.ts
+  s_5ab62ff3b5ef4f::t_8c91ef5f10e115 1-12,14,17-46,70-75,77-102,120-126,140-144
+  s_5b1e0d2c67c133::t_fd8efb9a886e00 13,15-16,127-129,135-139
+  s_5b1e0d2c67c133::t_c7c022290601d7 47-69,103-119,130-134
+src/utils/genesis-doctor.ts
+  s_5ab62ff3b5ef4f::t_1a28f24cb8129e 1,34,44-45
+  s_5ab62ff3b5ef4f::t_70af7e3e4e335e 2-33,35-43,46-149
+tests/unit/github-artifact.test.ts
+  s_bca1180080a6ae::t_616d71265eab38 30-38
+  s_bca1180080a6ae::t_238aea38112d8c 1,6-29,39-47,53-54
+  s_bca1180080a6ae::t_b2d0ba3add159e 2-5,48-52
+docs/commands.md
+  s_bca1180080a6ae::t_cd8fc1c40ae427 66-68
+  s_bca1180080a6ae::t_bced0dcc8182dd 65,279-299,355
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "8ed03ce3613c767bc3ae6644caecbf908d67ee1c",
+  "prompts": {},
+  "sessions": {
+    "s_5ab62ff3b5ef4f": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "3df99db8-e210-44a5-867f-15a5e661e747",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_5b1e0d2c67c133": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_19ddc1c46ffeOwFroc9ra5thBd",
+        "model": "gpt-5.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_bca1180080a6ae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_19dd83392ffeem0jqT3ZfcKwo0",
+        "model": "gpt-5.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
