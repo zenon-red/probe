@@ -1,2 +1,9 @@
 npm run lint:staged
 npm run typecheck
+
+# Keep bun.lock in sync — CI binary builds use `bun install --frozen-lockfile`
+if git diff --cached --name-only | grep -qE '^(package\.json|package-lock\.json)$'; then
+  echo "📦 package.json or package-lock.json changed — syncing bun.lock"
+  bun install
+  git add bun.lock
+fi
