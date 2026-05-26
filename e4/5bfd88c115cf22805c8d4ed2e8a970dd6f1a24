@@ -1,0 +1,21 @@
+package.json
+  s_44b4c11eb1f4fb::t_a33bf7f24cffc0 49
+  s_44b4c11eb1f4fb::t_851dc722aa6071 62-64
+  s_44b4c11eb1f4fb::t_c9cbfc4aee8098 57-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "e45bfd88c115cf22805c8d4ed2e8a970dd6f1a24",
+  "prompts": {},
+  "sessions": {
+    "s_44b4c11eb1f4fb": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_199c47a6cffegu2Toi6iCkxwgd",
+        "model": "glm-5.1"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
