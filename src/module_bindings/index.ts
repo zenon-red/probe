@@ -38,6 +38,9 @@ import AddTaskDependencyReducer from "./add_task_dependency_reducer";
 import ApplyGenesisReducer from "./apply_genesis_reducer";
 import AssignHumanRoleReducer from "./assign_human_role_reducer";
 import ClaimTaskReducer from "./claim_task_reducer";
+import CompleteCreateTasksActionReducer from "./complete_create_tasks_action_reducer";
+import CompleteMergeReadyActionReducer from "./complete_merge_ready_action_reducer";
+import CompleteProjectSetupActionReducer from "./complete_project_setup_action_reducer";
 import CompleteReviewActionReducer from "./complete_review_action_reducer";
 import CompleteValidateReviewActionReducer from "./complete_validate_review_action_reducer";
 import ConfigureLabReducer from "./configure_lab_reducer";
@@ -58,6 +61,7 @@ import ReportActionRunStartedReducer from "./report_action_run_started_reducer";
 import ReportAgentRuntimeStatusReducer from "./report_agent_runtime_status_reducer";
 import ResubmitIdeaRevisionReducer from "./resubmit_idea_revision_reducer";
 import ReviewDiscoveredTaskReducer from "./review_discovered_task_reducer";
+import ReviewDiscoveryForActionReducer from "./review_discovery_for_action_reducer";
 import ReviewIdeaHumanReducer from "./review_idea_human_reducer";
 import ReviewProjectPlanReducer from "./review_project_plan_reducer";
 import SendMessageReducer from "./send_message_reducer";
@@ -245,11 +249,15 @@ const tablesSchema = __schema({
   dispatch_route_config: __table({
     name: 'dispatch_route_config',
     indexes: [
+      { accessor: 'id', name: 'dispatch_route_config_id_idx_btree', algorithm: 'btree', columns: [
+        'id',
+      ] },
       { accessor: 'route', name: 'dispatch_route_config_route_idx_btree', algorithm: 'btree', columns: [
         'route',
       ] },
     ],
     constraints: [
+      { name: 'dispatch_route_config_id_key', constraint: 'unique', columns: ['id'] },
       { name: 'dispatch_route_config_route_key', constraint: 'unique', columns: ['route'] },
     ],
   }, DispatchRouteConfigRow),
@@ -510,6 +518,9 @@ const reducersSchema = __reducers(
   __reducerSchema("apply_genesis", ApplyGenesisReducer),
   __reducerSchema("assign_human_role", AssignHumanRoleReducer),
   __reducerSchema("claim_task", ClaimTaskReducer),
+  __reducerSchema("complete_create_tasks_action", CompleteCreateTasksActionReducer),
+  __reducerSchema("complete_merge_ready_action", CompleteMergeReadyActionReducer),
+  __reducerSchema("complete_project_setup_action", CompleteProjectSetupActionReducer),
   __reducerSchema("complete_review_action", CompleteReviewActionReducer),
   __reducerSchema("complete_validate_review_action", CompleteValidateReviewActionReducer),
   __reducerSchema("configure_lab", ConfigureLabReducer),
@@ -530,6 +541,7 @@ const reducersSchema = __reducers(
   __reducerSchema("report_agent_runtime_status", ReportAgentRuntimeStatusReducer),
   __reducerSchema("resubmit_idea_revision", ResubmitIdeaRevisionReducer),
   __reducerSchema("review_discovered_task", ReviewDiscoveredTaskReducer),
+  __reducerSchema("review_discovery_for_action", ReviewDiscoveryForActionReducer),
   __reducerSchema("review_idea_human", ReviewIdeaHumanReducer),
   __reducerSchema("review_project_plan", ReviewProjectPlanReducer),
   __reducerSchema("send_message", SendMessageReducer),

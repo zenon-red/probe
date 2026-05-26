@@ -1,42 +1,94 @@
 import type { AgentAction } from "~/module_bindings/types.js";
-import { DispatchRoute, enumName } from "~/utils/enums.js";
+import {
+  actionCompleteCommand,
+  createTasksCompleteCommand,
+  discoveryReviewCompleteCommand,
+  executionCompleteCommand,
+  mergeReadyCompleteCommand,
+  projectSetupCompleteCommand,
+  proposalCompleteCommand,
+  reviewCompleteCommand,
+  reviewValidateCommand,
+  voteCompleteCommand,
+} from "~/utils/action-prompts.js";
+import { enumName } from "~/utils/enums.js";
 
 export type ActionCompletionGuide = {
   command: string;
   note?: string;
 };
 
-export function completionGuideForAction(action: AgentAction): ActionCompletionGuide {
-  const id = action.id.toString();
-  const route = enumName(action.route);
+type ActionCompletionPolicy = {
+  genericAllowed: boolean;
+  guide: (actionId: bigint | number) => ActionCompletionGuide;
+};
 
-  if (DispatchRoute.is.reviewTask(action.route)) {
-    return {
-      command: `probe review complete ${id} --outcome approved|changes-requested --summary "..." --artifact-kind review --artifact-url <url>`,
-    };
-  }
-  if (DispatchRoute.is.validateReview(action.route)) {
-    return {
-      command: `probe review validate ${id} --outcome valid|invalid --summary "..." --artifact-kind review_comment --artifact-url <url>`,
-    };
-  }
-  if (route === "ProposalScout") {
-    return {
-      command: `probe idea propose --action-id ${id} --title "..." --description "..."`,
-      note: "Completes the action when the idea is persisted",
-    };
-  }
-  if (route === "Vote") {
-    return {
-      command: `probe idea vote --action-id ${id} --idea-id <id> --vote-type for|against|abstain`,
-      note: "Completes the action when the vote is persisted",
-    };
-  }
-  if (route === "ContinueOwnedTask" || route === "AssignOpenTask") {
-    return {
-      command: `probe artifact register --action-id ${id} --kind pull_request --url <github-pr-url> --summary "..."`,
-      note: "Completes execution actions when the pull request artifact is registered",
-    };
-  }
-  return { command: `probe action complete ${id}` };
+const executionPolicy: ActionCompletionPolicy = {
+  genericAllowed: false,
+  guide: (id) => ({ command: executionCompleteCommand(id) }),
+};
+
+const ROUTE_COMPLETION_POLICIES: Record<string, ActionCompletionPolicy> = {
+  ReviewTask: {
+    genericAllowed: false,
+    guide: (id) => ({ command: reviewCompleteCommand(id) }),
+  },
+  ValidateReview: {
+    genericAllowed: false,
+    guide: (id) => ({ command: reviewValidateCommand(id) }),
+  },
+  ProposalScout: {
+    genericAllowed: false,
+    guide: (id) => ({ command: proposalCompleteCommand(id) }),
+  },
+  Vote: {
+    genericAllowed: false,
+    guide: (id) => ({ command: voteCompleteCommand(id) }),
+  },
+  AssignOpenTask: executionPolicy,
+  ContinueOwnedTask: executionPolicy,
+  ProjectSetup: {
+    genericAllowed: false,
+    guide: (id) => ({
+      command: `probe project create --name "..." --github-repo <org/repo> --source-idea <idea-id> --description "..."`,
+      note: `Then: ${projectSetupCompleteCommand(id)}`,
+    }),
+  },
+  CreateTasks: {
+    genericAllowed: false,
+    guide: (id) => ({
+      command: `probe task create --project <project-id> --title "..." --description "..."`,
+      note: `Then: ${createTasksCompleteCommand(id)}`,
+    }),
+  },
+  MergeReadyTask: {
+    genericAllowed: false,
+    guide: (id) => ({ command: mergeReadyCompleteCommand(id) }),
+  },
+  ReviewDiscovery: {
+    genericAllowed: false,
+    guide: (id) => ({ command: discoveryReviewCompleteCommand(id) }),
+  },
+};
+
+export function completionPolicyForRoute(route: string): ActionCompletionPolicy {
+  return (
+    ROUTE_COMPLETION_POLICIES[route] ?? {
+      genericAllowed: true,
+      guide: (id) => ({ command: actionCompleteCommand(id) }),
+    }
+  );
+}
+
+export function successCommandForAction(action: {
+  id: bigint | number;
+  kind?: string;
+  route: string;
+}): string {
+  return completionPolicyForRoute(action.route).guide(action.id).command;
+}
+
+export function completionGuideForAction(action: AgentAction): ActionCompletionGuide {
+  const route = enumName(action.route);
+  return completionPolicyForRoute(route).guide(action.id);
 }

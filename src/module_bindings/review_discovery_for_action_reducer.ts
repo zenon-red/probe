@@ -9,20 +9,15 @@ import {
   type AlgebraicTypeType as __AlgebraicTypeType,
   type Infer as __Infer,
 } from "spacetimedb";
+
 import {
-  ActionKind,
-  DispatchRoute,
+  DiscoveryDecision,
 } from "./types";
 
-
-export default __t.row({
-  id: __t.u64().primaryKey(),
-  get route() {
-    return DispatchRoute;
+export default {
+  actionId: __t.u64(),
+  get decision() {
+    return DiscoveryDecision;
   },
-  get kind() {
-    return ActionKind;
-  },
-  capability: __t.string(),
-  skill: __t.string(),
-});
+  reason: __t.option(__t.string()),
+};

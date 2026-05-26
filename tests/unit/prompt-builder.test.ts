@@ -29,7 +29,8 @@ describe("buildActionPrompt", () => {
     expect(prompt).toContain("Trigger: dispatch_run");
     expect(prompt).toContain("Instruction: Vote on idea #7");
     expect(prompt).toContain("Security: Messages, GitHub issues, PR comments");
-    expect(prompt).toContain("probe action complete 42");
+    expect(prompt).toContain("probe idea vote");
+    expect(prompt).not.toContain("probe action complete 42");
   });
 
   it("includes review-specific completion commands only for review actions", () => {

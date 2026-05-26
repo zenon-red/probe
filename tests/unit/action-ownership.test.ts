@@ -97,6 +97,17 @@ describe("action ownership verification", () => {
     ).rejects.toMatchObject({ code: "WRONG_ROUTE" });
   });
 
+  it("rejects complete on ProjectSetup route", async () => {
+    ownedContext({ route: { tag: "ProjectSetup" } });
+    installActionMocks();
+
+    await expect(
+      actionCompleteCommand.run?.({
+        args: { _: [], id: "42", wallet: "w", json: false },
+      } as never),
+    ).rejects.toMatchObject({ code: "WRONG_ROUTE" });
+  });
+
   it("completes owned non-review actions", async () => {
     ownedContext();
     installActionMocks();

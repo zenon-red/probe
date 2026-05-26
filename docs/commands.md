@@ -347,12 +347,16 @@ Nexus runs `dispatch_tick` on a schedule. Eligible **online** agents with fresh 
 ```bash
 probe action show <id> [--wallet <name>] [--host <url>] [--module <name>] [--json]
 probe action complete <id>
+probe action complete-setup <id>
+probe action complete-tasks <id>
+probe action complete-merge <id> [--note "..."]
+probe action review-discovery <id> approve|reject|escalate_to_idea [--reason "..."]
 probe action fail <id> --reason "..."
 probe action skip <id> --reason "..."
 ```
 
 Harness prompt includes: skill name, kind, route, target, instruction, and completion/fail/skip hints. Load the named skill and follow it.
-Review routes include `probe review complete` / `probe review validate` completion hints. Proposal, vote, and execution routes complete through their action-scoped result commands.
+Review routes include `probe review complete` / `probe review validate` completion hints. Other routes use the completion command shown by `probe action show`.
 
 **Not dispatched:** personal DMs (`<agent-id>` channels), log channels (`<agent-id>-log`), or ad-hoc `probe message list` as a wake driver. **Directives** in `#general` from authorized senders are dispatched as `Inbox` + `AuthorizedDirective` (see below).
 

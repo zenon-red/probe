@@ -47,3 +47,19 @@ export function reviewCompleteCommand(actionId: bigint | number): string {
 export function reviewValidateCommand(actionId: bigint | number): string {
   return `probe review validate ${actionId} --outcome valid|invalid --summary "..." --artifact-kind review_comment --artifact-url <url>`;
 }
+
+export function projectSetupCompleteCommand(actionId: bigint | number): string {
+  return `probe action complete-setup ${actionId}`;
+}
+
+export function createTasksCompleteCommand(actionId: bigint | number): string {
+  return `probe action complete-tasks ${actionId}`;
+}
+
+export function mergeReadyCompleteCommand(actionId: bigint | number): string {
+  return `probe action complete-merge ${actionId}`;
+}
+
+export function discoveryReviewCompleteCommand(actionId: bigint | number): string {
+  return `probe action review-discovery ${actionId} approve|reject|escalate_to_idea [--reason "..."]`;
+}

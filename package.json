@@ -50,7 +50,7 @@
     "c12": "^2.0.0",
     "canonical-json": "^0.4.0",
     "citty": "^0.2.2",
-    "spacetimedb": "^2.0.1",
+    "spacetimedb": "^2.2.0",
     "znn-typescript-sdk": "https://codeload.github.com/PlasmaKing/znn-typescript-sdk/tar.gz/865bc8866d798893ed364f6db4f14162efe0b396"
   },
   "devDependencies": {

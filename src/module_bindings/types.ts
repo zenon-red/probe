@@ -299,6 +299,7 @@ export const DispatchRoute = __t.enum("DispatchRoute", {
 export type DispatchRoute = __Infer<typeof DispatchRoute>;
 
 export const DispatchRouteConfig = __t.object("DispatchRouteConfig", {
+  id: __t.u64(),
   get route() {
     return DispatchRoute;
   },
@@ -655,3 +656,4 @@ export const VoteType = __t.enum("VoteType", {
   Veto: __t.unit(),
 });
 export type VoteType = __Infer<typeof VoteType>;
+

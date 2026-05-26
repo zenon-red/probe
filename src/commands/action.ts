@@ -5,9 +5,10 @@ import {
   commandContextOptions,
   withAuth,
 } from "~/utils/context.js";
-import { DispatchRoute, enumName, identityHex } from "~/utils/enums.js";
+import { completionGuideForAction, completionPolicyForRoute } from "~/utils/action-completion.js";
+import { enumName, identityHex } from "~/utils/enums.js";
+import { toDiscoveryDecision } from "~/commands/nexus/discover/shared.js";
 import { parseActionId } from "~/utils/action-id.js";
-import { completionGuideForAction } from "~/utils/action-completion.js";
 import { loadUserConfig } from "~/utils/user-config.js";
 import { runReducerCommand } from "~/utils/reducer-command.js";
 import { defineSubcommandParent } from "~/utils/subcommand.js";
@@ -22,7 +23,7 @@ const ACTION_SUBSCRIBE = [
   "SELECT * FROM applied_genesis",
 ];
 
-function buildContextCommands(action: AgentAction): string[] {
+export function buildContextCommands(action: AgentAction): string[] {
   const commands: string[] = [];
   if (action.targetType === "idea" && action.targetId) {
     commands.push(`probe idea get ${action.targetId}`);
@@ -33,6 +34,9 @@ function buildContextCommands(action: AgentAction): string[] {
   }
   if (action.targetType === "project" && action.targetId) {
     commands.push(`probe project get ${action.targetId}`);
+  }
+  if (action.targetType === "discovered_task" && action.targetId) {
+    commands.push(`probe discover get ${action.targetId}`);
   }
   return commands;
 }
@@ -101,32 +105,19 @@ function verifyOwnership(ctx: CommandContext, actionId: bigint): AgentAction {
 }
 
 function completionHintForAction(action: AgentAction): string {
-  const route = action.route;
-  const id = action.id.toString();
-  if (DispatchRoute.is.reviewTask(route)) {
-    return `Use: probe review complete ${id} --outcome approved|changes-requested --summary "..." --artifact-kind review --artifact-url <url>`;
-  }
-  if (DispatchRoute.is.validateReview(route)) {
-    return `Use: probe review validate ${id} --outcome valid|invalid --summary "..." --artifact-kind review_comment --artifact-url <url>`;
-  }
-  return `Use: probe action complete ${id}`;
+  const guide = completionGuideForAction(action);
+  return guide.note ? `Use: ${guide.command} (${guide.note})` : `Use: ${guide.command}`;
 }
 
-function blockGenericCompleteOnReviewRoutes(action: AgentAction): void {
-  if (DispatchRoute.is.reviewTask(action.route)) {
-    error(
-      "WRONG_ROUTE",
-      `Action ${action.id} is a peer review (ReviewTask).`,
-      completionHintForAction(action),
-    );
-  }
-  if (DispatchRoute.is.validateReview(action.route)) {
-    error(
-      "WRONG_ROUTE",
-      `Action ${action.id} is a review validation (ValidateReview).`,
-      completionHintForAction(action),
-    );
-  }
+function blockGenericCompleteOnGatedRoutes(action: AgentAction): void {
+  const route = enumName(action.route);
+  if (completionPolicyForRoute(route).genericAllowed) return;
+
+  error(
+    "WRONG_ROUTE",
+    `Action ${action.id} (${route}) cannot use generic completion.`,
+    completionHintForAction(action),
+  );
 }
 
 type ActionConnectionArgs = {
@@ -188,7 +179,7 @@ export const actionCompleteCommand = defineCommand({
       reducer: (ctx) => ctx.conn.reducers.updateAgentAction,
       params: (ctx) => {
         const action = verifyOwnership(ctx, actionId);
-        blockGenericCompleteOnReviewRoutes(action);
+        blockGenericCompleteOnGatedRoutes(action);
         return {
           actionId,
           eventType: { tag: "Completed" as const },
@@ -234,6 +225,136 @@ export const actionFailCommand = defineCommand({
   },
 });
 
+export const actionCompleteSetupCommand = defineCommand({
+  meta: { name: "complete-setup", description: "Complete a project_setup action" },
+  args: {
+    id: { type: "positional", name: "id", description: "Action ID", required: true },
+    wallet: { type: "string", description: "Wallet name" },
+    host: { type: "string", description: "SpacetimeDB host" },
+    module: { type: "string", description: "Module name" },
+    json: { type: "boolean", description: "JSON output", default: false },
+  },
+  async run({ args }) {
+    applyJsonMode(args);
+    const actionId = parseActionId(args.id);
+
+    await runReducerCommand(args as ActionConnectionArgs, {
+      subscribe: ACTION_SUBSCRIBE,
+      reducer: (ctx) => ctx.conn.reducers.completeProjectSetupAction,
+      params: (ctx) => {
+        verifyOwnership(ctx, actionId);
+        return { actionId };
+      },
+    });
+
+    success({ action_id: actionId.toString(), status: "completed" });
+  },
+});
+
+export const actionCompleteTasksCommand = defineCommand({
+  meta: { name: "complete-tasks", description: "Complete a create_tasks action" },
+  args: {
+    id: { type: "positional", name: "id", description: "Action ID", required: true },
+    wallet: { type: "string", description: "Wallet name" },
+    host: { type: "string", description: "SpacetimeDB host" },
+    module: { type: "string", description: "Module name" },
+    json: { type: "boolean", description: "JSON output", default: false },
+  },
+  async run({ args }) {
+    applyJsonMode(args);
+    const actionId = parseActionId(args.id);
+
+    await runReducerCommand(args as ActionConnectionArgs, {
+      subscribe: ACTION_SUBSCRIBE,
+      reducer: (ctx) => ctx.conn.reducers.completeCreateTasksAction,
+      params: (ctx) => {
+        verifyOwnership(ctx, actionId);
+        return { actionId };
+      },
+    });
+
+    success({ action_id: actionId.toString(), status: "completed" });
+  },
+});
+
+export const actionCompleteMergeCommand = defineCommand({
+  meta: { name: "complete-merge", description: "Complete a merge_ready_task action" },
+  args: {
+    id: { type: "positional", name: "id", description: "Action ID", required: true },
+    note: { type: "string", description: "Optional finalization note" },
+    wallet: { type: "string", description: "Wallet name" },
+    host: { type: "string", description: "SpacetimeDB host" },
+    module: { type: "string", description: "Module name" },
+    json: { type: "boolean", description: "JSON output", default: false },
+  },
+  async run({ args }) {
+    applyJsonMode(args);
+    const actionId = parseActionId(args.id);
+
+    await runReducerCommand(args as ActionConnectionArgs, {
+      subscribe: ACTION_SUBSCRIBE,
+      reducer: (ctx) => ctx.conn.reducers.completeMergeReadyAction,
+      params: (ctx) => {
+        verifyOwnership(ctx, actionId);
+        return { actionId, note: args.note ?? undefined };
+      },
+    });
+
+    success({ action_id: actionId.toString(), status: "completed" });
+  },
+});
+
+export const actionReviewDiscoveryCommand = defineCommand({
+  meta: {
+    name: "review-discovery",
+    description: "Review a discovery and complete the review_discovery action",
+  },
+  args: {
+    id: { type: "positional", name: "id", description: "Action ID", required: true },
+    decision: {
+      type: "positional",
+      name: "decision",
+      description: "approve, reject, or escalate_to_idea",
+      required: true,
+    },
+    reason: { type: "string", description: "Reason for rejection/escalation" },
+    wallet: { type: "string", description: "Wallet name" },
+    host: { type: "string", description: "SpacetimeDB host" },
+    module: { type: "string", description: "Module name" },
+    json: { type: "boolean", description: "JSON output", default: false },
+  },
+  async run({ args }) {
+    applyJsonMode(args);
+    const actionId = parseActionId(args.id);
+    const decisionValue = toDiscoveryDecision(args.decision.toLowerCase());
+    if (!decisionValue) {
+      error(
+        "INVALID_DECISION",
+        `Invalid decision: ${args.decision}. Use: approve, reject, escalate_to_idea`,
+      );
+    }
+
+    await runReducerCommand(args as ActionConnectionArgs, {
+      subscribe: ACTION_SUBSCRIBE,
+      reducer: (ctx) => ctx.conn.reducers.reviewDiscoveryForAction,
+      params: (ctx) => {
+        verifyOwnership(ctx, actionId);
+        return {
+          actionId,
+          decision: decisionValue,
+          reason: args.reason ?? undefined,
+        };
+      },
+    });
+
+    success({
+      action_id: actionId.toString(),
+      status: "completed",
+      decision: args.decision.toLowerCase(),
+    });
+  },
+});
+
 export const actionSkipCommand = defineCommand({
   meta: { name: "skip", description: "Skip an action" },
   args: {
@@ -268,7 +389,7 @@ export const actionSkipCommand = defineCommand({
 
 export default defineSubcommandParent({
   name: "action",
-  description: "Manage action lifecycle — show, complete, fail, skip",
+  description: "Manage action lifecycle",
   args: {
     wallet: { type: "string", description: "Wallet name" },
     host: { type: "string", description: "SpacetimeDB host" },
@@ -282,10 +403,18 @@ export default defineSubcommandParent({
       "probe action <subcommand> [positionals] [args]",
       "probe action show 42",
       "probe action complete 42",
+      "probe action complete-setup 42",
+      "probe action complete-tasks 42",
+      "probe action complete-merge 42",
+      "probe action review-discovery 42 approve|reject|escalate_to_idea",
     ],
     actions: [
       { name: "show <id>", detail: "Show one action" },
       { name: "complete <id>", detail: "Mark an action completed" },
+      { name: "complete-setup <id>", detail: "Complete a project setup action" },
+      { name: "complete-tasks <id>", detail: "Complete a create-tasks action" },
+      { name: "complete-merge <id>", detail: "Complete a merge-ready action" },
+      { name: "review-discovery <id> <decision>", detail: "Complete a discovery review" },
       { name: "fail <id>", detail: "Mark an action failed" },
       { name: "skip <id>", detail: "Skip an action" },
     ],
@@ -293,6 +422,10 @@ export default defineSubcommandParent({
   subCommands: {
     show: actionShowCommand,
     complete: actionCompleteCommand,
+    "complete-setup": actionCompleteSetupCommand,
+    "complete-tasks": actionCompleteTasksCommand,
+    "complete-merge": actionCompleteMergeCommand,
+    "review-discovery": actionReviewDiscoveryCommand,
     fail: actionFailCommand,
     skip: actionSkipCommand,
   },

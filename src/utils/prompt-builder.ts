@@ -1,16 +1,11 @@
 import {
-  actionCompleteCommand,
   actionCorrelationFlag,
   actionFailCommand,
   actionSkipCommand,
   ACTION_PROMPT_RUN_SKILL,
   ACTION_PROMPT_SECURITY,
-  executionCompleteCommand,
-  proposalCompleteCommand,
-  reviewCompleteCommand,
-  reviewValidateCommand,
-  voteCompleteCommand,
 } from "./action-prompts.js";
+import { successCommandForAction } from "./action-completion.js";
 
 export function buildActionPrompt(
   action: {
@@ -44,21 +39,6 @@ export function buildActionPrompt(
   ];
 
   return lines.join("\n");
-}
-
-function successCommandForAction(action: {
-  id: bigint | number;
-  kind: string;
-  route: string;
-}): string {
-  if (action.kind === "ReviewTask") return reviewCompleteCommand(action.id);
-  if (action.kind === "ValidateReview") return reviewValidateCommand(action.id);
-  if (action.route === "ProposalScout") return proposalCompleteCommand(action.id);
-  if (action.route === "Vote") return voteCompleteCommand(action.id);
-  if (action.route === "AssignOpenTask" || action.route === "ContinueOwnedTask") {
-    return executionCompleteCommand(action.id);
-  }
-  return actionCompleteCommand(action.id);
 }
 
 export { actionCorrelationFlag } from "./action-prompts.js";
