@@ -5,8 +5,11 @@ import {
   actionSkipCommand,
   ACTION_PROMPT_RUN_SKILL,
   ACTION_PROMPT_SECURITY,
+  executionCompleteCommand,
+  proposalCompleteCommand,
   reviewCompleteCommand,
   reviewValidateCommand,
+  voteCompleteCommand,
 } from "./action-prompts.js";
 
 export function buildActionPrompt(
@@ -35,18 +38,27 @@ export function buildActionPrompt(
     ACTION_PROMPT_SECURITY,
     "",
     ACTION_PROMPT_RUN_SKILL,
-    `- ${actionCompleteCommand(action.id)}`,
+    `- ${successCommandForAction(action)}`,
     `- ${actionFailCommand(action.id)}`,
     `- ${actionSkipCommand(action.id)}`,
   ];
 
-  if (action.kind === "ReviewTask") {
-    lines.push(`- ${reviewCompleteCommand(action.id)}`);
-  } else if (action.kind === "ValidateReview") {
-    lines.push(`- ${reviewValidateCommand(action.id)}`);
-  }
-
   return lines.join("\n");
+}
+
+function successCommandForAction(action: {
+  id: bigint | number;
+  kind: string;
+  route: string;
+}): string {
+  if (action.kind === "ReviewTask") return reviewCompleteCommand(action.id);
+  if (action.kind === "ValidateReview") return reviewValidateCommand(action.id);
+  if (action.route === "ProposalScout") return proposalCompleteCommand(action.id);
+  if (action.route === "Vote") return voteCompleteCommand(action.id);
+  if (action.route === "AssignOpenTask" || action.route === "ContinueOwnedTask") {
+    return executionCompleteCommand(action.id);
+  }
+  return actionCompleteCommand(action.id);
 }
 
 export { actionCorrelationFlag } from "./action-prompts.js";

@@ -1,7 +1,9 @@
-import { execSync } from "node:child_process";
-import { SKILLS_INSTALL_CMD } from "./skills-check.js";
-import { commandExists } from "./system.js";
-import { SHELL_TIMEOUT } from "./timeouts.js";
+import { execFileSync, execSync } from "node:child_process";
+import type { SkillsSpec } from "~/utils/genesis-skills.js";
+import { skillsInstallArgs, skillsInstallCommand } from "~/utils/genesis-skills.js";
+import { formatSkillsSpec } from "~/utils/genesis-skills-spec.js";
+import { commandExists } from "~/utils/system.js";
+import { SHELL_TIMEOUT } from "~/utils/timeouts.js";
 
 export interface SkillsResult {
   installed: boolean;
@@ -9,7 +11,9 @@ export interface SkillsResult {
   recovery?: string;
 }
 
-export async function installSkills(): Promise<SkillsResult> {
+export async function installSkills(spec: SkillsSpec): Promise<SkillsResult> {
+  const installCmd = skillsInstallCommand(spec.source, spec.ref);
+
   if (!commandExists("npx")) {
     return {
       installed: false,
@@ -23,28 +27,28 @@ export async function installSkills(): Promise<SkillsResult> {
     return {
       installed: false,
       detail: "skills CLI not available",
-      recovery: "Run: npm install -g @zenon-red/skills-cli",
+      recovery: "Install the skills CLI package for your environment",
     };
   }
   try {
-    execSync(SKILLS_INSTALL_CMD, {
+    execFileSync("npx", skillsInstallArgs(spec), {
       stdio: "ignore",
       timeout: SHELL_TIMEOUT.VERY_LONG,
     });
     return {
       installed: true,
-      detail: "Installed zenon-red/skills globally",
+      detail: `Installed ${formatSkillsSpec(spec)} globally`,
     };
   } catch {
     return {
       installed: false,
       detail: "skills add command failed",
-      recovery: `Run manually: ${SKILLS_INSTALL_CMD}`,
+      recovery: `Run manually: ${installCmd}`,
     };
   }
 }
 
-export async function verifySkills(): Promise<SkillsResult> {
+export async function verifySkillsCli(): Promise<SkillsResult> {
   if (!commandExists("npx")) {
     return {
       installed: false,
@@ -61,7 +65,6 @@ export async function verifySkills(): Promise<SkillsResult> {
     return {
       installed: false,
       detail: "skills CLI not available or empty",
-      recovery: `Run: ${SKILLS_INSTALL_CMD}`,
     };
   }
 }

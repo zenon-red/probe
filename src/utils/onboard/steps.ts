@@ -6,6 +6,9 @@ import { AGENT_SUBSCRIBE, callReducer, commandContextOptions, withAuth } from "~
 import { AgentRole } from "~/utils/enums.js";
 import { createWallet, getWalletInfo, walletExists } from "~/utils/wallet.js";
 import { authenticateWallet } from "~/utils/auth-flow.js";
+import { persistGenesisFromSource } from "~/utils/genesis-apply.js";
+import { checkSkillsCompatForGenesis } from "~/utils/genesis-skills.js";
+import { formatSkillsSpec, loadSkillsSpecFromConfig } from "~/utils/genesis-skills-spec.js";
 import { installSkills } from "~/utils/skills-install.js";
 import { daemonAdapters, detectDaemon, type DaemonAdapter } from "~/utils/daemon.js";
 import {
@@ -18,6 +21,11 @@ import { loadUserConfig, saveUserConfig } from "~/utils/user-config.js";
 import { errorMessage } from "~/utils/errors.js";
 import { SHELL_TIMEOUT } from "~/utils/timeouts.js";
 import type { OnboardStep } from "./types.js";
+
+type MembershipCheck =
+  | { status: "member" }
+  | { status: "not_member" }
+  | { status: "unknown"; reason: string };
 
 export interface OnboardState {
   args: {
@@ -36,6 +44,7 @@ export interface OnboardState {
     "harness-args"?: string;
     "dry-run": boolean;
     json: boolean;
+    genesis?: string;
   };
   agentId: string;
   role: string;
@@ -87,6 +96,21 @@ export function randomPassword(): string {
   return pass;
 }
 
+function checkGithubOrgMembership(githubOrg: string): MembershipCheck {
+  try {
+    const memberships = execSync("gh api user/memberships/orgs --jq '.[].organization.login'", {
+      encoding: "utf-8",
+      timeout: SHELL_TIMEOUT.MEDIUM,
+    })
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+    return memberships.includes(githubOrg) ? { status: "member" } : { status: "not_member" };
+  } catch (err) {
+    return { status: "unknown", reason: errorMessage(err, "GitHub membership check failed") };
+  }
+}
+
 export async function resolveIdentity(state: OnboardState): Promise<boolean> {
   let agentId = state.args["agent-id"];
   let role = state.args.role || "auto";
@@ -122,25 +146,38 @@ export async function resolveIdentity(state: OnboardState): Promise<boolean> {
   }
 
   if (role === "auto") {
+    const config = await loadUserConfig();
+    const githubOrg = config.githubOrg?.trim();
     let isMember = false;
-    if (ghAvailable) {
-      try {
-        const orgs = execSync("gh org list", {
-          encoding: "utf-8",
-          timeout: SHELL_TIMEOUT.MEDIUM,
-        });
-        isMember = orgs.includes("zenon-red");
-      } catch {
-        // ignore
-      }
+    if (!githubOrg) {
+      role = "zeno";
+      addStep(
+        state,
+        "role",
+        "warn",
+        "No org.githubOrg in genesis config; defaulting to zeno. Pass --genesis or --role explicitly.",
+      );
+    } else if (ghAvailable) {
+      const membership = checkGithubOrgMembership(githubOrg);
+      isMember = membership.status === "member";
+      role = isMember ? "zoe" : "zeno";
+      addStep(
+        state,
+        "role",
+        membership.status === "unknown" ? "warn" : "pass",
+        membership.status === "unknown"
+          ? `Cannot verify ${githubOrg} membership (${membership.reason}); defaulting to zeno`
+          : `Auto-detected role: ${role} (${githubOrg} member: ${isMember})`,
+      );
+    } else {
+      role = "zeno";
+      addStep(
+        state,
+        "role",
+        "warn",
+        `Cannot verify ${githubOrg} membership without gh; defaulting to zeno`,
+      );
     }
-    role = isMember ? "zoe" : "zeno";
-    addStep(
-      state,
-      "role",
-      "pass",
-      `Auto-detected role: ${role} (${isMember ? "zenon-red org member" : "not a member"})`,
-    );
   } else {
     addStep(state, "role", "pass", `Explicit role: ${role}`);
   }
@@ -364,13 +401,52 @@ export async function createWorkspace(state: OnboardState): Promise<void> {
   }
 }
 
-export async function installSkillsStep(state: OnboardState): Promise<void> {
+export async function applyGenesisStep(state: OnboardState): Promise<boolean> {
+  const source = state.args.genesis?.trim();
+  if (!source) {
+    return true;
+  }
   if (state.args["dry-run"]) {
-    addStep(state, "skills", "skip", "Would install skills (dry-run)");
+    addStep(state, "genesis", "skip", `Would apply genesis from ${source} (dry-run)`);
+    return true;
+  }
+  try {
+    const { parsed } = await persistGenesisFromSource(source);
+    addStep(
+      state,
+      "genesis",
+      "pass",
+      `Applied ${parsed.genesisId} (${parsed.githubOrg}, skills ${parsed.skillsSource}@${parsed.skillsRef})`,
+    );
+    return true;
+  } catch (err) {
+    addStep(state, "genesis", "fail", errorMessage(err, "Genesis apply failed"));
+    return false;
+  }
+}
+
+export async function installSkillsStep(state: OnboardState): Promise<void> {
+  const spec = await loadSkillsSpecFromConfig();
+  if (!spec) {
+    addStep(
+      state,
+      "skills",
+      "warn",
+      "No genesis skills configured. Pass --genesis <manifest> or run probe genesis apply first.",
+    );
     return;
   }
-  const skillsResult = await installSkills();
-  addStep(state, "skills", skillsResult.installed ? "pass" : "warn", skillsResult.detail);
+
+  if (state.args["dry-run"]) {
+    addStep(state, "skills", "skip", `Would install ${formatSkillsSpec(spec)} (dry-run)`);
+    return;
+  }
+
+  const skillsResult = await installSkills(spec);
+  const compat = checkSkillsCompatForGenesis(spec.source, spec.ref);
+  const status = skillsResult.installed && compat.status === "ok" ? "pass" : "warn";
+  const detail = skillsResult.installed ? compat.message : skillsResult.detail;
+  addStep(state, "skills", status, detail);
 }
 
 export async function configureDaemon(state: OnboardState): Promise<void> {

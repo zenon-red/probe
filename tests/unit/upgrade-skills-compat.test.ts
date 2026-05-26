@@ -1,15 +1,15 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { join } from "node:path";
-import type { SkillsCompat } from "../../src/utils/skills-check.js";
-import { SKILLS_INSTALL_CMD } from "../../src/utils/skills-check.js";
+import { skillsInstallCommand, type SkillsCompat } from "../../src/utils/genesis-skills.js";
+import { applyJsonMode, setJsonMode } from "../../src/utils/output-mode.js";
 import { emitUpgradeFinish } from "../../src/utils/upgrade-skills-output.js";
-import { setJsonMode } from "../../src/utils/output-mode.js";
 
-const fixtures = join(import.meta.dir, "../fixtures/skills-lock");
-const realConsoleLog = globalThis.console.log.bind(console);
-const realConsoleError = globalThis.console.error.bind(console);
+const SOURCE = "acme/skills";
+const REF = "v1.0.0";
+const INSTALL_CMD = skillsInstallCommand(SOURCE, REF);
+const realConsoleLog = console.log.bind(console);
+const realConsoleError = console.error.bind(console);
 
-const upgradeBase = {
+const base = {
   method: "npm",
   currentVersion: "1.0.0",
   targetVersion: "1.1.0",
@@ -19,86 +19,97 @@ const upgradeBase = {
   checkOnly: false,
 };
 
-const warnCompat: SkillsCompat = {
-  status: "warn",
-  expectedRef: "v0.3.3",
-  foundRef: "v0.3.2",
-  message: "Skills ref mismatch: expected v0.3.3, found v0.3.2",
-  fixCommand: SKILLS_INSTALL_CMD,
+const okCompat: SkillsCompat = {
+  status: "ok",
+  expectedSource: SOURCE,
+  expectedRef: REF,
+  foundRef: REF,
+  message: "ok",
+  fixCommand: INSTALL_CMD,
 };
 
-function captureConsole() {
+const warnCompat: SkillsCompat = {
+  status: "warn",
+  expectedSource: SOURCE,
+  expectedRef: REF,
+  foundRef: "v0.9.0",
+  message: "Skills ref mismatch: expected v1.0.0, found v0.9.0",
+  fixCommand: INSTALL_CMD,
+};
+
+function captureConsole(): { stdout: string[]; stderr: string[] } {
   const stdout: string[] = [];
   const stderr: string[] = [];
-  globalThis.console.log = (...args: unknown[]) => {
+  console.log = (...args: unknown[]) => {
     stdout.push(args.map(String).join(" "));
   };
-  globalThis.console.error = (...args: unknown[]) => {
+  console.error = (...args: unknown[]) => {
     stderr.push(args.map(String).join(" "));
   };
   return { stdout, stderr };
 }
 
 afterEach(() => {
-  globalThis.console.log = realConsoleLog;
-  globalThis.console.error = realConsoleError;
+  console.log = realConsoleLog;
+  console.error = realConsoleError;
   setJsonMode(false);
 });
 
-describe("emitUpgradeFinish", () => {
-  it("omits skillsCompat when upgrade did not run", () => {
-    setJsonMode(true);
-    const { stdout, stderr } = captureConsole();
-    emitUpgradeFinish({ ...upgradeBase, updated: false, checkOnly: true }, false, {
+describe("emitUpgradeFinish skills compat", () => {
+  it("does not load or check skills when upgrade did not run", async () => {
+    applyJsonMode({ json: true });
+    const { stdout } = captureConsole();
+    await emitUpgradeFinish({ ...base, updated: false, checkOnly: true }, false, {
+      loadSkillsSpec: async () => {
+        throw new Error("should not load skills");
+      },
       checkSkillsCompat: () => {
-        throw new Error("should not check skills on --check");
+        throw new Error("should not check skills");
       },
     });
 
-    const parsed = JSON.parse(stdout.join("\n").trim());
-    expect(parsed.data.updated).toBe(false);
-    expect(parsed.data.skillsCompat).toBeUndefined();
-    expect(stderr.join("\n")).not.toContain("Skills");
+    const payload = JSON.parse(stdout.join("\n")) as { data: { skillsCompat?: unknown } };
+    expect(payload.data.skillsCompat).toBeUndefined();
   });
 
-  it("includes skillsCompat on stdout in JSON mode without stderr compat prose", () => {
-    setJsonMode(true);
+  it("includes skillsCompat in JSON when updated", async () => {
+    applyJsonMode({ json: true });
     const { stdout, stderr } = captureConsole();
-    emitUpgradeFinish(upgradeBase, true, {
-      lockPath: join(fixtures, "ok.json"),
+    await emitUpgradeFinish(base, true, {
+      loadSkillsSpec: async () => ({ source: SOURCE, ref: REF }),
+      checkSkillsCompat: () => okCompat,
     });
 
-    const parsed = JSON.parse(stdout.join("\n").trim());
-    expect(parsed.success).toBe(true);
-    expect(parsed.data.skillsCompat?.status).toBe("ok");
-    expect(stderr.join("\n")).not.toMatch(/⚠|Skills ref mismatch/);
+    const payload = JSON.parse(stdout.join("\n")) as {
+      data: { skillsCompat: { status: string } };
+    };
+    expect(payload.data.skillsCompat.status).toBe("ok");
+    expect(stderr.join("\n")).toBe("");
   });
 
-  it("prints compat hints to stderr only in human mode", () => {
-    setJsonMode(false);
+  it("prints warn compat only to stderr in human mode", async () => {
     const { stdout, stderr } = captureConsole();
-    emitUpgradeFinish(upgradeBase, true, {
+    await emitUpgradeFinish(base, true, {
+      loadSkillsSpec: async () => ({ source: SOURCE, ref: REF }),
       checkSkillsCompat: () => warnCompat,
     });
 
-    const stdoutText = stdout.join("\n");
-    expect(stdoutText).not.toContain("⚠");
-    expect(stdoutText).not.toContain(SKILLS_INSTALL_CMD);
-
-    const stderrText = stderr.join("\n");
-    expect(stderrText).toContain("⚠");
-    expect(stderrText).toContain(SKILLS_INSTALL_CMD);
+    expect(stdout.join("\n")).not.toContain(INSTALL_CMD);
+    expect(stderr.join("\n")).toContain("⚠");
+    expect(stderr.join("\n")).toContain(INSTALL_CMD);
   });
 
-  it("uses injected lock path instead of global lock file", () => {
-    setJsonMode(true);
+  it("reports unknown compat when genesis skills are not configured", async () => {
+    applyJsonMode({ json: true });
     const { stdout } = captureConsole();
-    emitUpgradeFinish(upgradeBase, true, {
-      lockPath: join(fixtures, "warn-mismatch.json"),
+    await emitUpgradeFinish(base, true, {
+      loadSkillsSpec: async () => null,
     });
 
-    const parsed = JSON.parse(stdout.join("\n").trim());
-    expect(parsed.data.skillsCompat?.status).toBe("warn");
-    expect(parsed.data.skillsCompat?.foundRef).toBe("v0.3.2");
+    const payload = JSON.parse(stdout.join("\n")) as {
+      data: { skillsCompat: { status: string; message: string } };
+    };
+    expect(payload.data.skillsCompat.status).toBe("unknown");
+    expect(payload.data.skillsCompat.message).toContain("No genesis skills configured");
   });
 });

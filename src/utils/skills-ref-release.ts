@@ -1,26 +1,24 @@
-import { EXPECTED_SKILLS_REF, compareSkillsReleaseRef } from "./skills-check.js";
+import { compareSkillsReleaseRef } from "./skills-check.js";
 
-export interface SkillsRefCheckResult {
+export type SkillsRefCheckResult = {
   exitCode: number;
   lines: string[];
-}
+};
 
 export function runSkillsRefCheck(options: {
-  expectedRef?: string;
+  skillsSource: string;
+  expectedRef: string;
   latestTag: string | null;
-  strict: boolean;
+  strict?: boolean;
 }): SkillsRefCheckResult {
-  const expectedRef = options.expectedRef ?? EXPECTED_SKILLS_REF;
-  const { status, message } = compareSkillsReleaseRef(expectedRef, options.latestTag);
-  const lines = [message];
+  const { skillsSource, expectedRef, latestTag, strict } = options;
+  const { status, message } = compareSkillsReleaseRef(skillsSource, expectedRef, latestTag);
 
   if (status === "match") {
-    return { exitCode: 0, lines };
+    return { exitCode: 0, lines: [message] };
   }
-
-  if (status === "mismatch") {
-    return { exitCode: options.strict ? 1 : 0, lines };
+  if (status === "unknown") {
+    return { exitCode: strict ? 1 : 0, lines: [message] };
   }
-
-  return { exitCode: options.strict ? 1 : 0, lines };
+  return { exitCode: strict ? 1 : 0, lines: [message] };
 }

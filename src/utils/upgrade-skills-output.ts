@@ -1,4 +1,6 @@
-import { type SkillsCompat, checkSkillsCompat, printSkillsCompatToStderr } from "./skills-check.js";
+import { checkSkillsCompatForGenesis, type SkillsCompat } from "./genesis-skills.js";
+import { loadSkillsSpecFromConfig } from "./genesis-skills-spec.js";
+import { printSkillsCompatToStderr } from "./skills-check.js";
 import { isJsonMode, success } from "./output.js";
 
 export interface UpgradeResultBase {
@@ -11,21 +13,36 @@ export interface UpgradeResultBase {
   checkOnly: boolean;
 }
 
-export type CheckSkillsCompatFn = (options?: { lockPath?: string }) => SkillsCompat;
+export type CheckSkillsCompatFn = (spec: { source: string; ref: string }) => SkillsCompat;
 
 /** Emit upgrade success payload and optional skills compat stderr hints. */
-export function emitUpgradeFinish(
+export async function emitUpgradeFinish(
   base: UpgradeResultBase,
   updated: boolean,
   deps?: {
     checkSkillsCompat?: CheckSkillsCompatFn;
-    lockPath?: string;
+    loadSkillsSpec?: () => Promise<{ source: string; ref: string } | null>;
   },
-): void {
-  const check = deps?.checkSkillsCompat ?? checkSkillsCompat;
-  const skillsCompat = updated
-    ? check(deps?.lockPath ? { lockPath: deps.lockPath } : undefined)
-    : undefined;
+): Promise<void> {
+  const loadSpec = deps?.loadSkillsSpec ?? loadSkillsSpecFromConfig;
+  const check =
+    deps?.checkSkillsCompat ?? ((spec) => checkSkillsCompatForGenesis(spec.source, spec.ref));
+
+  let skillsCompat: SkillsCompat | undefined;
+  if (updated) {
+    const spec = await loadSpec();
+    if (spec) {
+      skillsCompat = check(spec);
+    } else {
+      skillsCompat = {
+        status: "unknown",
+        expectedSource: "",
+        expectedRef: "",
+        message: "No genesis skills configured locally (run probe genesis apply)",
+        fixCommand: "probe genesis apply <path-to-genesis.json> --install-skills",
+      };
+    }
+  }
 
   if (isJsonMode()) {
     success(skillsCompat ? { ...base, skillsCompat } : base);

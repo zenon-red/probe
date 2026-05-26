@@ -1,4 +1,5 @@
 import { genesisHashFromManifest } from "~/utils/genesis-hash.js";
+import { validateSkillsSpec } from "~/utils/genesis-skills.js";
 import { PROMPT_MARKER_PLACEHOLDER } from "~/utils/prompt-marker.js";
 
 export const DEPLOYED_SCHEMA_VERSION = 1;
@@ -170,6 +171,7 @@ export function parseGenesisManifestJson(manifestJson: string): ParsedGenesisMan
   const spacetimeModule = requireString(endpoints.spacetimeModule, "endpoints.spacetimeModule");
   const skillsSource = requireString(skills.source, "skills.source");
   const skillsRef = requireString(skills["ref"], "skills.ref");
+  const skillsSpec = validateSkillsSpec(skillsSource, skillsRef);
 
   const feedChannelsRaw = messaging.feedChannels;
   if (!Array.isArray(feedChannelsRaw) || feedChannelsRaw.length === 0) {
@@ -198,8 +200,8 @@ export function parseGenesisManifestJson(manifestJson: string): ParsedGenesisMan
     githubOrg,
     orgName,
     promptMarker,
-    skillsSource,
-    skillsRef,
+    skillsSource: skillsSpec.source,
+    skillsRef: skillsSpec.ref,
     issuer,
     spacetimeHost,
     spacetimeModule,

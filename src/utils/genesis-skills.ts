@@ -1,23 +1,58 @@
-import { existsSync, readFileSync } from "node:fs";
 import {
-  checkSkillsCompat,
   getSkillLockPath,
+  readSkillLockEntries,
   type SkillsCompat,
   type SkillsCompatStatus,
 } from "~/utils/skills-check.js";
 
-export function skillsInstallCommand(source: string, ref: string): string {
-  return `npx skills add ${source}#${ref} --skill='*' -y -g`;
+export interface SkillsSpec {
+  source: string;
+  ref: string;
 }
 
-export function checkSkillsCompatForGenesis(source: string, ref: string): SkillsCompat {
-  const lockPath = getSkillLockPath();
+export function validateSkillsSpec(source: string, ref: string): SkillsSpec {
+  const normalized = { source: source.trim(), ref: ref.trim() };
+  const sourcePattern = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})\/[A-Za-z0-9._-]+$/;
+  const refPattern = /^[A-Za-z0-9._/-]+$/;
+
+  if (!sourcePattern.test(normalized.source)) {
+    throw new Error("skills.source must be a GitHub owner/repo slug");
+  }
+  if (
+    !refPattern.test(normalized.ref) ||
+    normalized.ref.includes("..") ||
+    normalized.ref.includes("@{") ||
+    normalized.ref.startsWith("/") ||
+    normalized.ref.endsWith("/")
+  ) {
+    throw new Error("skills.ref must be a safe git ref");
+  }
+  return normalized;
+}
+
+export function skillsInstallCommand(source: string, ref: string): string {
+  const spec = validateSkillsSpec(source, ref);
+  return `npx skills add ${spec.source}#${spec.ref} --skill='*' -y -g`;
+}
+
+export function skillsInstallArgs(spec: SkillsSpec): string[] {
+  const safe = validateSkillsSpec(spec.source, spec.ref);
+  return ["skills", "add", `${safe.source}#${safe.ref}`, "--skill=*", "-y", "-g"];
+}
+
+export function checkSkillsCompatForGenesis(
+  source: string,
+  ref: string,
+  options?: { lockPath?: string },
+): SkillsCompat {
+  const lockPath = options?.lockPath ?? getSkillLockPath();
   const lockEntries = readSkillLockEntries(lockPath);
   const fixCommand = skillsInstallCommand(source, ref);
 
   if (lockEntries === "missing") {
     return {
       status: "unknown",
+      expectedSource: source,
       expectedRef: ref,
       message: `Skills lock not found at ${lockPath}`,
       fixCommand,
@@ -27,6 +62,7 @@ export function checkSkillsCompatForGenesis(source: string, ref: string): Skills
   if (lockEntries === "invalid") {
     return {
       status: "unknown",
+      expectedSource: source,
       expectedRef: ref,
       message: "Skills lock unreadable",
       fixCommand,
@@ -37,6 +73,7 @@ export function checkSkillsCompatForGenesis(source: string, ref: string): Skills
   if (entries.length === 0) {
     return {
       status: "unknown",
+      expectedSource: source,
       expectedRef: ref,
       message: `No ${source} entries in lock`,
       fixCommand,
@@ -48,6 +85,7 @@ export function checkSkillsCompatForGenesis(source: string, ref: string): Skills
   if (hasMissingRef) {
     return {
       status: "warn",
+      expectedSource: source,
       expectedRef: ref,
       message: `Skills install is not pinned to ${ref}`,
       fixCommand,
@@ -55,44 +93,37 @@ export function checkSkillsCompatForGenesis(source: string, ref: string): Skills
   }
 
   const distinctRefs = [...new Set(refs as string[])];
-  if (distinctRefs.length > 1 || distinctRefs[0] !== ref) {
+  if (distinctRefs.length > 1) {
     return {
       status: "warn",
+      expectedSource: source,
       expectedRef: ref,
-      foundRef: distinctRefs[0],
-      message: `Skills ref mismatch: expected ${ref}, found ${distinctRefs.join(",")}`,
+      foundRef: distinctRefs.find((r) => r !== ref) ?? distinctRefs[0],
+      message: `Skills refs are inconsistent (expected ${ref})`,
+      fixCommand,
+    };
+  }
+
+  const foundRef = distinctRefs[0]!;
+  if (foundRef !== ref) {
+    return {
+      status: "warn",
+      expectedSource: source,
+      expectedRef: ref,
+      foundRef,
+      message: `Skills ref mismatch: expected ${ref}, found ${foundRef}`,
       fixCommand,
     };
   }
 
   return {
     status: "ok",
+    expectedSource: source,
     expectedRef: ref,
-    foundRef: ref,
+    foundRef,
     message: `Skills compatible (${source}@${ref})`,
     fixCommand,
   };
 }
 
-interface SkillLockEntry {
-  source?: string;
-  ref?: string;
-}
-
-function readSkillLockEntries(lockPath: string): SkillLockEntry[] | "missing" | "invalid" {
-  if (!existsSync(lockPath)) return "missing";
-  try {
-    const parsed = JSON.parse(readFileSync(lockPath, "utf8")) as { skills?: unknown };
-    const skills = parsed.skills;
-    if (skills === null || typeof skills !== "object" || Array.isArray(skills)) {
-      return "invalid";
-    }
-    return Object.values(skills).filter(
-      (e): e is SkillLockEntry => e !== null && typeof e === "object" && !Array.isArray(e),
-    );
-  } catch {
-    return "invalid";
-  }
-}
-
-export { checkSkillsCompat, type SkillsCompat, type SkillsCompatStatus };
+export type { SkillsCompat, SkillsCompatStatus };

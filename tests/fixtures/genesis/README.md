@@ -11,7 +11,7 @@ Copied from [nexus/stdb/fixtures/genesis](https://github.com/zenon-red/nexus/tre
 
 Keep in sync with Nexus when vectors change (algorithm: RFC8785 JCS + SHA-256 hex).
 
-From the monorepo, after editing `nexus/orgs/*/genesis.json` or `nexus/lab/orgs/*/genesis.json`:
+From the monorepo, after editing `nexus/orgs/*/genesis.json`:
 
 ```bash
 nexus/stdb/scripts/genesis-fixtures.sh --write

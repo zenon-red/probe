@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import type { CommandContext } from "~/utils/context.js";
 import { callReducer } from "~/utils/context.js";
 import {
@@ -13,7 +13,7 @@ import {
   loadGenesisManifestFromSource,
   type ParsedGenesisManifest,
 } from "~/utils/genesis-manifest.js";
-import { skillsInstallCommand } from "~/utils/genesis-skills.js";
+import { skillsInstallArgs, skillsInstallCommand } from "~/utils/genesis-skills.js";
 import { commandExists } from "~/utils/system.js";
 import { SHELL_TIMEOUT } from "~/utils/timeouts.js";
 import { enumName } from "~/utils/enums.js";
@@ -52,7 +52,7 @@ export async function validateGithubOrgExists(org: string, verify: boolean): Pro
     throw new Error("gh CLI required for --verify org.githubOrg check");
   }
   try {
-    execSync(`gh api "orgs/${org}" --jq .login`, {
+    execFileSync("gh", ["api", `orgs/${org}`, "--jq", ".login"], {
       stdio: "pipe",
       timeout: SHELL_TIMEOUT.MEDIUM,
     });
@@ -85,6 +85,16 @@ export async function reportRuntimeStatus(ctx: CommandContext): Promise<string> 
   return enumName(status);
 }
 
+export async function persistGenesisFromSource(source: string): Promise<{
+  parsed: ParsedGenesisManifest;
+  persistedSource: string;
+}> {
+  const { parsed, persistedSource } = await loadGenesisManifestFromSource(source);
+  assertMinProbeVersion(parsed.minProbeVersion);
+  await persistGenesisLocal(parsed, persistedSource);
+  return { parsed, persistedSource };
+}
+
 export async function applyGenesisFromSource(
   ctx: CommandContext,
   source: string,
@@ -107,10 +117,14 @@ export async function applyGenesisFromSource(
 
   if (options.installSkills && commandExists("npx")) {
     try {
-      execSync(skillsInstallCommand(parsed.skillsSource, parsed.skillsRef), {
-        stdio: "ignore",
-        timeout: SHELL_TIMEOUT.VERY_LONG,
-      });
+      execFileSync(
+        "npx",
+        skillsInstallArgs({ source: parsed.skillsSource, ref: parsed.skillsRef }),
+        {
+          stdio: "ignore",
+          timeout: SHELL_TIMEOUT.VERY_LONG,
+        },
+      );
     } catch {
       // deferred install — doctor reports skills_upgrade_required
     }

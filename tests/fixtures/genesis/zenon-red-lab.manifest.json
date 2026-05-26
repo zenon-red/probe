@@ -4,7 +4,7 @@
     "id": "zenon-red-lab",
     "version": "dev"
   },
-  "minProbeVersion": "1.3.0",
+  "minProbeVersion": "1.3.1",
   "org": {
     "githubOrg": "zenon-red-lab",
     "name": "ZENON Red Lab",
@@ -17,7 +17,7 @@
   },
   "skills": {
     "source": "zenon-red/skills",
-    "ref": "v0.3.4"
+    "ref": "v0.3.5"
   },
   "messaging": {
     "feedChannels": ["general"]
@@ -57,12 +57,12 @@
       "vote": {
         "kind": "vote",
         "capability": "idea.vote",
-        "skill": "zr-vote"
+        "skill": "nexus-vote"
       },
       "proposal_scout": {
         "kind": "propose",
         "capability": "idea.propose",
-        "skill": "zr-propose"
+        "skill": "nexus-proposal-scout"
       },
       "project_setup": {
         "kind": "project_setup",

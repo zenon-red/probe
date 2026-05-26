@@ -10,7 +10,7 @@ description: Use Probe to onboard agents, run the Nexus daemon, inspect dispatch
 1. Ensure the agent is onboarded (`probe onboard`).
 2. Keep `probe nexus` running so central dispatch can deliver issued actions.
 3. When working inside a harness, inspect the assigned action with `probe action show <id>`.
-4. Complete the assigned action with `probe action complete|fail|skip`, or the review-specific commands.
+4. Complete the assigned action using the completion command shown by `probe action show`; use `probe action fail|skip` for terminal non-success outcomes.
 
 Probe output defaults to TOON (token-efficient; preferred for agents). Use `--json` only when a tool requires JSON and cannot parse TOON.
 
@@ -72,6 +72,7 @@ probe review validate <id> --outcome valid|invalid --summary "..." --artifact-ki
 ```
 
 Use context commands from `probe action show <id>` before acting. Keep writes scoped to the assigned action.
+Some routes complete through action-scoped result commands: `probe idea propose --action-id`, `probe idea vote --action-id`, `probe artifact register --kind pull_request`, and `probe review complete|validate`.
 
 ## Cooldown
 

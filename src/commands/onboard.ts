@@ -3,6 +3,7 @@ import { forceHelpRequested, printHelp } from "~/utils/help.js";
 import { applyJsonMode, error, success } from "~/utils/output.js";
 import type { OnboardStep } from "~/utils/onboard/types.js";
 import {
+  applyGenesisStep,
   authenticateStep,
   configureDaemon,
   configureHarness,
@@ -92,6 +93,10 @@ export default defineCommand({
       description: "Output JSON only",
       default: false,
     },
+    genesis: {
+      type: "string",
+      description: "Path or URL to genesis.json (org, endpoints, skills source/ref)",
+    },
   },
   async run({ args }) {
     applyJsonMode(args);
@@ -137,6 +142,10 @@ export default defineCommand({
             name: "--harness-args",
             detail: "Comma-separated args before prompt (with --harness custom)",
           },
+          {
+            name: "--genesis",
+            detail: "Path or URL to genesis.json (required for skills install)",
+          },
           { name: "--dry-run", detail: "Plan only, no side effects" },
           { name: "--json", detail: "JSON output" },
         ],
@@ -165,6 +174,11 @@ export default defineCommand({
     };
 
     if (!(await verifyHome(state))) {
+      finish(state);
+      return;
+    }
+
+    if (!(await applyGenesisStep(state))) {
       finish(state);
       return;
     }

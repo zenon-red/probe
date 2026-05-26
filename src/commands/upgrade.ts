@@ -126,8 +126,8 @@ export default defineCommand({
 
     const updateAvailable = targetVersion !== currentVersion;
 
-    const finishUpgrade = (updated: boolean, checkOnly: boolean) => {
-      emitUpgradeFinish(
+    const finishUpgrade = async (updated: boolean, checkOnly: boolean) => {
+      await emitUpgradeFinish(
         {
           method,
           currentVersion,
@@ -142,7 +142,7 @@ export default defineCommand({
     };
 
     if (args.check) {
-      finishUpgrade(false, true);
+      await finishUpgrade(false, true);
       return;
     }
 
@@ -155,7 +155,7 @@ export default defineCommand({
     }
 
     if (!updateAvailable) {
-      finishUpgrade(false, false);
+      await finishUpgrade(false, false);
       return;
     }
 
@@ -187,6 +187,6 @@ export default defineCommand({
       error(code, message);
     }
 
-    finishUpgrade(true, false);
+    await finishUpgrade(true, false);
   },
 });

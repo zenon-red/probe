@@ -22,7 +22,6 @@ import FinalizeVoiceAnnouncementReducer from "../finalize_voice_announcement_red
 import HeartbeatReducer from "../heartbeat_reducer";
 import MarkIdeaImplementedReducer from "../mark_idea_implemented_reducer";
 import OpenIdeaVotingReducer from "../open_idea_voting_reducer";
-import ProposeIdeaReducer from "../propose_idea_reducer";
 import ProposeIdeaForActionReducer from "../propose_idea_for_action_reducer";
 import RegisterAgentReducer from "../register_agent_reducer";
 import RegisterArtifactReducer from "../register_artifact_reducer";
@@ -33,8 +32,6 @@ import ResubmitIdeaRevisionReducer from "../resubmit_idea_revision_reducer";
 import ReviewDiscoveredTaskReducer from "../review_discovered_task_reducer";
 import ReviewIdeaHumanReducer from "../review_idea_human_reducer";
 import ReviewProjectPlanReducer from "../review_project_plan_reducer";
-import SeedUiDataReducer from "../seed_ui_data_reducer";
-import SeedVoiceAnnouncementsReducer from "../seed_voice_announcements_reducer";
 import SendMessageReducer from "../send_message_reducer";
 import SendProjectMessageReducer from "../send_project_message_reducer";
 import SetAgentDispatchCooldownReducer from "../set_agent_dispatch_cooldown_reducer";
@@ -46,7 +43,6 @@ import UpdateAgentBioReducer from "../update_agent_bio_reducer";
 import UpdateAgentCapabilitiesReducer from "../update_agent_capabilities_reducer";
 import UpdateProjectStatusReducer from "../update_project_status_reducer";
 import UpdateTaskStatusReducer from "../update_task_status_reducer";
-import VoteIdeaReducer from "../vote_idea_reducer";
 import VoteIdeaForActionReducer from "../vote_idea_for_action_reducer";
 
 export type AddTaskDependencyParams = __Infer<typeof AddTaskDependencyReducer>;
@@ -65,7 +61,6 @@ export type FinalizeVoiceAnnouncementParams = __Infer<typeof FinalizeVoiceAnnoun
 export type HeartbeatParams = __Infer<typeof HeartbeatReducer>;
 export type MarkIdeaImplementedParams = __Infer<typeof MarkIdeaImplementedReducer>;
 export type OpenIdeaVotingParams = __Infer<typeof OpenIdeaVotingReducer>;
-export type ProposeIdeaParams = __Infer<typeof ProposeIdeaReducer>;
 export type ProposeIdeaForActionParams = __Infer<typeof ProposeIdeaForActionReducer>;
 export type RegisterAgentParams = __Infer<typeof RegisterAgentReducer>;
 export type RegisterArtifactParams = __Infer<typeof RegisterArtifactReducer>;
@@ -76,8 +71,6 @@ export type ResubmitIdeaRevisionParams = __Infer<typeof ResubmitIdeaRevisionRedu
 export type ReviewDiscoveredTaskParams = __Infer<typeof ReviewDiscoveredTaskReducer>;
 export type ReviewIdeaHumanParams = __Infer<typeof ReviewIdeaHumanReducer>;
 export type ReviewProjectPlanParams = __Infer<typeof ReviewProjectPlanReducer>;
-export type SeedUiDataParams = __Infer<typeof SeedUiDataReducer>;
-export type SeedVoiceAnnouncementsParams = __Infer<typeof SeedVoiceAnnouncementsReducer>;
 export type SendMessageParams = __Infer<typeof SendMessageReducer>;
 export type SendProjectMessageParams = __Infer<typeof SendProjectMessageReducer>;
 export type SetAgentDispatchCooldownParams = __Infer<typeof SetAgentDispatchCooldownReducer>;
@@ -89,6 +82,5 @@ export type UpdateAgentBioParams = __Infer<typeof UpdateAgentBioReducer>;
 export type UpdateAgentCapabilitiesParams = __Infer<typeof UpdateAgentCapabilitiesReducer>;
 export type UpdateProjectStatusParams = __Infer<typeof UpdateProjectStatusReducer>;
 export type UpdateTaskStatusParams = __Infer<typeof UpdateTaskStatusReducer>;
-export type VoteIdeaParams = __Infer<typeof VoteIdeaReducer>;
 export type VoteIdeaForActionParams = __Infer<typeof VoteIdeaForActionReducer>;
 

@@ -50,7 +50,6 @@ import FinalizeVoiceAnnouncementReducer from "./finalize_voice_announcement_redu
 import HeartbeatReducer from "./heartbeat_reducer";
 import MarkIdeaImplementedReducer from "./mark_idea_implemented_reducer";
 import OpenIdeaVotingReducer from "./open_idea_voting_reducer";
-import ProposeIdeaReducer from "./propose_idea_reducer";
 import ProposeIdeaForActionReducer from "./propose_idea_for_action_reducer";
 import RegisterAgentReducer from "./register_agent_reducer";
 import RegisterArtifactReducer from "./register_artifact_reducer";
@@ -61,8 +60,6 @@ import ResubmitIdeaRevisionReducer from "./resubmit_idea_revision_reducer";
 import ReviewDiscoveredTaskReducer from "./review_discovered_task_reducer";
 import ReviewIdeaHumanReducer from "./review_idea_human_reducer";
 import ReviewProjectPlanReducer from "./review_project_plan_reducer";
-import SeedUiDataReducer from "./seed_ui_data_reducer";
-import SeedVoiceAnnouncementsReducer from "./seed_voice_announcements_reducer";
 import SendMessageReducer from "./send_message_reducer";
 import SendProjectMessageReducer from "./send_project_message_reducer";
 import SetAgentDispatchCooldownReducer from "./set_agent_dispatch_cooldown_reducer";
@@ -74,7 +71,6 @@ import UpdateAgentBioReducer from "./update_agent_bio_reducer";
 import UpdateAgentCapabilitiesReducer from "./update_agent_capabilities_reducer";
 import UpdateProjectStatusReducer from "./update_project_status_reducer";
 import UpdateTaskStatusReducer from "./update_task_status_reducer";
-import VoteIdeaReducer from "./vote_idea_reducer";
 import VoteIdeaForActionReducer from "./vote_idea_for_action_reducer";
 
 // Import all procedure arg schemas
@@ -526,7 +522,6 @@ const reducersSchema = __reducers(
   __reducerSchema("heartbeat", HeartbeatReducer),
   __reducerSchema("mark_idea_implemented", MarkIdeaImplementedReducer),
   __reducerSchema("open_idea_voting", OpenIdeaVotingReducer),
-  __reducerSchema("propose_idea", ProposeIdeaReducer),
   __reducerSchema("propose_idea_for_action", ProposeIdeaForActionReducer),
   __reducerSchema("register_agent", RegisterAgentReducer),
   __reducerSchema("register_artifact", RegisterArtifactReducer),
@@ -537,8 +532,6 @@ const reducersSchema = __reducers(
   __reducerSchema("review_discovered_task", ReviewDiscoveredTaskReducer),
   __reducerSchema("review_idea_human", ReviewIdeaHumanReducer),
   __reducerSchema("review_project_plan", ReviewProjectPlanReducer),
-  __reducerSchema("seed_ui_data", SeedUiDataReducer),
-  __reducerSchema("seed_voice_announcements", SeedVoiceAnnouncementsReducer),
   __reducerSchema("send_message", SendMessageReducer),
   __reducerSchema("send_project_message", SendProjectMessageReducer),
   __reducerSchema("set_agent_dispatch_cooldown", SetAgentDispatchCooldownReducer),
@@ -550,7 +543,6 @@ const reducersSchema = __reducers(
   __reducerSchema("update_agent_capabilities", UpdateAgentCapabilitiesReducer),
   __reducerSchema("update_project_status", UpdateProjectStatusReducer),
   __reducerSchema("update_task_status", UpdateTaskStatusReducer),
-  __reducerSchema("vote_idea", VoteIdeaReducer),
   __reducerSchema("vote_idea_for_action", VoteIdeaForActionReducer),
 );
 

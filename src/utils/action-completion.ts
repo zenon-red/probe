@@ -23,19 +23,19 @@ export function completionGuideForAction(action: AgentAction): ActionCompletionG
   if (route === "ProposalScout") {
     return {
       command: `probe idea propose --action-id ${id} --title "..." --description "..."`,
-      note: "Then probe action complete after result_idea_id is set",
+      note: "Completes the action when the idea is persisted",
     };
   }
   if (route === "Vote") {
     return {
       command: `probe idea vote --action-id ${id} --idea-id <id> --vote-type for|against|abstain`,
-      note: "Then probe action complete after result_vote_id is set",
+      note: "Completes the action when the vote is persisted",
     };
   }
   if (route === "ContinueOwnedTask" || route === "AssignOpenTask") {
     return {
       command: `probe artifact register --action-id ${id} --kind pull_request --url <github-pr-url> --summary "..."`,
-      note: "Then probe action complete",
+      note: "Completes execution actions when the pull request artifact is registered",
     };
   }
   return { command: `probe action complete ${id}` };

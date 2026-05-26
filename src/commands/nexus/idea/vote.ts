@@ -13,7 +13,11 @@ export default defineCommand({
   meta: { name: "vote", description: "Vote on an idea with dimension scores" },
   args: {
     id: { type: "positional", name: "id", description: "Idea ID", required: true },
-    "action-id": { type: "string", description: "Dispatch action ID (vote route)" },
+    "action-id": {
+      type: "string",
+      description: "Dispatch action ID (vote route)",
+      required: true,
+    },
     ...voteScoreArgs,
     wallet: { type: "string", description: "Wallet name" },
     host: { type: "string", description: "SpacetimeDB host" },
@@ -24,8 +28,7 @@ export default defineCommand({
     applyJsonMode(args);
 
     const dimensionScores = buildDimensionScores(args);
-
-    const actionIdRaw = args["action-id"] ? String(args["action-id"]).trim() : "";
+    const actionIdRaw = String(args["action-id"]).trim();
 
     await runWithBoundary(async () => {
       try {
@@ -36,31 +39,20 @@ export default defineCommand({
           async (ctx) => {
             validateDimensionScores(dimensionScores, ctx.evaluationDimensions);
 
-            if (actionIdRaw) {
-              const { parseActionId } = await import("~/utils/action-id.js");
-              const actionId = parseActionId(actionIdRaw);
-              await callReducer(ctx, ctx.conn.reducers.voteIdeaForAction, {
-                actionId,
-                scores: dimensionScores,
-              });
-              success({
-                voted: true,
-                action_id: actionId.toString(),
-                ideaId: args.id,
-                scores: dimensionScores,
-              });
-              return;
-            }
-
-            await callReducer(ctx, ctx.conn.reducers.voteIdea, {
-              ideaId: BigInt(args.id),
+            const { parseActionId } = await import("~/utils/action-id.js");
+            const actionId = parseActionId(actionIdRaw);
+            await callReducer(ctx, ctx.conn.reducers.voteIdeaForAction, {
+              actionId,
+              scores: dimensionScores,
+            });
+            success({
+              voted: true,
+              action_id: actionId.toString(),
+              ideaId: args.id,
               scores: dimensionScores,
             });
           },
         );
-        if (!actionIdRaw) {
-          success({ voted: true, ideaId: args.id, scores: dimensionScores });
-        }
       } catch (err) {
         error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
       }
