@@ -1,11 +1,11 @@
 import { execSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { createWriteStream, existsSync, readFileSync, renameSync, unlinkSync } from "node:fs";
-import { createRequire } from "node:module";
 import { arch, platform } from "node:os";
 import { dirname, resolve } from "node:path";
 import { Readable } from "node:stream";
 import { finished } from "node:stream/promises";
+import { probeVersion } from "~/probe-version.js";
 import { errorMessage } from "~/utils/errors.js";
 import { NETWORK_TIMEOUT, SHELL_TIMEOUT } from "./timeouts.js";
 
@@ -18,8 +18,6 @@ const NPM_REGISTRY = "https://registry.npmjs.org";
 const GITHUB_API = "https://api.github.com";
 const REQUEST_TIMEOUT = NETWORK_TIMEOUT.DEFAULT;
 
-const require = createRequire(import.meta.url);
-
 export function normalizeVersion(input: string): string {
   const trimmed = input.trim();
   if (trimmed.startsWith(`${PACKAGE}@`)) {
@@ -29,26 +27,6 @@ export function normalizeVersion(input: string): string {
     return normalizeVersion(trimmed.slice("refs/tags/".length));
   }
   return trimmed.replace(/^v/, "");
-}
-
-export function getCurrentVersion(): string {
-  const candidates = ["../../package.json", "../package.json", "../../../package.json"];
-  try {
-    for (const candidate of candidates) {
-      try {
-        const version = require(candidate).version as string;
-        if (version) return version;
-      } catch {
-        // try next candidate
-      }
-    }
-    if (process.env.npm_package_version) {
-      return process.env.npm_package_version;
-    }
-  } catch {
-    // fallthrough
-  }
-  return "0.0.0";
 }
 
 export function detectMethod(explicit?: InstallMethodArg): InstallMethod {

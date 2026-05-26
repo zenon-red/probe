@@ -1,4 +1,3 @@
-import { createRequire } from "node:module";
 import { defineCommand, runMain } from "citty";
 import auth from "./commands/auth/index.js";
 import login from "./commands/login.js";
@@ -37,6 +36,7 @@ import { guardUnknownSubcommand } from "./utils/subcommand.js";
 import { installProbeExitHook, renderProbeErrorAndExit } from "./utils/boundary.js";
 import { error } from "./utils/output.js";
 import { errorMessage, isProbeError, ProbeError } from "./utils/errors.js";
+import { probeDescription, probeVersion } from "./probe-version.js";
 
 const topLevelCommands = new Set([
   "wallet",
@@ -64,8 +64,8 @@ const topLevelCommands = new Set([
   "review",
 ]);
 
-const require = createRequire(import.meta.url);
-const { version, description } = require("../package.json");
+const version = probeVersion();
+const description = probeDescription();
 
 const main = defineCommand({
   meta: { name: "probe", version, description },

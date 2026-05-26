@@ -8,11 +8,11 @@ import {
   fetchGitHubReleaseByVersion,
   fetchLatestGitHubRelease,
   fetchLatestNpmVersion,
-  getCurrentVersion,
   normalizeVersion,
   upgradeViaBinary,
   upgradeViaNpm,
 } from "~/utils/upgrade.js";
+import { probeVersion } from "~/probe-version.js";
 import { errorMessage } from "~/utils/errors.js";
 
 const VALID_METHODS = new Set<InstallMethodArg>(["auto", "npm", "binary"]);
@@ -86,7 +86,7 @@ export default defineCommand({
       );
     }
 
-    const currentVersion = getCurrentVersion();
+    const currentVersion = probeVersion();
     const method = detectMethod(methodArg);
 
     let targetVersion: string | undefined;

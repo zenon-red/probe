@@ -1,5 +1,6 @@
 import type { CommandContext } from "~/utils/context.js";
-import { computeSyncStatus, probeVersion } from "~/utils/genesis-runtime.js";
+import { computeSyncStatus } from "~/utils/genesis-runtime.js";
+import { probeVersion } from "~/probe-version.js";
 import { reportRuntimeStatus, syncGenesis } from "~/utils/genesis-apply.js";
 import { loadUserConfig } from "~/utils/user-config.js";
 import type { EventEmitter } from "./events.js";

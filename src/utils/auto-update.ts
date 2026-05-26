@@ -1,3 +1,4 @@
+import { probeVersion } from "~/probe-version.js";
 import { getConfig } from "~/utils/config.js";
 import { isJsonMode } from "~/utils/output-mode.js";
 import {
@@ -5,7 +6,6 @@ import {
   detectMethod,
   fetchLatestGitHubRelease,
   fetchLatestNpmVersion,
-  getCurrentVersion,
   upgradeViaBinary,
   upgradeViaNpm,
 } from "~/utils/upgrade.js";
@@ -64,7 +64,7 @@ export async function checkAutoUpdate(): Promise<void> {
     return;
   }
 
-  const current = getCurrentVersion();
+  const current = probeVersion();
   const hasUpdate = compareSemver(latest, current) > 0;
 
   if (!hasUpdate) {

@@ -1,4 +1,3 @@
-import { createRequire } from "node:module";
 import type { AgentSyncStatus } from "~/module_bindings/types.js";
 import type { Agent } from "~/utils/context.js";
 import { enumName } from "~/utils/enums.js";
@@ -6,9 +5,7 @@ import type { ParsedGenesisManifest } from "~/utils/genesis-manifest.js";
 import { loadUserConfig, saveUserConfig } from "~/utils/user-config.js";
 import type { NexusConfig } from "~/types/config.js";
 import { checkSkillsCompatForGenesis } from "~/utils/genesis-skills.js";
-
-const require = createRequire(import.meta.url);
-const { version: PROBE_VERSION } = require("../../package.json") as { version: string };
+import { probeVersion } from "~/probe-version.js";
 
 export type GenesisLocalConfig = {
   genesisSource?: string;
@@ -43,21 +40,18 @@ export function compareSemver(a: string, b: string): number | null {
 
 export function assertMinProbeVersion(minProbeVersion: string | undefined): void {
   if (!minProbeVersion) return;
-  const cmp = compareSemver(PROBE_VERSION, minProbeVersion);
+  const version = probeVersion();
+  const cmp = compareSemver(version, minProbeVersion);
   if (cmp === null) {
     throw new Error(
-      `Cannot compare Probe version ${PROBE_VERSION} to minProbeVersion ${minProbeVersion}`,
+      `Cannot compare Probe version ${version} to minProbeVersion ${minProbeVersion}`,
     );
   }
   if (cmp < 0) {
     throw new Error(
-      `Probe ${PROBE_VERSION} is below genesis minProbeVersion ${minProbeVersion}. Run: probe upgrade`,
+      `Probe ${version} is below genesis minProbeVersion ${minProbeVersion}. Run: probe upgrade`,
     );
   }
-}
-
-export function probeVersion(): string {
-  return PROBE_VERSION;
 }
 
 export async function loadGenesisLocalConfig(): Promise<GenesisLocalConfig & Partial<NexusConfig>> {

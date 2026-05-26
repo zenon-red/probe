@@ -1,7 +1,8 @@
 import type { Agent, CommandContext } from "~/utils/context.js";
 import type { DoctorIssue } from "~/utils/doctor-issues.js";
 import { enumName } from "~/utils/enums.js";
-import { compareSemver, computeSyncStatus, probeVersion } from "~/utils/genesis-runtime.js";
+import { compareSemver, computeSyncStatus } from "~/utils/genesis-runtime.js";
+import { probeVersion } from "~/probe-version.js";
 import { checkSkillsCompatForGenesis } from "~/utils/genesis-skills.js";
 import type { NexusConfig } from "~/types/config.js";
 

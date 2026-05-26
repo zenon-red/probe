@@ -6,9 +6,9 @@ import {
   assertMinProbeVersion,
   computeSyncStatus,
   persistGenesisLocal,
-  probeVersion,
   type AppliedGenesisRow,
 } from "~/utils/genesis-runtime.js";
+import { probeVersion } from "~/probe-version.js";
 import {
   loadGenesisManifestFromSource,
   type ParsedGenesisManifest,

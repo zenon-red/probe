@@ -43,10 +43,22 @@ jobs:
       - name: Generate decoders
         run: bun x tsx scripts/generate-decoders.ts
 
+      - name: Read package metadata
+        id: pkg
+        run: |
+          echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+          echo "description=$(node -p "JSON.stringify(require('./package.json').description)")" >> "$GITHUB_OUTPUT"
+
       - name: Build binary
+        env:
+          PROBE_PKG_VERSION: ${{ steps.pkg.outputs.version }}
+          PROBE_PKG_DESCRIPTION: ${{ steps.pkg.outputs.description }}
         run: |
           mkdir -p artifacts
-          bun build ./src/index.ts --compile --target=${{ matrix.target }} --outfile=./artifacts/${{ matrix.output }}
+          bun build ./src/index.ts --compile --target=${{ matrix.target }} \
+            --define __PROBE_VERSION__="\"${PROBE_PKG_VERSION}\"" \
+            --define __PROBE_DESCRIPTION__="${PROBE_PKG_DESCRIPTION}" \
+            --outfile=./artifacts/${{ matrix.output }}
 
       - name: Upload binary artifact
         uses: actions/upload-artifact@v4
