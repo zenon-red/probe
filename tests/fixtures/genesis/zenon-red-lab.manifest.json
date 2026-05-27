@@ -20,7 +20,9 @@
     "ref": "v0.3.5"
   },
   "messaging": {
-    "feedChannels": ["general"]
+    "feedChannels": [
+      "general"
+    ]
   },
   "dispatch": {
     "routes": {

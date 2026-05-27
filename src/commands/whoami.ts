@@ -1,6 +1,6 @@
 import { defineCommand } from "citty";
 import { AGENT_SUBSCRIBE, commandContextOptions, withAuth } from "~/utils/context.js";
-import { errorMessage, failWithConnectionOrUnexpected } from "~/utils/errors.js";
+import { failWithConnectionOrUnexpected } from "~/utils/errors.js";
 import { applyJsonMode, error, success } from "~/utils/output.js";
 
 export default defineCommand({
@@ -33,8 +33,7 @@ export default defineCommand({
         });
       });
     } catch (err) {
-      const message = errorMessage(err);
-      failWithConnectionOrUnexpected(message);
+      failWithConnectionOrUnexpected(err);
     }
   },
 });

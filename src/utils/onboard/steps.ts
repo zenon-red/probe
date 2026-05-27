@@ -403,8 +403,20 @@ export async function createWorkspace(state: OnboardState): Promise<void> {
   }
 }
 
+async function resolveGenesisSourceForOnboard(explicit?: string): Promise<string | undefined> {
+  const fromArg = explicit?.trim();
+  if (fromArg) return fromArg;
+
+  const config = await loadUserConfig();
+  for (const candidate of [config.genesisSource, config.genesisUrl]) {
+    const source = candidate?.trim();
+    if (source) return source;
+  }
+  return undefined;
+}
+
 export async function applyGenesisStep(state: OnboardState): Promise<boolean> {
-  const source = state.args.genesis?.trim();
+  const source = await resolveGenesisSourceForOnboard(state.args.genesis);
   if (!source) {
     return true;
   }
