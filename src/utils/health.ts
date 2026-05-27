@@ -4,6 +4,7 @@ import { getConfig } from "~/utils/config.js";
 import { CommandContext, commandContextOptions, type Agent } from "~/utils/context.js";
 import { countIssues, doctorOk, type DoctorIssue } from "~/utils/doctor-issues.js";
 import { runGenesisDoctorChecks } from "~/utils/genesis-doctor.js";
+import { runNexusLayoutDoctorChecks } from "~/utils/nexus-layout-doctor.js";
 import { loadUserConfig } from "~/utils/user-config.js";
 import { isPathWritable } from "~/utils/path-writable.js";
 import { getCachedToken } from "~/utils/token-cache.js";
@@ -204,6 +205,7 @@ export async function runHealthChecks(options: {
 
         const localConfig = { ...config, ...(await loadUserConfig()) };
         runGenesisDoctorChecks(ctx, localConfig, agent, addIssue);
+        await runNexusLayoutDoctorChecks(addIssue);
       } catch (err) {
         addIssue({
           code: "NEXUS_CONNECTION_FAILED",

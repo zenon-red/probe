@@ -16,6 +16,7 @@ export interface NexusConfig {
     host: string;
     module: string;
   };
+  defaultGenesisUrl?: string;
   genesisSource?: string;
   genesisUrl?: string;
   genesisHash?: string;
@@ -42,6 +43,8 @@ export const DEFAULT_CONFIG: NexusConfig = {
     host: "wss://db.zenon.red",
     module: "nexus",
   },
+  defaultGenesisUrl:
+    "https://raw.githubusercontent.com/zenon-red/nexus/main/orgs/zenon-red/genesis.json",
 };
 
 export interface WalletInfo {

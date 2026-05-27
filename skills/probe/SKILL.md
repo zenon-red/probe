@@ -53,7 +53,7 @@ What onboarding covers:
 
 - wallet + auth token cache
 - agent registration
-- local workspace bootstrap (`~/zr-workspace/ZR.md`)
+- local fork clones: `~/nexus/github.com/<agentId>/<repo>/` (`fork_path` from `probe action show` / `probe task claim`)
 - skills install
 - daemon setup
 - harness configuration

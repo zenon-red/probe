@@ -20,5 +20,6 @@ describe("Config", () => {
     expect(config.issuer.length).toBeGreaterThan(0);
     expect(config.passwordMinLength).toBe(8);
     expect(config.tokenCacheDir.length).toBeGreaterThan(0);
+    expect(config.defaultGenesisUrl).toContain("zenon-red");
   });
 });

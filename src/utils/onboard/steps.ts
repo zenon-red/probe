@@ -18,6 +18,8 @@ import {
   type HarnessDetectionResult,
 } from "~/utils/harness-detection.js";
 import { runHealthChecks } from "~/utils/health.js";
+import { getConfig } from "~/utils/config.js";
+import { GITHUB_HOST, nexusRoot } from "~/utils/nexus-paths.js";
 import { loadUserConfig, saveUserConfig } from "~/utils/user-config.js";
 import { errorMessage } from "~/utils/errors.js";
 import { SHELL_TIMEOUT } from "~/utils/timeouts.js";
@@ -374,43 +376,35 @@ export async function setCapabilitiesStep(state: OnboardState): Promise<void> {
   }
 }
 
-export async function createWorkspace(state: OnboardState): Promise<void> {
-  const workspaceDir = join(homedir(), "zr-workspace");
-  const zrmdPath = join(workspaceDir, "ZR.md");
-  try {
-    await access(zrmdPath);
-    addStep(state, "workspace", "pass", `${zrmdPath} exists`);
-  } catch {
-    if (state.args["dry-run"]) {
-      addStep(state, "workspace", "skip", `Would create ${zrmdPath}`);
-    } else {
-      await mkdir(workspaceDir, { recursive: true });
-      const content = `# ZR
-
-## Identity
-- Agent: ${state.agentId}
-- Role: ${state.role}
-- Wallet: ${state.walletName}
-- Password: stored at ${state.passwordFile}
-
-## On Wake
-
-## Recent Activity
-`;
-      await writeFile(zrmdPath, content);
-      addStep(state, "workspace", "pass", `Created ${zrmdPath}`);
-    }
+export async function ensureNexusLayout(state: OnboardState): Promise<void> {
+  const root = nexusRoot();
+  if (state.args["dry-run"]) {
+    addStep(state, "layout", "skip", `Would create ${root}/${GITHUB_HOST}`);
+    return;
   }
+
+  await mkdir(join(root, GITHUB_HOST), { recursive: true });
+  addStep(state, "layout", "pass", `Created ${root}/${GITHUB_HOST}`);
 }
 
 async function resolveGenesisSourceForOnboard(explicit?: string): Promise<string | undefined> {
   const fromArg = explicit?.trim();
   if (fromArg) return fromArg;
 
-  const config = await loadUserConfig();
-  for (const candidate of [config.genesisSource, config.genesisUrl]) {
+  const config = await getConfig();
+  for (const candidate of [config.genesisSource, config.genesisUrl, config.defaultGenesisUrl]) {
     const source = candidate?.trim();
-    if (source) return source;
+    if (!source) continue;
+    if (source.startsWith("http://") || source.startsWith("https://")) {
+      return source;
+    }
+    const path = source.startsWith("file://") ? source.slice("file://".length) : source;
+    try {
+      await access(path);
+      return path;
+    } catch {
+      continue;
+    }
   }
   return undefined;
 }

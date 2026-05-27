@@ -8,7 +8,7 @@ import {
   configureDaemon,
   configureHarness,
   createWalletStep,
-  createWorkspace,
+  ensureNexusLayout,
   installSkillsStep,
   registerAgentStep,
   resolveIdentity,
@@ -145,7 +145,7 @@ export default defineCommand({
           },
           {
             name: "--genesis",
-            detail: "Path or URL to genesis.json (required for skills install)",
+            detail: "Path or URL to genesis.json (optional; uses package defaultGenesisUrl)",
           },
           { name: "--dry-run", detail: "Plan only, no side effects" },
           { name: "--json", detail: "JSON output" },
@@ -205,7 +205,7 @@ export default defineCommand({
 
     await setBioStep(state);
     await setCapabilitiesStep(state);
-    await createWorkspace(state);
+    await ensureNexusLayout(state);
     await installSkillsStep(state);
     await configureDaemon(state);
     await configureHarness(state);

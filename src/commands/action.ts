@@ -9,6 +9,8 @@ import { completionGuideForAction, completionPolicyForRoute } from "~/utils/acti
 import { enumName, identityHex } from "~/utils/enums.js";
 import { toDiscoveryDecision } from "~/commands/nexus/discover/shared.js";
 import { parseActionId } from "~/utils/action-id.js";
+import { currentAgentForIdentity } from "~/commands/nexus/agent/shared.js";
+import { taskRepoContext } from "~/utils/nexus-paths.js";
 import { loadUserConfig } from "~/utils/user-config.js";
 import { runReducerCommand } from "~/utils/reducer-command.js";
 import { defineSubcommandParent } from "~/utils/subcommand.js";
@@ -53,10 +55,19 @@ function targetRepoForAction(ctx: CommandContext, action: AgentAction): string |
 function formatActionRow(
   ctx: CommandContext,
   action: AgentAction,
-  extras?: { githubOrg?: string },
+  extras?: { githubOrg?: string; agentId?: string },
 ): Record<string, unknown> {
   const routeTag = enumName(action.route);
   const routeConfig = ctx.dispatchRouteConfig.find((r) => enumName(r.route) === routeTag);
+  const targetRepo = targetRepoForAction(ctx, action);
+  const repoContext =
+    targetRepo && extras?.agentId
+      ? taskRepoContext({
+          agentId: extras.agentId,
+          githubRepo: targetRepo,
+          taskId: action.targetType === "task" ? action.targetId : undefined,
+        })
+      : undefined;
   return {
     id: action.id.toString(),
     kind: enumName(action.kind),
@@ -66,7 +77,13 @@ function formatActionRow(
     instruction: action.instruction,
     target_type: action.targetType ?? "—",
     target_id: action.targetId ?? "—",
-    target_repo: targetRepoForAction(ctx, action) ?? "—",
+    target_repo: repoContext?.target_repo ?? targetRepo ?? "—",
+    repo_owner: repoContext?.repo_owner ?? "—",
+    repo_name: repoContext?.repo_name ?? "—",
+    upstream_url: repoContext?.upstream_url ?? "—",
+    fork_url: repoContext?.fork_url ?? "—",
+    fork_path: repoContext?.fork_path ?? "—",
+    branch_hint: repoContext?.branch_hint ?? "—",
     "org.github_org": extras?.githubOrg ?? "—",
     result_idea_id: action.resultIdeaId?.toString() ?? "—",
     result_vote_id: action.resultVoteId?.toString() ?? "—",
@@ -150,9 +167,11 @@ export const actionShowCommand = defineCommand({
 
         const local = await loadUserConfig();
         const applied = ctx.appliedGenesis.find((r) => r.id === "active");
+        const ownAgent = currentAgentForIdentity(ctx);
         const contextCommands = buildContextCommands(action);
         const row = formatActionRow(ctx, action, {
           githubOrg: applied?.githubOrg ?? local.githubOrg,
+          agentId: ownAgent?.id,
         });
 
         success({ action: row }, contextCommands);
