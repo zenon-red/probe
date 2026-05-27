@@ -4,6 +4,7 @@ import auth from "../../src/commands/auth/index.js";
 import config from "../../src/commands/config/index.js";
 import message from "../../src/commands/nexus/message.js";
 import {
+  guardNexusDaemonArgv,
   guardUnknownSubcommand,
   resolveKnownSubcommand,
   scanArgvCommandTokens,
@@ -133,6 +134,25 @@ describe("subcommand-only parent commands", () => {
       "show",
       "42",
     ]);
+  });
+
+  it("guardNexusDaemonArgv rejects mistaken subcommands after nexus", () => {
+    try {
+      guardNexusDaemonArgv(["nexus", "agent", "identity", "--wallet", "zr-zoe"]);
+      throw new Error("expected UNKNOWN_ARGS");
+    } catch (err) {
+      expect((err as { code?: string }).code).toBe("UNKNOWN_ARGS");
+      expect((err as { message?: string }).message).toContain("agent identity");
+      expect((err as { suggestion?: string }).suggestion).toBe(
+        "Did you mean: probe agent identity?",
+      );
+    }
+  });
+
+  it("guardNexusDaemonArgv allows bare nexus with flags only", () => {
+    expect(() =>
+      guardNexusDaemonArgv(["nexus", "--wallet", "zr-zoe", "--harness", "opencode"]),
+    ).not.toThrow();
   });
 
   it("guardUnknownSubcommand reports bogus not option value as unknown subcommand", () => {

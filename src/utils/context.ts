@@ -224,6 +224,11 @@ export class CommandContext implements AsyncDisposable {
 
           const subscriptions = resolveSubscriptions(options, identity);
 
+          if (subscriptions.length === 0) {
+            resolve(new CommandContext(conn, config, identity, authToken, auth));
+            return;
+          }
+
           conn
             .subscriptionBuilder()
             .onApplied(() => {
