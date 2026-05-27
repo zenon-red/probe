@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import { EXIT_CODES, exitCodeFor } from "../../src/utils/emit.js";
-import { ProbeError, clearProbeErrorForExit, isProbeError } from "../../src/utils/errors.js";
+import { ProbeError, isProbeError } from "../../src/utils/errors.js";
 import { renderProbeError } from "../../src/utils/boundary.js";
 import { error } from "../../src/utils/output.js";
 
@@ -8,7 +8,6 @@ const realConsoleError = globalThis.console.error.bind(console);
 
 afterEach(() => {
   globalThis.console.error = realConsoleError;
-  clearProbeErrorForExit();
 });
 
 describe("ProbeError", () => {

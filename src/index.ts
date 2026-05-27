@@ -1,4 +1,4 @@
-import { defineCommand, runMain } from "citty";
+import { defineCommand, runCommand } from "citty";
 import auth from "./commands/auth/index.js";
 import login from "./commands/login.js";
 import config from "./commands/config/index.js";
@@ -33,9 +33,9 @@ import {
   suggestCommand,
 } from "./utils/help.js";
 import { guardUnknownSubcommand } from "./utils/subcommand.js";
-import { installProbeExitHook, renderProbeErrorAndExit } from "./utils/boundary.js";
+import { exitProcess, renderProbeErrorAndExit } from "./utils/boundary.js";
 import { error } from "./utils/output.js";
-import { errorMessage, isProbeError, ProbeError } from "./utils/errors.js";
+import { isProbeError } from "./utils/errors.js";
 import { probeDescription, probeVersion } from "./probe-version.js";
 
 const topLevelCommands = new Set([
@@ -161,10 +161,9 @@ process.on("unhandledRejection", (err: unknown) => {
   if (isProbeError(err)) {
     renderProbeErrorAndExit(err);
   }
-  renderProbeErrorAndExit(ProbeError.of("UNEXPECTED_ERROR", errorMessage(err)));
+  console.error(err);
+  exitProcess(1);
 });
-
-installProbeExitHook();
 
 const prepareCliArgv = (): string[] => {
   const argv = process.argv.slice(2);
@@ -202,4 +201,14 @@ try {
   throw err;
 }
 
-runMain(main);
+if (argv.length === 1 && (argv[0] === "--version" || argv[0] === "-v")) {
+  console.log(version);
+} else {
+  runCommand(main, { rawArgs: argv }).catch((err: unknown) => {
+    if (isProbeError(err)) {
+      renderProbeErrorAndExit(err);
+    }
+    console.error(err);
+    exitProcess(1);
+  });
+}

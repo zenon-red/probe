@@ -1,5 +1,5 @@
 import type { OutputResult } from "~/types/index.js";
-import { ProbeError, takeProbeErrorForExit, clearProbeErrorForExit } from "~/utils/errors.js";
+import { ProbeError } from "~/utils/errors.js";
 import { isJsonMode } from "~/utils/output-mode.js";
 
 const jsonReplacer = (_key: string, value: unknown): unknown => {
@@ -10,19 +10,6 @@ const jsonReplacer = (_key: string, value: unknown): unknown => {
 };
 
 const nativeProcessExit = process.exit.bind(process);
-
-export function installProbeExitHook(): void {
-  process.exit = ((code?: number) => {
-    const pending = takeProbeErrorForExit();
-    if (pending) {
-      renderProbeError(pending);
-      nativeProcessExit(pending.exitCode);
-      return undefined as never;
-    }
-    nativeProcessExit(code);
-    return undefined as never;
-  }) as typeof process.exit;
-}
 
 export function renderProbeError(err: ProbeError): void {
   if (isJsonMode()) {
@@ -45,14 +32,10 @@ export function renderProbeError(err: ProbeError): void {
 }
 
 export function renderProbeErrorAndExit(err: ProbeError): never {
-  clearProbeErrorForExit();
   renderProbeError(err);
   return nativeProcessExit(err.exitCode);
 }
 
 export function exitProcess(code: number): never {
-  clearProbeErrorForExit();
   return nativeProcessExit(code);
 }
-
-export { clearProbeErrorForExit } from "~/utils/errors.js";

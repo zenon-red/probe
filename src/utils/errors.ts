@@ -1,14 +1,11 @@
 /*
  * process.exit inventory (src/) — see docs/internal/process-exit-inventory.md
  *
- * Intentional boundary exits (shared renderer / hook):
- *   src/utils/boundary.ts     — renderProbeErrorAndExit, exitProcess, installProbeExitHook
- *   src/index.ts              — unhandledRejection → renderProbeErrorAndExit; citty via exit hook
- *   src/commands/doctor.ts      — exitProcess(1) after success output when checks fail (not ProbeError)
+ * Intentional boundary exits:
+ *   src/utils/boundary.ts       — renderProbeErrorAndExit, exitProcess
+ *   src/index.ts                — top-level command and rejection boundary
+ *   src/commands/doctor.ts      — exitProcess(1) after success output when checks fail
  *   src/commands/nexus-daemon.ts — renderProbeErrorAndExit on harness startup failure
- *
- * Citty integration: installProbeExitHook() intercepts process.exit when a ProbeError was thrown
- * so citty's runMain catch path renders JSON/text via renderProbeError before exiting.
  *
  * Migrated away from direct process.exit:
  *   src/utils/output.ts — error() throws ProbeError (render at boundary)
@@ -27,22 +24,6 @@ const CONNECTION_ERROR_MARKERS = [
   "enotfound",
   "timeout",
 ];
-
-let exitHookProbeError: ProbeError | undefined;
-
-export function clearProbeErrorForExit(): void {
-  exitHookProbeError = undefined;
-}
-
-export function markProbeErrorForExit(err: ProbeError): void {
-  exitHookProbeError = err;
-}
-
-export function takeProbeErrorForExit(): ProbeError | undefined {
-  const pending = exitHookProbeError;
-  exitHookProbeError = undefined;
-  return pending;
-}
 
 export class ProbeError extends Error {
   readonly code: string;
@@ -73,9 +54,7 @@ export const failWithConnectionOrUnexpected = (err: unknown): never => {
   if (isProbeError(err)) throw err;
   const message = errorMessage(err, "Unknown error");
   const code = isConnectionLikeError(message) ? "CONNECTION_ERROR" : "UNEXPECTED_ERROR";
-  const probeErr = ProbeError.of(code, message);
-  markProbeErrorForExit(probeErr);
-  throw probeErr;
+  throw ProbeError.of(code, message);
 };
 
 export function errorMessage(err: unknown, fallback?: string): string {

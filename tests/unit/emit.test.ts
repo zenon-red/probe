@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "bun:test";
 import { renderProbeError } from "../../src/utils/boundary.js";
 import { emit, exitCodeFor, EXIT_CODES } from "../../src/utils/emit.js";
-import { ProbeError, clearProbeErrorForExit } from "../../src/utils/errors.js";
+import { ProbeError } from "../../src/utils/errors.js";
 import { setJsonMode } from "../../src/utils/output-mode.js";
 
 const realConsoleLog = globalThis.console.log.bind(console);
@@ -10,7 +10,6 @@ const realConsoleError = globalThis.console.error.bind(console);
 afterEach(() => {
   globalThis.console.log = realConsoleLog;
   globalThis.console.error = realConsoleError;
-  clearProbeErrorForExit();
   setJsonMode(false);
 });
 

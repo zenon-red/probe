@@ -1,5 +1,5 @@
 import { emit } from "./emit.js";
-import { ProbeError, markProbeErrorForExit } from "./errors.js";
+import { ProbeError } from "./errors.js";
 
 export { applyJsonMode, isJsonMode, setJsonMode } from "./output-mode.js";
 
@@ -13,7 +13,5 @@ export function error(
   suggestion?: string,
   exitCode?: number,
 ): never {
-  const err = ProbeError.of(code, message, suggestion, exitCode);
-  markProbeErrorForExit(err);
-  throw err;
+  throw ProbeError.of(code, message, suggestion, exitCode);
 }

@@ -12,8 +12,9 @@ import { formatSkillsSpec, loadSkillsSpecFromConfig } from "~/utils/genesis-skil
 import { installSkills } from "~/utils/skills-install.js";
 import { daemonAdapters, detectDaemon, type DaemonAdapter } from "~/utils/daemon.js";
 import {
-  autoDetectHarness,
-  detectHarnesses,
+  formatAmbiguousHarnessMessage,
+  formatHarnessOperatorQuestion,
+  resolveOnboardHarness,
   type HarnessDetectionResult,
 } from "~/utils/harness-detection.js";
 import { runHealthChecks } from "~/utils/health.js";
@@ -55,6 +56,7 @@ export interface OnboardState {
   walletCreated: boolean;
   mnemonic: string;
   steps: OnboardStep[];
+  harnessChoice?: { available: string[]; operatorPrompt: string };
 }
 
 export function addStep(
@@ -496,21 +498,37 @@ export async function configureHarness(state: OnboardState): Promise<void> {
       .map((s) => s.trim())
       .filter(Boolean);
     harness = { harness: "custom", command, args: harnessArgs };
-  } else if (harnessArg === "auto") {
-    try {
-      harness = autoDetectHarness();
-    } catch (err) {
-      addStep(state, "harness", "warn", errorMessage(err, "Harness auto-detection failed"));
-      return;
-    }
   } else {
-    const detected = detectHarnesses();
-    const match = detected.find((d) => d.harness === harnessArg);
-    if (!match) {
-      addStep(state, "harness", "fail", `Harness "${harnessArg}" not detected`);
+    try {
+      const resolution = resolveOnboardHarness(harnessArg);
+      if (resolution.kind === "none") {
+        addStep(
+          state,
+          "harness",
+          "fail",
+          "No harness detected. Install pi, hermes, openclaw, or opencode — or use --harness custom.",
+        );
+        return;
+      }
+      if (resolution.kind === "ambiguous") {
+        const available = resolution.detected.map((d) => d.harness);
+        state.harnessChoice = {
+          available,
+          operatorPrompt: formatHarnessOperatorQuestion(resolution.detected),
+        };
+        addStep(
+          state,
+          "harness",
+          "manual_required",
+          formatAmbiguousHarnessMessage(resolution.detected),
+        );
+        return;
+      }
+      harness = resolution.harness;
+    } catch (err) {
+      addStep(state, "harness", "fail", errorMessage(err, "Harness selection failed"));
       return;
     }
-    harness = match;
   }
 
   if (state.args["dry-run"]) {
