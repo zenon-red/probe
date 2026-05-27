@@ -113,6 +113,40 @@ export function defineSubcommandParent(spec: SubcommandParentSpec) {
   });
 }
 
+const NEXUS_CONFUSED_SIBLINGS = new Set([
+  "agent",
+  "task",
+  "message",
+  "idea",
+  "discover",
+  "project",
+  "action",
+  "genesis",
+  "artifact",
+  "review",
+  "query",
+  "onboard",
+  "cooldown",
+]);
+
+export function guardNexusDaemonArgv(argv: string[]): void {
+  const tokens = scanArgvCommandTokens(argv);
+  const nexusIdx = tokens.indexOf("nexus");
+  if (nexusIdx === -1) return;
+
+  const trailing = tokens.slice(nexusIdx + 1);
+  if (trailing.length === 0) return;
+
+  const suggested = `probe ${trailing.join(" ")}`;
+  const looksLikeSibling = trailing[0] !== undefined && NEXUS_CONFUSED_SIBLINGS.has(trailing[0]);
+
+  error(
+    "UNKNOWN_ARGS",
+    `probe nexus is the persistent daemon only; unexpected arguments: ${trailing.join(" ")}`,
+    looksLikeSibling ? `Did you mean: ${suggested}?` : "Run: probe nexus --help",
+  );
+}
+
 export function guardUnknownSubcommand(argv: string[]): void {
   const tokens = scanArgvCommandTokens(argv);
   if (tokens.length < 2) {

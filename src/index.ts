@@ -32,7 +32,7 @@ import {
   setForceHelpRequested,
   suggestCommand,
 } from "./utils/help.js";
-import { guardUnknownSubcommand } from "./utils/subcommand.js";
+import { guardNexusDaemonArgv, guardUnknownSubcommand } from "./utils/subcommand.js";
 import { exitProcess, renderProbeErrorAndExit } from "./utils/boundary.js";
 import { error } from "./utils/output.js";
 import { isProbeError } from "./utils/errors.js";
@@ -194,6 +194,7 @@ if (firstPositional && !topLevelCommands.has(firstPositional)) {
 
 try {
   guardUnknownSubcommand(argv);
+  guardNexusDaemonArgv(argv);
 } catch (err) {
   if (isProbeError(err)) {
     renderProbeErrorAndExit(err);

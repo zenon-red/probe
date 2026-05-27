@@ -192,4 +192,35 @@ describe("CommandContext.create connection target", () => {
     expect(ctx.identity).toBe(identity);
     await ctx[Symbol.asyncDispose]();
   });
+
+  it("skips subscribe when subscribe is empty", async () => {
+    const testConfig = {
+      ...DEFAULT_CONFIG,
+      spacetime: { host: "wss://identity.example", module: "nexus" },
+      requestTimeout: 5000,
+    };
+
+    spyOn(configModule, "getConfig").mockResolvedValue(testConfig);
+    spyOn(configModule, "resolveSpacetimeArgs");
+
+    const identity = { toHexString: () => "abc" } as unknown as Identity;
+    const createPromise = CommandContext.create(
+      commandContextOptions({ wallet: "test-wallet" }, { subscribe: [] }),
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const mockConn = {
+      subscriptionBuilder: () => {
+        throw new Error("subscriptionBuilder should not run");
+      },
+      disconnect: () => {},
+    };
+
+    connectHandler!(mockConn, identity, "token-abc");
+
+    const ctx = await createPromise;
+    expect(ctx.identity).toBe(identity);
+    await ctx[Symbol.asyncDispose]();
+  });
 });
