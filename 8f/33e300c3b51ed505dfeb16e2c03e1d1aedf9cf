@@ -1,0 +1,73 @@
+src/utils/boundary.ts
+  s_77f99d87e3c4ae::t_2dacc145da92cb 2
+src/utils/harness-detection.ts
+  s_288b4747d82169::t_a2313c97e728fa 100-103,108-109,111-119,121-122,136,138-139,142,144,146,148-150,156-163,167-182
+  s_6caf54a3ac3f93::t_ecd5bacdb41ab0 151-155
+  s_77f99d87e3c4ae::t_421a2a69732223 164-166
+  s_288b4747d82169::t_1f51a88d81edf6 124-134,140-141,143,145,147
+  s_6caf54a3ac3f93::t_9a5b9210a7157a 74-76,80
+  s_6caf54a3ac3f93::t_753eafe7fda400 96-99
+  s_6caf54a3ac3f93::t_38ddb5501d712b 7-14
+  s_6caf54a3ac3f93::t_6e66e94d5c9cc5 66-67
+tests/unit/harness-detection.test.ts
+  s_288b4747d82169::t_59bbd8a4be7685 8-10,19-25,31-32,35-36,41-42,48-53,55,62-63,65,72-74,85,87-89,91-92
+  s_288b4747d82169::t_88fecdb10c2db3 26,33,37,43,54,64,86
+  s_6caf54a3ac3f93::t_4d7b9996df34cd 1-7,11-18,28-30,34,38-40,44-47,56-61,66-71
+  s_288b4747d82169::t_7053e975c8be6f 75-84,90
+src/commands/onboard.ts
+  s_288b4747d82169::t_eb474caeb43db7 253-256
+  s_77f99d87e3c4ae::t_916bff6addea6b 22,164
+src/commands/wallet/index.ts
+  s_288b4747d82169::t_e76f5e63ef8f62 17-19,22-34,38-42
+src/utils/output.ts
+  s_77f99d87e3c4ae::t_2dacc145da92cb 2,16
+src/utils/errors.ts
+  s_77f99d87e3c4ae::t_2dacc145da92cb 4-7,57
+src/index.ts
+  s_77f99d87e3c4ae::t_5dca15008aad4b 1,204-208,210-214
+  s_77f99d87e3c4ae::t_2f2868004d703f 38,164-165
+  s_77f99d87e3c4ae::t_5701dfa26b921d 36,209
+src/utils/onboard/steps.ts
+  s_288b4747d82169::t_0270600f356601 517
+  s_288b4747d82169::t_323f8893a7a46b 501,503-516,518,525-527,529
+  s_77f99d87e3c4ae::t_421a2a69732223 519-524
+  s_288b4747d82169::t_629691cc29e666 15,17
+  s_288b4747d82169::t_2fe2ce687ffa35 16
+  s_288b4747d82169::t_6f3ec125484b80 59
+tests/unit/probe-error.test.ts
+  s_77f99d87e3c4ae::t_6cbeae6def6576 3
+tests/unit/emit.test.ts
+  s_77f99d87e3c4ae::t_dba69fff36e990 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "8f33e300c3b51ed505dfeb16e2c03e1d1aedf9cf",
+  "prompts": {},
+  "sessions": {
+    "s_288b4747d82169": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8651ae04-8db8-405a-8f51-1dc482df6863",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_6caf54a3ac3f93": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "770267c0-67e3-4733-8621-97c0769d9db4",
+        "model": "composer-2.5"
+      },
+      "human_author": null
+    },
+    "s_77f99d87e3c4ae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_198fb7718ffeixVJ5MdzYg011m",
+        "model": "gpt-5.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
