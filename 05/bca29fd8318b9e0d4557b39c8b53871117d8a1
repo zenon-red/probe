@@ -1,0 +1,88 @@
+package.json
+  s_ca8bb01bb7686f::t_52b67490f22578 3
+docs/commands.md
+  s_288b4747d82169::t_ab17ab1cb2e1b3 316
+  s_52cebcfe7b0286::t_4edccd4057809e 328
+  s_288b4747d82169::t_4ee562339a9f1f 329
+src/types/config.ts
+  s_288b4747d82169::t_bb028ad0ae91a7 19
+  s_288b4747d82169::t_61472a101ebc87 46-47
+src/utils/nexus-paths.ts
+  s_52cebcfe7b0286::t_bbc16c8bb61537 4-5,10-11,14-15,20,25-26,31,40,52,55-65,68-69,73,75-79,81
+  s_288b4747d82169::t_8dc3388cbcd559 1-3,6-9,12-13,16-19,21-24,27-30,32-39,41-51,53-54,66-67,70-72,74,82-83
+  s_52cebcfe7b0286::t_cc9d03a147d347 80
+src/commands/nexus/task/claim.ts
+  s_52cebcfe7b0286::t_01640959a321a2 2,5,34,42,45,57
+  s_ca8bb01bb7686f::t_95ba274e620be6 23
+  s_288b4747d82169::t_47613301ba0cc3 27,41,43-44,46-47
+tests/unit/config.test.ts
+  s_288b4747d82169::t_4ad182e83a38ac 23
+src/commands/onboard.ts
+  s_52cebcfe7b0286::t_f0eda175160db0 148
+  s_288b4747d82169::t_84ae545f133690 208
+  s_288b4747d82169::t_5da813f85a963e 11
+skills/probe/SKILL.md
+  s_52cebcfe7b0286::t_bbab2fbbbdf0b1 56
+src/utils/health.ts
+  s_288b4747d82169::t_80e543ac0d344f 7
+  s_52cebcfe7b0286::t_0cab905bc0156d 208
+tests/unit/nexus-paths.test.ts
+  s_288b4747d82169::t_e7fa0a11866e5c 1,4,7,9-13,16-20,23-25,31,40,42-43
+  s_52cebcfe7b0286::t_b4c59329016360 5
+  s_52cebcfe7b0286::t_2cf09e691455e7 2-3,6,8,14-15,21-22,26-30,32-37,39
+  s_52cebcfe7b0286::t_69c1d41a616a0f 38,41
+src/utils/onboard/steps.ts
+  s_52cebcfe7b0286::t_c87e9486291125 22
+  s_288b4747d82169::t_904538be483c44 379-381,383,394,397-407
+  s_52cebcfe7b0286::t_6948860c3197c6 387
+  s_ca8bb01bb7686f::t_9cafd46b420a88 395
+  s_288b4747d82169::t_4cbc9411bcb575 21
+  s_52cebcfe7b0286::t_713ac0300bff88 382,386
+docs/getting-started.md
+  s_288b4747d82169::t_039684f4f117e9 45
+  s_52cebcfe7b0286::t_2b64b68677992a 46
+  s_ca8bb01bb7686f::t_9cafd46b420a88 215-221
+  s_288b4747d82169::t_975579402a42e2 54
+src/commands/action.ts
+  s_52cebcfe7b0286::t_fc72d49b93a245 58
+  s_288b4747d82169::t_082812464136ff 174
+  s_52cebcfe7b0286::t_9ceecef56f34cf 170
+  s_52cebcfe7b0286::t_2074f3d8cca2c1 63,65,68,80-86
+  s_52cebcfe7b0286::t_2dc63ec65a314e 12-13
+  s_288b4747d82169::t_ddb62b7fa83cd0 62,64,66-67,69-70
+src/utils/nexus-layout-doctor.ts
+  s_52cebcfe7b0286::t_1ccc44d7b86b17 3,12,15-16
+  s_288b4747d82169::t_67a027a9be17e6 1-2,4-11,13-14,17-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "05bca29fd8318b9e0d4557b39c8b53871117d8a1",
+  "prompts": {},
+  "sessions": {
+    "s_288b4747d82169": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8651ae04-8db8-405a-8f51-1dc482df6863",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_52cebcfe7b0286": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "d589e35f-4e5f-4bed-b39b-d47795feefe1",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_ca8bb01bb7686f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_194c1a943ffepTO1jIvQO7Tb63",
+        "model": "mimo-v2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
