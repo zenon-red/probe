@@ -1,42 +1,50 @@
-import { afterEach, describe, expect, mock, test } from "bun:test";
-
-const commandExists = mock((cmd: string) => false);
-const existsSync = mock(() => false);
-
-mock.module("~/utils/system.js", () => ({ commandExists }));
-mock.module("node:fs", () => ({ existsSync }));
-
-const { formatAmbiguousHarnessMessage, formatHarnessOperatorQuestion, resolveOnboardHarness } =
-  await import("~/utils/harness-detection.js");
+import { afterEach, describe, expect, test } from "bun:test";
+import {
+  formatAmbiguousHarnessMessage,
+  formatHarnessOperatorQuestion,
+  resolveOnboardHarness,
+  type HarnessDetectionDeps,
+} from "~/utils/harness-detection.js";
 
 const pi = { harness: "pi" as const, command: "pi", args: ["-p"] };
 const hermes = { harness: "hermes" as const, command: "hermes", args: ["-z"] };
 
+function deps(overrides: Partial<HarnessDetectionDeps> = {}): HarnessDetectionDeps {
+  return {
+    commandExists: () => false,
+    existsSync: () => false,
+    ...overrides,
+  };
+}
+
 describe("resolveOnboardHarness", () => {
   afterEach(() => {
-    commandExists.mockReset();
-    existsSync.mockReset();
     delete process.env.PROBE_HARNESS;
     delete process.env.HARNESS;
   });
 
   test("resolves explicit harness when detected", () => {
-    commandExists.mockImplementation((cmd: string) => cmd === "pi");
-    expect(resolveOnboardHarness("pi")).toEqual({ kind: "resolved", harness: pi });
+    expect(resolveOnboardHarness("pi", deps({ commandExists: (cmd) => cmd === "pi" }))).toEqual({
+      kind: "resolved",
+      harness: pi,
+    });
   });
 
   test("returns none when nothing detected", () => {
-    expect(resolveOnboardHarness("auto")).toEqual({ kind: "none" });
+    expect(resolveOnboardHarness("auto", deps())).toEqual({ kind: "none" });
   });
 
   test("auto resolves single harness", () => {
-    commandExists.mockImplementation((cmd: string) => cmd === "hermes");
-    expect(resolveOnboardHarness("auto")).toEqual({ kind: "resolved", harness: hermes });
+    expect(
+      resolveOnboardHarness("auto", deps({ commandExists: (cmd) => cmd === "hermes" })),
+    ).toEqual({ kind: "resolved", harness: hermes });
   });
 
   test("returns ambiguous when multiple detected and no env", () => {
-    commandExists.mockImplementation((cmd: string) => cmd === "pi" || cmd === "hermes");
-    const result = resolveOnboardHarness("auto");
+    const result = resolveOnboardHarness(
+      "auto",
+      deps({ commandExists: (cmd) => cmd === "pi" || cmd === "hermes" }),
+    );
     expect(result.kind).toBe("ambiguous");
     if (result.kind === "ambiguous") {
       expect(result.detected.map((d) => d.harness).sort()).toEqual(["hermes", "pi"]);
@@ -44,15 +52,23 @@ describe("resolveOnboardHarness", () => {
   });
 
   test("uses PROBE_HARNESS when multiple detected", () => {
-    commandExists.mockImplementation((cmd: string) => cmd === "pi" || cmd === "hermes");
     process.env.PROBE_HARNESS = "hermes";
-    expect(resolveOnboardHarness("auto")).toEqual({ kind: "resolved", harness: hermes });
+    expect(
+      resolveOnboardHarness(
+        "auto",
+        deps({ commandExists: (cmd) => cmd === "pi" || cmd === "hermes" }),
+      ),
+    ).toEqual({ kind: "resolved", harness: hermes });
   });
 
   test("uses HARNESS env when PROBE_HARNESS unset", () => {
-    commandExists.mockImplementation((cmd: string) => cmd === "pi" || cmd === "hermes");
     process.env.HARNESS = "pi";
-    expect(resolveOnboardHarness("auto")).toEqual({ kind: "resolved", harness: pi });
+    expect(
+      resolveOnboardHarness(
+        "auto",
+        deps({ commandExists: (cmd) => cmd === "pi" || cmd === "hermes" }),
+      ),
+    ).toEqual({ kind: "resolved", harness: pi });
   });
 });
 

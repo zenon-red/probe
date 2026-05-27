@@ -1,9 +1,17 @@
-// TODO: add unit tests for detectHarnesses and autoDetectHarness (mock execSync and existsSync)
 import { existsSync } from "node:fs";
 import { commandExists } from "./system.js";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { HarnessType } from "~/types/config.js";
+
+export interface HarnessDetectionDeps {
+  commandExists: (command: string) => boolean;
+  existsSync: (path: string) => boolean;
+}
+
+function defaultHarnessDetectionDeps(): HarnessDetectionDeps {
+  return { commandExists, existsSync };
+}
 
 export interface HarnessDetectionResult {
   harness: HarnessType;
@@ -55,19 +63,21 @@ const HARNESS_PROBES: HarnessProbe[] = [
   },
 ];
 
-function hasKnownDir(dir: string): boolean {
-  return existsSync(dir);
+function hasKnownDir(dir: string, deps: HarnessDetectionDeps): boolean {
+  return deps.existsSync(dir);
 }
 
 /**
  * Detect installed harnesses by checking PATH and known directories.
  * Returns the list of detected harnesses.
  */
-export function detectHarnesses(): HarnessDetectionResult[] {
+export function detectHarnesses(
+  deps: HarnessDetectionDeps = defaultHarnessDetectionDeps(),
+): HarnessDetectionResult[] {
   const results: HarnessDetectionResult[] = [];
 
   for (const probe of HARNESS_PROBES) {
-    if (commandExists(probe.pathCheck) || hasKnownDir(probe.knownDir)) {
+    if (deps.commandExists(probe.pathCheck) || hasKnownDir(probe.knownDir, deps)) {
       results.push({
         harness: probe.id,
         command: probe.command,
@@ -83,8 +93,10 @@ export function detectHarnesses(): HarnessDetectionResult[] {
  * Auto-detect a single harness. Returns the detection result or throws
  * if zero or multiple harnesses are detected without explicit config.
  */
-export function autoDetectHarness(): HarnessDetectionResult {
-  const resolution = resolveOnboardHarness("auto");
+export function autoDetectHarness(
+  deps: HarnessDetectionDeps = defaultHarnessDetectionDeps(),
+): HarnessDetectionResult {
+  const resolution = resolveOnboardHarness("auto", deps);
   if (resolution.kind === "resolved") {
     return resolution.harness;
   }
@@ -136,8 +148,11 @@ export function formatAmbiguousHarnessMessage(detected: HarnessDetectionResult[]
   ].join("\n");
 }
 
-export function resolveOnboardHarness(harnessArg: string | undefined): OnboardHarnessResolution {
-  const detected = detectHarnesses();
+export function resolveOnboardHarness(
+  harnessArg: string | undefined,
+  deps: HarnessDetectionDeps = defaultHarnessDetectionDeps(),
+): OnboardHarnessResolution {
+  const detected = detectHarnesses(deps);
   const arg = harnessArg?.trim() || "auto";
 
   if (arg !== "auto") {
