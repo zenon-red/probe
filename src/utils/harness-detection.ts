@@ -1,9 +1,17 @@
-// TODO: add unit tests for detectHarnesses and autoDetectHarness (mock execSync and existsSync)
 import { existsSync } from "node:fs";
 import { commandExists } from "./system.js";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { HarnessType } from "~/types/config.js";
+
+export interface HarnessDetectionDeps {
+  commandExists: (command: string) => boolean;
+  existsSync: (path: string) => boolean;
+}
+
+function defaultHarnessDetectionDeps(): HarnessDetectionDeps {
+  return { commandExists, existsSync };
+}
 
 export interface HarnessDetectionResult {
   harness: HarnessType;
@@ -55,19 +63,21 @@ const HARNESS_PROBES: HarnessProbe[] = [
   },
 ];
 
-function hasKnownDir(dir: string): boolean {
-  return existsSync(dir);
+function hasKnownDir(dir: string, deps: HarnessDetectionDeps): boolean {
+  return deps.existsSync(dir);
 }
 
 /**
  * Detect installed harnesses by checking PATH and known directories.
  * Returns the list of detected harnesses.
  */
-export function detectHarnesses(): HarnessDetectionResult[] {
+export function detectHarnesses(
+  deps: HarnessDetectionDeps = defaultHarnessDetectionDeps(),
+): HarnessDetectionResult[] {
   const results: HarnessDetectionResult[] = [];
 
   for (const probe of HARNESS_PROBES) {
-    if (commandExists(probe.pathCheck) || hasKnownDir(probe.knownDir)) {
+    if (deps.commandExists(probe.pathCheck) || hasKnownDir(probe.knownDir, deps)) {
       results.push({
         harness: probe.id,
         command: probe.command,
@@ -83,21 +93,91 @@ export function detectHarnesses(): HarnessDetectionResult[] {
  * Auto-detect a single harness. Returns the detection result or throws
  * if zero or multiple harnesses are detected without explicit config.
  */
-export function autoDetectHarness(): HarnessDetectionResult {
-  const detected = detectHarnesses();
-
-  if (detected.length === 0) {
+export function autoDetectHarness(
+  deps: HarnessDetectionDeps = defaultHarnessDetectionDeps(),
+): HarnessDetectionResult {
+  const resolution = resolveOnboardHarness("auto", deps);
+  if (resolution.kind === "resolved") {
+    return resolution.harness;
+  }
+  if (resolution.kind === "none") {
     throw new Error(
       "No harness detected. Install one of: pi, hermes, openclaw, opencode — or set harness explicitly in config.",
     );
   }
+  throw new Error(formatAmbiguousHarnessMessage(resolution.detected));
+}
 
-  if (detected.length === 1) {
-    return detected[0];
+export type OnboardHarnessResolution =
+  | { kind: "resolved"; harness: HarnessDetectionResult }
+  | { kind: "ambiguous"; detected: HarnessDetectionResult[] }
+  | { kind: "none" };
+
+function harnessFromEnv(detected: HarnessDetectionResult[]): HarnessDetectionResult | undefined {
+  const raw = process.env.PROBE_HARNESS || process.env.HARNESS;
+  if (!raw || raw === "auto" || raw === "custom") {
+    return undefined;
+  }
+  return detected.find((d) => d.harness === raw);
+}
+
+export function formatHarnessOperatorQuestion(detected: HarnessDetectionResult[]): string {
+  const names = detected.map((d) => d.harness);
+  const n = names.length;
+  const options = names.map((h) => `- ${h}`).join("\n");
+  const countWord = n === 2 ? "two" : String(n);
+  return [
+    `There are ${countWord} possible harnesses we could use to interact with Nexus. Which one would you like to use?`,
+    "",
+    options,
+  ].join("\n");
+}
+
+export function formatAmbiguousHarnessMessage(detected: HarnessDetectionResult[]): string {
+  const names = detected.map((d) => d.harness).join(", ");
+  return [
+    `Multiple harness CLIs are installed: ${names}.`,
+    "",
+    "Ask your operator (see join.md — harness question), then rerun onboard with:",
+    "",
+    formatHarnessOperatorQuestion(detected),
+    "",
+    '  probe onboard --name "<display name>" --harness <choice>',
+    "",
+    "If the operator set PROBE_HARNESS (or HARNESS) in the environment, rerun with --harness auto.",
+  ].join("\n");
+}
+
+export function resolveOnboardHarness(
+  harnessArg: string | undefined,
+  deps: HarnessDetectionDeps = defaultHarnessDetectionDeps(),
+): OnboardHarnessResolution {
+  const detected = detectHarnesses(deps);
+  const arg = harnessArg?.trim() || "auto";
+
+  if (arg !== "auto") {
+    const match = detected.find((d) => d.harness === arg);
+    if (!match) {
+      if (detected.length === 0) {
+        return { kind: "none" };
+      }
+      throw new Error(
+        `Harness "${arg}" not detected. Installed: ${detected.map((d) => d.harness).join(", ")}`,
+      );
+    }
+    return { kind: "resolved", harness: match };
   }
 
-  const names = detected.map((d) => d.harness).join(", ");
-  throw new Error(
-    `Multiple harnesses detected (${names}). Specify which one to use in config or via --harness flag.`,
-  );
+  const fromEnv = harnessFromEnv(detected);
+  if (fromEnv) {
+    return { kind: "resolved", harness: fromEnv };
+  }
+
+  if (detected.length === 0) {
+    return { kind: "none" };
+  }
+  if (detected.length === 1) {
+    return { kind: "resolved", harness: detected[0] };
+  }
+  return { kind: "ambiguous", detected };
 }

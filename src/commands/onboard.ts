@@ -19,6 +19,7 @@ import {
   setDefaultWallet,
   verifyHome,
   verifyPasswordFile,
+  type OnboardState,
 } from "~/utils/onboard/steps.js";
 
 export default defineCommand({
@@ -160,7 +161,7 @@ export default defineCommand({
     }
 
     const steps: OnboardStep[] = [];
-    const state = {
+    const state: OnboardState = {
       args: args as unknown as Parameters<typeof resolveIdentity>[0]["args"],
       agentId: "",
       role: "",
@@ -247,6 +248,10 @@ export default defineCommand({
           step: step.step,
           detail: step.detail,
         }));
+      }
+
+      if (s.harnessChoice) {
+        data.harnessChoice = s.harnessChoice;
       }
 
       if (s.mnemonic) {

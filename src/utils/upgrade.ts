@@ -5,7 +5,6 @@ import { arch, platform } from "node:os";
 import { dirname, resolve } from "node:path";
 import { Readable } from "node:stream";
 import { finished } from "node:stream/promises";
-import { probeVersion } from "~/probe-version.js";
 import { errorMessage } from "~/utils/errors.js";
 import { NETWORK_TIMEOUT, SHELL_TIMEOUT } from "./timeouts.js";
 
