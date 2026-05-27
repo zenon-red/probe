@@ -1,0 +1,60 @@
+tests/unit/emit.test.ts
+  s_77f99d87e3c4ae::t_dba69fff36e990 4
+tests/unit/probe-error.test.ts
+  s_77f99d87e3c4ae::t_6cbeae6def6576 3
+src/utils/errors.ts
+  s_77f99d87e3c4ae::t_2dacc145da92cb 4-7,57
+src/utils/output.ts
+  s_77f99d87e3c4ae::t_2dacc145da92cb 2,16
+tests/unit/harness-detection.test.ts
+  s_77f99d87e3c4ae::t_421a2a69732223 9-10
+  s_288b4747d82169::t_88fecdb10c2db3 1,3-4,6-7,17-18,23-24,28,32-33,37-38,46-47,52-53,70
+  s_288b4747d82169::t_7053e975c8be6f 59-68,74
+  s_288b4747d82169::t_59bbd8a4be7685 2,5,8,11-16,19-22,25-27,29-31,34-36,39-45,48-51,54-58,69,71-73,75-76
+src/utils/boundary.ts
+  s_77f99d87e3c4ae::t_2dacc145da92cb 2
+src/utils/onboard/steps.ts
+  s_288b4747d82169::t_0270600f356601 517
+  s_77f99d87e3c4ae::t_421a2a69732223 519-524
+  s_288b4747d82169::t_323f8893a7a46b 501,503-516,518,525-527,529
+  s_288b4747d82169::t_6f3ec125484b80 59
+  s_288b4747d82169::t_629691cc29e666 15,17
+  s_288b4747d82169::t_2fe2ce687ffa35 16
+src/commands/onboard.ts
+  s_288b4747d82169::t_eb474caeb43db7 253-256
+  s_77f99d87e3c4ae::t_916bff6addea6b 22,164
+src/utils/harness-detection.ts
+  s_288b4747d82169::t_a2313c97e728fa 87-91,96-97,99-107,109-110,124,126-127,130,132,134,136-148,152-167
+  s_77f99d87e3c4ae::t_421a2a69732223 149-151
+  s_288b4747d82169::t_1f51a88d81edf6 112-122,128-129,131,133,135
+src/index.ts
+  s_77f99d87e3c4ae::t_5701dfa26b921d 36,209
+  s_77f99d87e3c4ae::t_2f2868004d703f 38,164-165
+  s_77f99d87e3c4ae::t_5dca15008aad4b 1,204-208,210-214
+src/commands/wallet/index.ts
+  s_288b4747d82169::t_e76f5e63ef8f62 17-19,22-34,38-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "83a476f77ba86f81bccea21141f9febe6bdaf76a",
+  "prompts": {},
+  "sessions": {
+    "s_288b4747d82169": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8651ae04-8db8-405a-8f51-1dc482df6863",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_77f99d87e3c4ae": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_198fb7718ffeixVJ5MdzYg011m",
+        "model": "gpt-5.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
