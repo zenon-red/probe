@@ -1,0 +1,32 @@
+src/index.ts
+  s_288b4747d82169::t_3a19ce4de11c49 35
+  s_288b4747d82169::t_d9a296a4dfb864 197
+tests/unit/context.test.ts
+  s_288b4747d82169::t_40aba9554e3481 195,197-225
+  s_288b4747d82169::t_a606444c089a18 196
+src/utils/subcommand.ts
+  s_288b4747d82169::t_f03b34d2c91024 116-149
+src/utils/context.ts
+  s_288b4747d82169::t_45bd0fbbc34fd9 228
+  s_288b4747d82169::t_151b7d6fe5ad22 227,229-231
+tests/unit/subcommands.test.ts
+  s_288b4747d82169::t_82bc6e6d4d292c 144
+  s_288b4747d82169::t_ce515c0a8b8a3f 7
+  s_288b4747d82169::t_a38b4fe16ff1bc 139-143,145-157
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d18d60ee7383de2761198e2cea0a5cc94eb57827",
+  "prompts": {},
+  "sessions": {
+    "s_288b4747d82169": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8651ae04-8db8-405a-8f51-1dc482df6863",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
