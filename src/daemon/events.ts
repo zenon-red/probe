@@ -27,6 +27,8 @@ export const CRITICAL_EVENTS = new Set([
   "action_started",
   "action_completed",
   "action_failed_infra",
+  "action_queued",
+  "action_queue_abandoned",
   "harness_spawn_violation",
   "harness_usage_extraction_failed",
 ]);

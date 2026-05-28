@@ -5,7 +5,7 @@ import { callReducer, type CommandContext } from "~/utils/context.js";
 import type { HarnessDetectionResult } from "~/utils/harness-detection.js";
 import { createActionExecutor } from "./action-executor.js";
 import { ensureGenesisSyncedBeforeHarness } from "./genesis-gate.js";
-import { toExecutableAction } from "./executable-action.js";
+import { toExecutableAction, type ExecutableAction } from "./executable-action.js";
 import { sanitizeValue, type EventEmitter } from "./events.js";
 import type { SpawnRunner } from "./harness-runner.js";
 
@@ -61,6 +61,8 @@ export async function runDaemonSession(options: DaemonSessionOptions): Promise<S
 
   let runningHarness: ChildProcess | null = null;
   let runningActionId: bigint | null = null;
+  let busy = false;
+  const queuedActions: ExecutableAction[] = [];
 
   const executeAction = createActionExecutor({
     ctx: options.ctx,
@@ -75,6 +77,31 @@ export async function runDaemonSession(options: DaemonSessionOptions): Promise<S
     spawnFn: options.spawnFn,
   });
 
+  const abandonQueued = (reason: string) => {
+    if (queuedActions.length === 0) return;
+    options.emit({
+      type: "action_queue_abandoned",
+      reason,
+      action_ids: queuedActions.map((a) => a.id.toString()),
+    });
+    queuedActions.length = 0;
+  };
+
+  const processActionQueue = async (first: ExecutableAction) => {
+    let next: ExecutableAction | null = first;
+    while (next) {
+      const ok = await ensureGenesisSyncedBeforeHarness(options.ctx, options.emit);
+      if (!ok) {
+        queuedActions.unshift(next);
+        abandonQueued("genesis_blocked");
+        return;
+      }
+
+      await executeAction(next);
+      next = queuedActions.shift() ?? null;
+    }
+  };
+
   const actionsTable = options.ctx.db["agent_actions"] as ObservableTable;
   actionsTable.onInsert?.((_ctx, row) => {
     const action = toExecutableAction(row);
@@ -87,20 +114,20 @@ export async function runDaemonSession(options: DaemonSessionOptions): Promise<S
       kind: enumName(action.kind),
     });
 
-    if (runningHarness) {
+    if (busy) {
+      queuedActions.push(action);
       options.emit({
-        type: "harness_spawn_violation",
+        type: "action_queued",
         action_id: action.id.toString(),
         running_action_id: runningActionId?.toString() ?? null,
       });
       return;
     }
 
-    void (async () => {
-      const ok = await ensureGenesisSyncedBeforeHarness(options.ctx, options.emit);
-      if (!ok) return;
-      await executeAction(action);
-    })();
+    busy = true;
+    void processActionQueue(action).finally(() => {
+      busy = false;
+    });
   });
 
   let heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
@@ -125,6 +152,7 @@ export async function runDaemonSession(options: DaemonSessionOptions): Promise<S
   }
 
   if (heartbeatTimer) clearTimeout(heartbeatTimer);
+  abandonQueued("shutdown");
   (runningHarness as ChildProcess | null)?.kill("SIGTERM");
   runningHarness = null;
 

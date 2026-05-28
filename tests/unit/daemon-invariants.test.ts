@@ -111,11 +111,11 @@ describe("runDaemonSession invariants", () => {
     heartbeatCalls = 0;
   });
 
-  function createSessionCtx() {
+  function createSessionCtx(harnessTimeoutSecs = 0.05) {
     return {
       identity: { toHexString: () => "abc" },
       agents: [{ id: "agent-1" }],
-      config: { harnessTimeoutSecs: 0.05, requestTimeout: 100 },
+      config: { harnessTimeoutSecs, requestTimeout: 100 },
       conn: {
         subscriptionBuilder: () => {
           const builder = {
@@ -149,17 +149,39 @@ describe("runDaemonSession invariants", () => {
     };
   }
 
-  it("emits harness_spawn_violation when action arrives during running harness", async () => {
-    let resolveClose!: () => void;
-    let stop = false;
-    const hangSpawn: SpawnRunner = () => {
+  async function waitFor(predicate: () => boolean, timeoutMs = 2000): Promise<void> {
+    const deadline = Date.now() + timeoutMs;
+    while (!predicate()) {
+      if (Date.now() > deadline) {
+        throw new Error("timed out waiting for condition");
+      }
+      await new Promise((r) => setTimeout(r, 5));
+    }
+  }
+
+  function createHangSpawn(): { spawn: SpawnRunner; releaseFirst: () => void } {
+    let releaseFirst!: () => void;
+    let spawnCount = 0;
+    const spawn: SpawnRunner = () => {
+      spawnCount += 1;
       const child = new EventEmitter() as ChildProcess;
-      resolveClose = () => child.emit("close", 0, null);
+      (child as { kill: (signal?: string) => void }).kill = () => {};
+      if (spawnCount === 1) {
+        releaseFirst = () => child.emit("close", 0, null);
+      } else {
+        queueMicrotask(() => child.emit("close", 0, null));
+      }
       return child;
     };
+    return { spawn, releaseFirst: () => releaseFirst() };
+  }
+
+  it("queues and drains action when insert arrives during running harness", async () => {
+    let stop = false;
+    const { spawn: hangSpawn, releaseFirst } = createHangSpawn();
 
     const sessionPromise = runDaemonSession({
-      ctx: createSessionCtx() as never,
+      ctx: createSessionCtx(300) as never,
       harness: { harness: "pi", command: "pi", args: [] },
       emit: (event) => events.push(event),
       effectiveWallet: "w",
@@ -174,9 +196,7 @@ describe("runDaemonSession invariants", () => {
       spawnFn: hangSpawn,
     });
 
-    while (!insertHandler) {
-      await new Promise((r) => setTimeout(r, 5));
-    }
+    await waitFor(() => insertHandler !== undefined);
 
     insertHandler?.(null, {
       ...baseAction,
@@ -186,9 +206,7 @@ describe("runDaemonSession invariants", () => {
       createdAt: "2026-01-01T00:00:00Z",
       updatedAt: "2026-01-01T00:00:00Z",
     });
-    while (!events.some((e) => e.type === "action_started")) {
-      await new Promise((r) => setTimeout(r, 5));
-    }
+    await waitFor(() => events.some((e) => e.type === "action_started" && e.action_id === "1"));
 
     insertHandler?.(null, {
       ...baseAction,
@@ -202,16 +220,133 @@ describe("runDaemonSession invariants", () => {
     expect(events.some((e) => e.type === "action_received" && e.action_id === "2")).toBe(true);
     expect(
       events.some(
-        (e) =>
-          e.type === "harness_spawn_violation" &&
-          e.action_id === "2" &&
-          e.running_action_id === "1",
+        (e) => e.type === "action_queued" && e.action_id === "2" && e.running_action_id === "1",
       ),
     ).toBe(true);
 
+    releaseFirst();
+    await waitFor(() => events.some((e) => e.type === "action_started" && e.action_id === "2"));
+    await waitFor(() => events.some((e) => e.type === "action_completed" && e.action_id === "2"));
+
     stop = true;
-    resolveClose();
     await sessionPromise;
+  });
+
+  it("drains multiple queued actions in order", async () => {
+    let stop = false;
+    const { spawn: hangSpawn, releaseFirst } = createHangSpawn();
+
+    const sessionPromise = runDaemonSession({
+      ctx: createSessionCtx(300) as never,
+      harness: { harness: "pi", command: "pi", args: [] },
+      emit: (event) => events.push(event),
+      effectiveWallet: "w",
+      resolvedHost: "host",
+      resolvedModule: "mod",
+      logFile: null,
+      logLevel: "critical",
+      stopping: () => stop,
+      stopWaiter: new Promise(() => {}),
+      sleep: sessionSleep,
+      withJitter: () => 50,
+      spawnFn: hangSpawn,
+    });
+
+    await waitFor(() => insertHandler !== undefined);
+
+    insertHandler?.(null, {
+      ...baseAction,
+      id: 1n,
+      status: { tag: "Issued" },
+      reasonCode: "test",
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+    });
+    await waitFor(() => events.some((e) => e.type === "action_started" && e.action_id === "1"));
+
+    for (const id of [2n, 3n]) {
+      insertHandler?.(null, {
+        ...baseAction,
+        id,
+        status: { tag: "Issued" },
+        reasonCode: "test",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-01T00:00:00Z",
+      });
+    }
+
+    expect(events.filter((e) => e.type === "action_queued").map((e) => e.action_id)).toEqual([
+      "2",
+      "3",
+    ]);
+
+    releaseFirst();
+    await waitFor(() => events.some((e) => e.type === "action_completed" && e.action_id === "2"));
+    await waitFor(() => events.some((e) => e.type === "action_completed" && e.action_id === "3"));
+
+    const completedIds = events
+      .filter((e) => e.type === "action_completed")
+      .map((e) => e.action_id);
+    expect(completedIds.indexOf("2")).toBeLessThan(completedIds.indexOf("3"));
+
+    stop = true;
+    await sessionPromise;
+  });
+
+  it("abandons queued actions on shutdown", async () => {
+    let stop = false;
+    const { spawn: hangSpawn } = createHangSpawn();
+
+    const sessionPromise = runDaemonSession({
+      ctx: createSessionCtx(300) as never,
+      harness: { harness: "pi", command: "pi", args: [] },
+      emit: (event) => events.push(event),
+      effectiveWallet: "w",
+      resolvedHost: "host",
+      resolvedModule: "mod",
+      logFile: null,
+      logLevel: "critical",
+      stopping: () => stop,
+      stopWaiter: new Promise(() => {}),
+      sleep: sessionSleep,
+      withJitter: () => 50,
+      spawnFn: hangSpawn,
+    });
+
+    await waitFor(() => insertHandler !== undefined);
+
+    insertHandler?.(null, {
+      ...baseAction,
+      id: 1n,
+      status: { tag: "Issued" },
+      reasonCode: "test",
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+    });
+    await waitFor(() => events.some((e) => e.type === "action_started" && e.action_id === "1"));
+
+    insertHandler?.(null, {
+      ...baseAction,
+      id: 2n,
+      status: { tag: "Issued" },
+      reasonCode: "test",
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+    });
+    await waitFor(() => events.some((e) => e.type === "action_queued" && e.action_id === "2"));
+
+    stop = true;
+    await sessionPromise;
+
+    expect(
+      events.some(
+        (e) =>
+          e.type === "action_queue_abandoned" &&
+          e.reason === "shutdown" &&
+          (e.action_ids as string[]).includes("2"),
+      ),
+    ).toBe(true);
+    expect(events.some((e) => e.type === "action_started" && e.action_id === "2")).toBe(false);
   });
 
   it("ignores non-Issued action inserts", async () => {
@@ -232,9 +367,7 @@ describe("runDaemonSession invariants", () => {
       spawnFn: createSpawnMock(0),
     });
 
-    while (!insertHandler) {
-      await new Promise((r) => setTimeout(r, 5));
-    }
+    await waitFor(() => insertHandler !== undefined);
 
     insertHandler?.(null, {
       ...baseAction,
