@@ -1,0 +1,74 @@
+src/commands/nexus/idea.ts
+  s_2155d702e5da41::t_1afb20896d8c6c 31,41
+tests/unit/idea-human-review.test.ts
+  s_4fc9d55b9c53dd::t_f1a63d830d13e1 4
+  s_2155d702e5da41::t_eea191dbcf1e17 14-16
+  s_4fc9d55b9c53dd::t_355ea48992a6ef 20-31
+src/commands/admin/index.ts
+  s_2155d702e5da41::t_b42274793c8ad4 24
+src/index.ts
+  s_2155d702e5da41::t_64b378f2d41ff8 123
+  s_2155d702e5da41::t_1b6b1cdc93c7f1 66
+  s_2155d702e5da41::t_4c8c109b45696c 160
+src/commands/agent-cooldown.ts
+  s_288b4747d82169::t_c4934ac5df65fa 24
+src/commands/nexus/idea/review.ts
+  s_2155d702e5da41::t_57418c21ac0fd0 41
+src/utils/enums.ts
+  s_4fc9d55b9c53dd::t_b67fc18a5053e4 88
+  s_4fc9d55b9c53dd::t_44273322c57929 116
+src/utils/output-mode.ts
+  s_3732b1b7b888ea::t_cb4c649f1b170a 1-2,7-11
+src/commands/action.ts
+  s_288b4747d82169::t_de6b72ebd0bffd 114
+package.json
+  s_5c539dbc508285::t_83824e2ee1615a 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f846e3b181b898a2fce3a35a4afe799b8ccece10",
+  "prompts": {},
+  "sessions": {
+    "s_2155d702e5da41": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "15359353-dbdb-4e96-b09d-d289e3c8e799",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_288b4747d82169": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "8651ae04-8db8-405a-8f51-1dc482df6863",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_3732b1b7b888ea": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1940990f8ffeYq1igvg5gByT04",
+        "model": "mimo-v2.5-pro"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_4fc9d55b9c53dd": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "a8e38447-3114-42a8-9852-b3a408b6095d",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_5c539dbc508285": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_192d1d53effeD9Tt1LolgxPgp3",
+        "model": "mimo-v2.5-pro"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
