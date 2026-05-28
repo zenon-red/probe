@@ -9,7 +9,7 @@ import {
   proposalCompleteCommand,
   reviewCompleteCommand,
   reviewValidateCommand,
-  submitPlanCompleteCommand,
+  submitSpecCompleteCommand,
   voteCompleteCommand,
 } from "~/utils/action-prompts.js";
 import { enumName } from "~/utils/enums.js";
@@ -55,16 +55,17 @@ const ROUTE_COMPLETION_POLICIES: Record<string, ActionCompletionPolicy> = {
       note: `Then: ${projectSetupCompleteCommand(id)}`,
     }),
   },
-  SubmitPlan: {
+  SubmitSpec: {
     genericAllowed: false,
-    guide: (id) => ({
-      command: `probe project submit-plan <project-id> --path <plan-path> --commit <sha> (then: probe action complete ${id})`,
+    guide: () => ({
+      command:
+        "probe project spec submit <project-id> --path <spec-path> --commit <sha> --hash <content-hash>",
     }),
   },
   CreateTasks: {
     genericAllowed: false,
     guide: (id) => ({
-      command: `probe task create --project <project-id> --title "..." --description "..."`,
+      command: `probe task create --project <project-id> --title "..." --spec-requirement "<requirement>" --description "..."`,
       note: `Then: ${createTasksCompleteCommand(id)}`,
     }),
   },
@@ -97,9 +98,9 @@ export function successCommandForAction(action: {
 
 export function completionGuideForAction(action: AgentAction): ActionCompletionGuide {
   const route = enumName(action.route);
-  if (route === "SubmitPlan" && action.targetId) {
+  if (route === "SubmitSpec" && action.targetId) {
     return {
-      command: submitPlanCompleteCommand(action.id, action.targetId),
+      command: submitSpecCompleteCommand(action.targetId),
     };
   }
   return completionPolicyForRoute(route).guide(action.id);

@@ -20,7 +20,7 @@ export default defineCommand({
     role: {
       type: "positional",
       name: "role",
-      description: "Role: zoe, admin, zeno (default: zeno)",
+      description: "Role: zoe, admin, zeno, human (default: zeno)",
       required: false,
     },
     address: { type: "string", description: "Zenon address" },

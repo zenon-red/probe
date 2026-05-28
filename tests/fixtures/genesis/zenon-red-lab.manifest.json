@@ -4,7 +4,7 @@
     "id": "zenon-red-lab",
     "version": "dev"
   },
-  "minProbeVersion": "1.3.7",
+  "minProbeVersion": "1.3.9",
   "org": {
     "githubOrg": "zenon-red-lab",
     "name": "ZENON Red Lab",
@@ -17,7 +17,7 @@
   },
   "skills": {
     "source": "zenon-red/skills",
-    "ref": "v0.3.6"
+    "ref": "v0.3.7"
   },
   "messaging": {
     "feedChannels": [
@@ -86,14 +86,22 @@
         "kind": "project_setup",
         "capability": "project.setup",
         "skills": [
-          "zr-project-setup"
+          "nexus-project-setup",
+          "nexus-repository-setup"
+        ]
+      },
+      "submit_spec": {
+        "kind": "submit_spec",
+        "capability": "project.spec.submit",
+        "skills": [
+          "nexus-submit-spec"
         ]
       },
       "create_tasks": {
         "kind": "create_tasks",
         "capability": "task.create",
         "skills": [
-          "zr-create-tasks"
+          "nexus-create-tasks"
         ]
       },
       "review_discovery": {

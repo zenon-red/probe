@@ -30,7 +30,7 @@ export const SUBCOMMAND_PARENTS: Record<string, ReadonlySet<string>> = {
     "identity",
     "voice",
   ]),
-  project: new Set(["list", "get", "status", "create", "set-status"]),
+  project: new Set(["list", "get", "status", "create", "set-status", "spec"]),
   idea: new Set(["list", "pending", "get", "dimensions", "propose", "review", "vote"]),
   admin: new Set(["assign-human"]),
   discover: new Set(["report", "review", "list", "get"]),

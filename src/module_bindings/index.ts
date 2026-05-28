@@ -62,13 +62,13 @@ import ResubmitIdeaRevisionReducer from "./resubmit_idea_revision_reducer";
 import ReviewDiscoveredTaskReducer from "./review_discovered_task_reducer";
 import ReviewDiscoveryForActionReducer from "./review_discovery_for_action_reducer";
 import ReviewIdeaHumanReducer from "./review_idea_human_reducer";
-import ReviewProjectPlanReducer from "./review_project_plan_reducer";
+import ReviewProjectSpecReducer from "./review_project_spec_reducer";
 import SendMessageReducer from "./send_message_reducer";
 import SendProjectMessageReducer from "./send_project_message_reducer";
 import SetAgentDispatchCooldownReducer from "./set_agent_dispatch_cooldown_reducer";
 import SetAgentStatusReducer from "./set_agent_status_reducer";
 import SetDispatchCooldownReducer from "./set_dispatch_cooldown_reducer";
-import SubmitProjectPlanRefReducer from "./submit_project_plan_ref_reducer";
+import SubmitProjectSpecRefReducer from "./submit_project_spec_ref_reducer";
 import UpdateAgentActionReducer from "./update_agent_action_reducer";
 import UpdateAgentBioReducer from "./update_agent_bio_reducer";
 import UpdateAgentCapabilitiesReducer from "./update_agent_capabilities_reducer";
@@ -99,7 +99,7 @@ import IdentityRolesRow from "./identity_roles_table";
 import MessagesRow from "./messages_table";
 import ProjectChannelsRow from "./project_channels_table";
 import ProjectMessagesRow from "./project_messages_table";
-import ProjectPlanFeedbackRow from "./project_plan_feedback_table";
+import ProjectSpecFeedbackRow from "./project_spec_feedback_table";
 import ProjectsRow from "./projects_table";
 import TaskDependenciesRow from "./task_dependencies_table";
 import TaskReviewValidationsRow from "./task_review_validations_table";
@@ -376,20 +376,20 @@ const tablesSchema = __schema({
       { name: 'project_messages_id_key', constraint: 'unique', columns: ['id'] },
     ],
   }, ProjectMessagesRow),
-  project_plan_feedback: __table({
-    name: 'project_plan_feedback',
+  project_spec_feedback: __table({
+    name: 'project_spec_feedback',
     indexes: [
-      { accessor: 'id', name: 'project_plan_feedback_id_idx_btree', algorithm: 'btree', columns: [
+      { accessor: 'id', name: 'project_spec_feedback_id_idx_btree', algorithm: 'btree', columns: [
         'id',
       ] },
-      { accessor: 'by_project_id', name: 'project_plan_feedback_project_id_idx_btree', algorithm: 'btree', columns: [
+      { accessor: 'by_project_id', name: 'project_spec_feedback_project_id_idx_btree', algorithm: 'btree', columns: [
         'projectId',
       ] },
     ],
     constraints: [
-      { name: 'project_plan_feedback_id_key', constraint: 'unique', columns: ['id'] },
+      { name: 'project_spec_feedback_id_key', constraint: 'unique', columns: ['id'] },
     ],
-  }, ProjectPlanFeedbackRow),
+  }, ProjectSpecFeedbackRow),
   projects: __table({
     name: 'projects',
     indexes: [
@@ -541,13 +541,13 @@ const reducersSchema = __reducers(
   __reducerSchema("review_discovered_task", ReviewDiscoveredTaskReducer),
   __reducerSchema("review_discovery_for_action", ReviewDiscoveryForActionReducer),
   __reducerSchema("review_idea_human", ReviewIdeaHumanReducer),
-  __reducerSchema("review_project_plan", ReviewProjectPlanReducer),
+  __reducerSchema("review_project_spec", ReviewProjectSpecReducer),
   __reducerSchema("send_message", SendMessageReducer),
   __reducerSchema("send_project_message", SendProjectMessageReducer),
   __reducerSchema("set_agent_dispatch_cooldown", SetAgentDispatchCooldownReducer),
   __reducerSchema("set_agent_status", SetAgentStatusReducer),
   __reducerSchema("set_dispatch_cooldown", SetDispatchCooldownReducer),
-  __reducerSchema("submit_project_plan_ref", SubmitProjectPlanRefReducer),
+  __reducerSchema("submit_project_spec_ref", SubmitProjectSpecRefReducer),
   __reducerSchema("update_agent_action", UpdateAgentActionReducer),
   __reducerSchema("update_agent_bio", UpdateAgentBioReducer),
   __reducerSchema("update_agent_capabilities", UpdateAgentCapabilitiesReducer),

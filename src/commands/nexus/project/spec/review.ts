@@ -1,11 +1,11 @@
 import { defineCommand } from "citty";
 import { applyJsonMode, success } from "~/utils/output.js";
-import { parseReviewDecision } from "../idea/shared.js";
+import { parseReviewDecision } from "../../idea/shared.js";
 import { runReducerCommand } from "~/utils/reducer-command.js";
-import { runWithBoundary } from "./shared.js";
+import { runWithBoundary } from "../shared.js";
 
 export default defineCommand({
-  meta: { name: "review-plan", description: "Review a project plan (human role)" },
+  meta: { name: "review", description: "Review a project spec (human role)" },
   args: {
     id: { type: "positional", name: "id", description: "Project ID", required: true },
     decision: {
@@ -28,7 +28,7 @@ export default defineCommand({
 
     await runWithBoundary(async () => {
       await runReducerCommand(args, {
-        reducer: (ctx) => ctx.conn.reducers.reviewProjectPlan,
+        reducer: (ctx) => ctx.conn.reducers.reviewProjectSpec,
         params: {
           projectId: BigInt(args.id as string),
           decision,

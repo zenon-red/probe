@@ -8,6 +8,11 @@ export const taskCreateCommand = defineCommand({
     project: { type: "string", description: "Project ID" },
     title: { type: "string", description: "Task title" },
     description: { type: "string", description: "Task description" },
+    "spec-requirement": {
+      type: "string",
+      description: "OpenSpec requirement name this task implements",
+      required: true,
+    },
     priority: { type: "string", description: "Priority 1-10", default: "5" },
     "github-issue-url": { type: "string", description: "GitHub issue URL" },
     wallet: { type: "string", description: "Wallet name" },
@@ -18,8 +23,8 @@ export const taskCreateCommand = defineCommand({
   async run({ args }) {
     applyJsonMode(args);
 
-    if (!args.project || !args.title) {
-      error("ARGS_REQUIRED", "--project and --title required");
+    if (!args.project || !args.title || !args["spec-requirement"]) {
+      error("ARGS_REQUIRED", "--project, --title, and --spec-requirement required");
     }
 
     const projectId = args.project;
@@ -34,6 +39,7 @@ export const taskCreateCommand = defineCommand({
         projectId: BigInt(projectId),
         title,
         description: args.description || "",
+        specRequirement: args["spec-requirement"] as string,
         priority,
         sourceIdeaId: undefined,
         githubIssueUrl: args["github-issue-url"],
@@ -43,6 +49,7 @@ export const taskCreateCommand = defineCommand({
       created: true,
       projectId,
       title,
+      specRequirement: args["spec-requirement"],
       issue: args["github-issue-url"],
     });
   },

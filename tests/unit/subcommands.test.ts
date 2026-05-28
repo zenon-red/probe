@@ -66,10 +66,9 @@ describe("subcommand-only parent commands", () => {
       "create",
       "get",
       "list",
-      "review-plan",
       "set-status",
+      "spec",
       "status",
-      "submit-plan",
     ]);
   });
 

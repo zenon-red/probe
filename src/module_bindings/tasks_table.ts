@@ -27,6 +27,7 @@ export default __t.row({
   githubIssueUrl: __t.option(__t.string()).name("github_issue_url"),
   githubPrUrl: __t.option(__t.string()).name("github_pr_url"),
   priority: __t.u8(),
+  specRequirement: __t.string().name("spec_requirement"),
   sourceIdeaId: __t.option(__t.u64()).name("source_idea_id"),
   reviewCount: __t.u8().name("review_count"),
   get blockedFromStatus() {

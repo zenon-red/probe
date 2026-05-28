@@ -12,6 +12,7 @@ import {
 
 export default {
   projectId: __t.u64(),
-  planRefPath: __t.string(),
-  planRefCommit: __t.string(),
+  specRefPath: __t.string(),
+  specRefCommit: __t.string(),
+  specContentHash: __t.string(),
 };

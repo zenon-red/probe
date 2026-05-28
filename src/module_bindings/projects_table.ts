@@ -11,7 +11,7 @@ import {
 } from "spacetimedb";
 import {
   ProjectStatus,
-  PlanReviewStatus,
+  SpecReviewStatus,
 } from "./types";
 
 
@@ -26,12 +26,14 @@ export default __t.row({
   },
   createdAt: __t.timestamp().name("created_at"),
   createdBy: __t.string().name("created_by"),
-  planRefPath: __t.option(__t.string()).name("plan_ref_path"),
-  planRefCommit: __t.option(__t.string()).name("plan_ref_commit"),
-  get planReviewStatus() {
-    return PlanReviewStatus.name("plan_review_status");
+  specRefPath: __t.option(__t.string()).name("spec_ref_path"),
+  specRefCommit: __t.option(__t.string()).name("spec_ref_commit"),
+  specContentHash: __t.option(__t.string()).name("spec_content_hash"),
+  get specReviewStatus() {
+    return SpecReviewStatus.name("spec_review_status");
   },
-  approvedPlanRefCommit: __t.option(__t.string()).name("approved_plan_ref_commit"),
-  planReviewedBy: __t.option(__t.string()).name("plan_reviewed_by"),
-  planReviewedAt: __t.option(__t.timestamp()).name("plan_reviewed_at"),
+  approvedSpecRefCommit: __t.option(__t.string()).name("approved_spec_ref_commit"),
+  approvedSpecContentHash: __t.option(__t.string()).name("approved_spec_content_hash"),
+  specReviewedBy: __t.option(__t.string()).name("spec_reviewed_by"),
+  specReviewedAt: __t.option(__t.timestamp()).name("spec_reviewed_at"),
 });

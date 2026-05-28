@@ -60,11 +60,8 @@ export function mergeReadyCompleteCommand(actionId: bigint | number): string {
   return `probe action complete-merge ${actionId}`;
 }
 
-export function submitPlanCompleteCommand(
-  actionId: bigint | number,
-  projectId: bigint | number | string,
-): string {
-  return `probe project submit-plan ${projectId} --path <plan-path> --commit <sha> (then: probe action complete ${actionId})`;
+export function submitSpecCompleteCommand(projectId: bigint | number | string): string {
+  return `probe project spec submit ${projectId} --path <spec-path> --commit <sha> --hash <content-hash>`;
 }
 
 export function discoveryReviewCompleteCommand(actionId: bigint | number): string {

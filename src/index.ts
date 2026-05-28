@@ -34,7 +34,11 @@ import {
   suggestCommand,
 } from "./utils/help.js";
 import { guardNexusDaemonArgv, guardUnknownSubcommand } from "./utils/subcommand.js";
-import { exitProcess, renderProbeErrorAndExit } from "./utils/boundary.js";
+import {
+  exitProcess,
+  renderBoundaryErrorAndExit,
+  renderProbeErrorAndExit,
+} from "./utils/boundary.js";
 import { error } from "./utils/output.js";
 import { isProbeError } from "./utils/errors.js";
 import { probeDescription, probeVersion } from "./probe-version.js";
@@ -162,9 +166,7 @@ const main = defineCommand({
 });
 
 process.on("unhandledRejection", (err: unknown) => {
-  if (isProbeError(err)) {
-    renderProbeErrorAndExit(err);
-  }
+  renderBoundaryErrorAndExit(err);
   console.error(err);
   exitProcess(1);
 });
@@ -200,9 +202,7 @@ try {
   guardUnknownSubcommand(argv);
   guardNexusDaemonArgv(argv);
 } catch (err) {
-  if (isProbeError(err)) {
-    renderProbeErrorAndExit(err);
-  }
+  renderBoundaryErrorAndExit(err);
   throw err;
 }
 
@@ -210,9 +210,7 @@ if (argv.length === 1 && (argv[0] === "--version" || argv[0] === "-v")) {
   console.log(version);
 } else {
   runCommand(main, { rawArgs: argv }).catch((err: unknown) => {
-    if (isProbeError(err)) {
-      renderProbeErrorAndExit(err);
-    }
+    renderBoundaryErrorAndExit(err);
     console.error(err);
     exitProcess(1);
   });

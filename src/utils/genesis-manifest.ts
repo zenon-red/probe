@@ -26,6 +26,7 @@ const ROUTE_EXPECTED_KIND: Record<string, string> = {
   vote: "vote",
   proposal_scout: "propose",
   project_setup: "project_setup",
+  submit_spec: "submit_spec",
   create_tasks: "create_tasks",
   merge_ready_task: "merge_ready_task",
   review_discovery: "review_discovery",

@@ -45,6 +45,9 @@ export class ProbeError extends Error {
 
 export const isProbeError = (err: unknown): err is ProbeError => err instanceof ProbeError;
 
+export const isCliError = (err: unknown): err is Error & { code: string } =>
+  err instanceof Error && err.name === "CLIError" && "code" in err && typeof err.code === "string";
+
 export const isConnectionLikeError = (message: string): boolean => {
   const lowered = message.toLowerCase();
   return CONNECTION_ERROR_MARKERS.some((marker) => lowered.includes(marker));

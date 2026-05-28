@@ -15,6 +15,7 @@ export default {
   title: __t.string(),
   description: __t.string(),
   priority: __t.u8(),
+  specRequirement: __t.string(),
   sourceIdeaId: __t.option(__t.u64()),
   githubIssueUrl: __t.option(__t.string()),
 };

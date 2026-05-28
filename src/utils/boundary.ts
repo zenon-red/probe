@@ -1,5 +1,5 @@
 import type { OutputResult } from "~/types/index.js";
-import { ProbeError } from "~/utils/errors.js";
+import { isCliError, isProbeError, ProbeError } from "~/utils/errors.js";
 import { isJsonMode } from "~/utils/output-mode.js";
 
 const jsonReplacer = (_key: string, value: unknown): unknown => {
@@ -11,29 +11,47 @@ const jsonReplacer = (_key: string, value: unknown): unknown => {
 
 const nativeProcessExit = process.exit.bind(process);
 
-export function renderProbeError(err: ProbeError): void {
+function renderFormattedError(code: string, message: string, suggestion?: string): void {
   if (isJsonMode()) {
     const output: OutputResult<never> = {
       success: false,
       error: {
-        code: err.code,
-        message: err.message,
-        ...(err.suggestion && { suggestion: err.suggestion }),
+        code,
+        message,
+        ...(suggestion && { suggestion }),
       },
     };
     console.error(JSON.stringify(output, jsonReplacer, 2));
     return;
   }
 
-  console.error(`${err.code}: ${err.message}`);
-  if (err.suggestion) {
-    console.error(`hint: ${err.suggestion}`);
+  console.error(`${code}: ${message}`);
+  if (suggestion) {
+    console.error(`hint: ${suggestion}`);
   }
+}
+
+export function renderProbeError(err: ProbeError): void {
+  renderFormattedError(err.code, err.message, err.suggestion);
 }
 
 export function renderProbeErrorAndExit(err: ProbeError): never {
   renderProbeError(err);
   return nativeProcessExit(err.exitCode);
+}
+
+export function renderCliErrorAndExit(err: Error & { code: string }): never {
+  renderFormattedError(err.code, err.message);
+  return nativeProcessExit(1);
+}
+
+export function renderBoundaryErrorAndExit(err: unknown): void {
+  if (isProbeError(err)) {
+    renderProbeErrorAndExit(err);
+  }
+  if (isCliError(err)) {
+    renderCliErrorAndExit(err);
+  }
 }
 
 export function exitProcess(code: number): never {

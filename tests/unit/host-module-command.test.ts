@@ -62,6 +62,7 @@ describe("host/module forwarding in commands", () => {
         module: "write-module",
         project: "1",
         title: "Test task",
+        "spec-requirement": "Test requirement",
         json: false,
       },
     } as never);

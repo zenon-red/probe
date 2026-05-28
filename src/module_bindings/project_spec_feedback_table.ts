@@ -23,5 +23,6 @@ export default __t.row({
   },
   reasonCode: __t.string().name("reason_code"),
   comment: __t.string(),
+  specContentHash: __t.option(__t.string()).name("spec_content_hash"),
   createdAt: __t.timestamp().name("created_at"),
 });

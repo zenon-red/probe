@@ -41,6 +41,14 @@ describe("completionGuideForAction", () => {
     expect(guide.command).toContain("probe action review-discovery 42");
   });
 
+  it("returns spec submit completion without generic complete", () => {
+    const guide = completionGuideForAction(action({ route: { tag: "SubmitSpec" }, targetId: "9" }));
+    expect(guide.command).toBe(
+      "probe project spec submit 9 --path <spec-path> --commit <sha> --hash <content-hash>",
+    );
+    expect(guide.command).not.toContain("probe action complete");
+  });
+
   it("omits generic completion for proposal routes", () => {
     const guide = completionGuideForAction(action({ route: { tag: "ProposalScout" } }));
     expect(guide.command).toContain("probe idea propose");

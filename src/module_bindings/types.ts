@@ -32,7 +32,7 @@ export const ActionKind = __t.enum("ActionKind", {
   ValidateReview: __t.unit(),
   MergeReadyTask: __t.unit(),
   ProjectSetup: __t.unit(),
-  SubmitPlan: __t.unit(),
+  SubmitSpec: __t.unit(),
   CreateTasks: __t.unit(),
   ReviewDiscovery: __t.unit(),
 });
@@ -293,7 +293,7 @@ export const DispatchRoute = __t.enum("DispatchRoute", {
   AssignOpenTask: __t.unit(),
   ProposalScout: __t.unit(),
   ProjectSetup: __t.unit(),
-  SubmitPlan: __t.unit(),
+  SubmitSpec: __t.unit(),
   CreateTasks: __t.unit(),
   MergeReadyTask: __t.unit(),
   ReviewDiscovery: __t.unit(),
@@ -434,16 +434,6 @@ export const MessageType = __t.enum("MessageType", {
 });
 export type MessageType = __Infer<typeof MessageType>;
 
-// The tagged union or sum type for the algebraic type `PlanReviewStatus`.
-export const PlanReviewStatus = __t.enum("PlanReviewStatus", {
-  NotSubmitted: __t.unit(),
-  PendingReview: __t.unit(),
-  Approved: __t.unit(),
-  ChangesRequested: __t.unit(),
-  Rejected: __t.unit(),
-});
-export type PlanReviewStatus = __Infer<typeof PlanReviewStatus>;
-
 export const Project = __t.object("Project", {
   id: __t.u64(),
   sourceIdeaId: __t.u64(),
@@ -455,14 +445,16 @@ export const Project = __t.object("Project", {
   },
   createdAt: __t.timestamp(),
   createdBy: __t.string(),
-  planRefPath: __t.option(__t.string()),
-  planRefCommit: __t.option(__t.string()),
-  get planReviewStatus() {
-    return PlanReviewStatus;
+  specRefPath: __t.option(__t.string()),
+  specRefCommit: __t.option(__t.string()),
+  specContentHash: __t.option(__t.string()),
+  get specReviewStatus() {
+    return SpecReviewStatus;
   },
-  approvedPlanRefCommit: __t.option(__t.string()),
-  planReviewedBy: __t.option(__t.string()),
-  planReviewedAt: __t.option(__t.timestamp()),
+  approvedSpecRefCommit: __t.option(__t.string()),
+  approvedSpecContentHash: __t.option(__t.string()),
+  specReviewedBy: __t.option(__t.string()),
+  specReviewedAt: __t.option(__t.timestamp()),
 });
 export type Project = __Infer<typeof Project>;
 
@@ -485,7 +477,7 @@ export const ProjectMessage = __t.object("ProjectMessage", {
 });
 export type ProjectMessage = __Infer<typeof ProjectMessage>;
 
-export const ProjectPlanFeedback = __t.object("ProjectPlanFeedback", {
+export const ProjectSpecFeedback = __t.object("ProjectSpecFeedback", {
   id: __t.u64(),
   projectId: __t.u64(),
   reviewerId: __t.string(),
@@ -494,9 +486,10 @@ export const ProjectPlanFeedback = __t.object("ProjectPlanFeedback", {
   },
   reasonCode: __t.string(),
   comment: __t.string(),
+  specContentHash: __t.option(__t.string()),
   createdAt: __t.timestamp(),
 });
-export type ProjectPlanFeedback = __Infer<typeof ProjectPlanFeedback>;
+export type ProjectSpecFeedback = __Infer<typeof ProjectSpecFeedback>;
 
 // The tagged union or sum type for the algebraic type `ProjectStatus`.
 export const ProjectStatus = __t.enum("ProjectStatus", {
@@ -513,6 +506,16 @@ export const ReviewDecision = __t.enum("ReviewDecision", {
 });
 export type ReviewDecision = __Infer<typeof ReviewDecision>;
 
+// The tagged union or sum type for the algebraic type `SpecReviewStatus`.
+export const SpecReviewStatus = __t.enum("SpecReviewStatus", {
+  NotSubmitted: __t.unit(),
+  PendingReview: __t.unit(),
+  Approved: __t.unit(),
+  ChangesRequested: __t.unit(),
+  Rejected: __t.unit(),
+});
+export type SpecReviewStatus = __Infer<typeof SpecReviewStatus>;
+
 export const Task = __t.object("Task", {
   id: __t.u64(),
   projectId: __t.u64(),
@@ -526,6 +529,7 @@ export const Task = __t.object("Task", {
   githubIssueUrl: __t.option(__t.string()),
   githubPrUrl: __t.option(__t.string()),
   priority: __t.u8(),
+  specRequirement: __t.string(),
   sourceIdeaId: __t.option(__t.u64()),
   reviewCount: __t.u8(),
   get blockedFromStatus() {
