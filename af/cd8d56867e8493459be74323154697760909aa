@@ -1,0 +1,82 @@
+tests/unit/action-completion.test.ts
+  s_3c2e3dccbb97d7::t_cda5eb7d8eadc9 45
+src/commands/nexus/project/spec/show.ts
+  s_15d7ea353b02c6::t_5a4094c931bdfc 28-34
+src/commands/nexus/agent/register.ts
+  s_be137b293e9726::t_f79f13b5ef0703 23
+src/commands/nexus/project.ts
+  s_81d3b7eb4c4440::t_7d80f94f12090a 29,38
+src/utils/action-completion.ts
+  s_81d3b7eb4c4440::t_63413a7143c30c 68
+  s_81d3b7eb4c4440::t_98597fac8710af 101,103
+  s_81d3b7eb4c4440::t_3629ae96420367 58,60-62
+src/commands/nexus/project/spec/validate.ts
+  s_15d7ea353b02c6::t_c33b0a2d62c02a 174
+  s_15d7ea353b02c6::t_5720efe1d5ccb9 146-152
+  s_3c2e3dccbb97d7::t_cda5eb7d8eadc9 16-18
+  s_15d7ea353b02c6::t_0b870d09dbe237 7
+src/utils/action-prompts.ts
+  s_3c2e3dccbb97d7::t_cda5eb7d8eadc9 63
+src/utils/boundary.ts
+  s_15d7ea353b02c6::t_fdffad6973c549 2
+  s_15d7ea353b02c6::t_4d5fc30dad4731 14,19-21,28-30,34-35,44,46-54
+  s_f82396298eaa05::t_86e5737a7427b9 43,45,55-56
+package.json
+  s_3c2e3dccbb97d7::t_eea723a4df9e34 3
+src/utils/errors.ts
+  s_3c2e3dccbb97d7::t_cda5eb7d8eadc9 49
+  s_f82396298eaa05::t_07bc6b3d724171 48,50
+src/index.ts
+  s_15d7ea353b02c6::t_db4032e301f0b2 205
+  s_15d7ea353b02c6::t_a5ef31e423de02 169
+  s_3c2e3dccbb97d7::t_cda5eb7d8eadc9 37-41
+  s_15d7ea353b02c6::t_7e5134d4e73f4f 213
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "afcd8d56867e8493459be74323154697760909aa",
+  "prompts": {},
+  "sessions": {
+    "s_15d7ea353b02c6": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ef02748f-544f-43bc-b9de-6d27a363cc30",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_3c2e3dccbb97d7": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_18f90c961ffe0FwmbRj12E4mBN",
+        "model": "mimo-v2.5-pro"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_81d3b7eb4c4440": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "6ff23ef5-c9b8-44d7-b5d3-c92dca84550b",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_be137b293e9726": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_18fc74163ffeO1yepHeVBNWnKI",
+        "model": "mimo-v2.5-pro"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_f82396298eaa05": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_18fa99069ffeWFK2Z6Bo4o7hCy",
+        "model": "mimo-v2.5-pro"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
