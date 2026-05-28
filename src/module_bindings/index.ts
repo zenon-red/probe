@@ -52,7 +52,6 @@ import FinalizeOnboardingReducer from "./finalize_onboarding_reducer";
 import FinalizeVoiceAnnouncementReducer from "./finalize_voice_announcement_reducer";
 import HeartbeatReducer from "./heartbeat_reducer";
 import MarkIdeaImplementedReducer from "./mark_idea_implemented_reducer";
-import OpenIdeaVotingReducer from "./open_idea_voting_reducer";
 import ProposeIdeaForActionReducer from "./propose_idea_for_action_reducer";
 import RegisterAgentReducer from "./register_agent_reducer";
 import RegisterArtifactReducer from "./register_artifact_reducer";
@@ -532,7 +531,6 @@ const reducersSchema = __reducers(
   __reducerSchema("finalize_voice_announcement", FinalizeVoiceAnnouncementReducer),
   __reducerSchema("heartbeat", HeartbeatReducer),
   __reducerSchema("mark_idea_implemented", MarkIdeaImplementedReducer),
-  __reducerSchema("open_idea_voting", OpenIdeaVotingReducer),
   __reducerSchema("propose_idea_for_action", ProposeIdeaForActionReducer),
   __reducerSchema("register_agent", RegisterAgentReducer),
   __reducerSchema("register_artifact", RegisterArtifactReducer),

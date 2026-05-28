@@ -1,4 +1,5 @@
 import { defineCommand, runCommand } from "citty";
+import admin from "./commands/admin/index.js";
 import auth from "./commands/auth/index.js";
 import login from "./commands/login.js";
 import config from "./commands/config/index.js";
@@ -62,6 +63,7 @@ const topLevelCommands = new Set([
   "genesis",
   "artifact",
   "review",
+  "admin",
 ]);
 
 const version = probeVersion();
@@ -118,6 +120,7 @@ const main = defineCommand({
           { name: "whoami", detail: "Show current authenticated agent profile" },
           { name: "upgrade", detail: "Upgrade Probe to the latest version" },
           { name: "config", detail: "Read/write CLI configuration" },
+          { name: "admin", detail: "Privileged ops (e.g. assign Human role)" },
         ],
         options: [{ name: "--json", detail: JSON_FLAG_HELP_DETAIL }],
         notes: [
@@ -154,6 +157,7 @@ const main = defineCommand({
     action,
     upgrade,
     whoami,
+    admin,
   },
 });
 

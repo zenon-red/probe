@@ -70,7 +70,6 @@ export const TaskStatus = {
 export const IdeaStatus = {
   values: [
     "PendingHumanReview",
-    "HumanApproved",
     "ChangesRequested",
     "Voting",
     "ApprovedForProject",
@@ -80,14 +79,13 @@ export const IdeaStatus = {
 
   is: {
     pendingHumanReview: (s: IdeaStatusType) => s.tag === "PendingHumanReview",
-    humanApproved: (s: IdeaStatusType) => s.tag === "HumanApproved",
     changesRequested: (s: IdeaStatusType) => s.tag === "ChangesRequested",
     voting: (s: IdeaStatusType) => s.tag === "Voting",
     approved: (s: IdeaStatusType) => s.tag === "ApprovedForProject",
     rejected: (s: IdeaStatusType) => s.tag === "Rejected",
     implemented: (s: IdeaStatusType) => s.tag === "Implemented",
     active: (s: IdeaStatusType) =>
-      ["PendingHumanReview", "HumanApproved", "ChangesRequested", "Voting"].includes(s.tag),
+      ["PendingHumanReview", "ChangesRequested", "Voting"].includes(s.tag),
     terminal: (s: IdeaStatusType) =>
       ["ApprovedForProject", "Rejected", "Implemented"].includes(s.tag),
   },
@@ -96,8 +94,6 @@ export const IdeaStatus = {
     const map: Record<string, IdeaStatusType> = {
       pending_human_review: { tag: "PendingHumanReview" },
       pendinghumanreview: { tag: "PendingHumanReview" },
-      human_approved: { tag: "HumanApproved" },
-      humanapproved: { tag: "HumanApproved" },
       changes_requested: { tag: "ChangesRequested" },
       changesrequested: { tag: "ChangesRequested" },
       voting: { tag: "Voting" },
@@ -116,15 +112,14 @@ export const IdeaStatus = {
     const f = filter.toLowerCase().replace(/[_\s]/g, "");
     if (f === "approved") return status.tag === "ApprovedForProject";
     if (f === "pendinghumanreview" || f === "pending") return status.tag === "PendingHumanReview";
-    if (f === "humanapproved") return status.tag === "HumanApproved";
     if (f === "changesrequested" || f === "changes") return status.tag === "ChangesRequested";
+    if (f === "voting") return IdeaStatus.is.voting(status);
     return status.tag.toLowerCase() === f;
   },
 
   display(status: IdeaStatusType): string {
     if (status.tag === "ApprovedForProject") return "Approved";
     if (status.tag === "PendingHumanReview") return "Pending Review";
-    if (status.tag === "HumanApproved") return "Human Approved";
     if (status.tag === "ChangesRequested") return "Changes Requested";
     return status.tag;
   },

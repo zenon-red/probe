@@ -21,7 +21,7 @@ export const agentCooldownShowCommand = defineCommand({
       }),
       async (ctx) => {
         const agent = ctx.agents.find(
-          (row) => identityHex(row.identity) === identityHex(ctx.auth?.identity),
+          (row) => identityHex(row.identity) === identityHex(ctx.identity),
         );
         if (!agent) {
           error("AGENT_NOT_FOUND", "Agent not found. Are you registered?");

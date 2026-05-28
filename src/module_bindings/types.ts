@@ -395,7 +395,6 @@ export type IdeaFeedback = __Infer<typeof IdeaFeedback>;
 // The tagged union or sum type for the algebraic type `IdeaStatus`.
 export const IdeaStatus = __t.enum("IdeaStatus", {
   PendingHumanReview: __t.unit(),
-  HumanApproved: __t.unit(),
   ChangesRequested: __t.unit(),
   Voting: __t.unit(),
   ApprovedForProject: __t.unit(),

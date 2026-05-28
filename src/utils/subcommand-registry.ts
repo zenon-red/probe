@@ -31,7 +31,8 @@ export const SUBCOMMAND_PARENTS: Record<string, ReadonlySet<string>> = {
     "voice",
   ]),
   project: new Set(["list", "get", "status", "create", "set-status"]),
-  idea: new Set(["list", "pending", "get", "dimensions", "propose", "vote"]),
+  idea: new Set(["list", "pending", "get", "dimensions", "propose", "review", "vote"]),
+  admin: new Set(["assign-human"]),
   discover: new Set(["report", "review", "list", "get"]),
   cooldown: new Set(["show", "set", "off", "inherit"]),
 };

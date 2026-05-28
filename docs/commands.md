@@ -195,6 +195,16 @@ probe message send <sender-username> "ack" --context 123
 probe message list --context 123 --limit 50
 ```
 
+## Admin
+
+Privileged operations (typically `--wallet human`).
+
+```bash
+probe admin assign-human <identity-hex>
+```
+
+Uses SpacetimeDB identity hex until zenon-address-based role assignment (`nexus/docs/todo/prd-human-oversight-and-address-auth.md`). Caller must already have the Human role.
+
 ## Idea
 
 ```bash
@@ -203,10 +213,11 @@ probe idea pending [--limit <n>]
 probe idea get <id>
 probe idea dimensions
 probe idea propose --title <text> --description <text> [--category <cat>]
+probe idea review <id> --decision <approved|rejected|changes-requested> [--reason-code <code>] [--comment <text>]
 probe idea vote <id> --ecosystem-impact <score> --execution-clarity <score> [...]
 ```
 
-Idea statuses: `voting`, `approved_for_project`, `rejected`, `implemented`.
+Idea statuses: `pending_human_review`, `changes_requested`, `voting`, `approved_for_project`, `rejected`, `implemented`.
 
 Idea votes use dimension scores. Default score flags:
 

@@ -111,7 +111,7 @@ function verifyOwnership(ctx: CommandContext, actionId: bigint): AgentAction {
   }
 
   const ownAgent = ctx.agents.find(
-    (agent) => identityHex(agent.identity) === identityHex(ctx.auth?.identity),
+    (agent) => identityHex(agent.identity) === identityHex(ctx.identity),
   );
 
   if (!ownAgent || action.agentId !== ownAgent.id) {

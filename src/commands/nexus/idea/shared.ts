@@ -1,8 +1,24 @@
+import type { ReviewDecision } from "~/module_bindings/types.js";
 import type { EvaluationDimension } from "~/utils/context.js";
 import { errorMessage, failWithConnectionOrUnexpected, isProbeError } from "~/utils/errors.js";
 import type { Idea } from "~/utils/context.js";
 import { error } from "~/utils/output.js";
 import { toMicros } from "~/utils/time.js";
+
+const REVIEW_DECISION_MAP: Record<string, ReviewDecision["tag"]> = {
+  approved: "Approved",
+  rejected: "Rejected",
+  "changes-requested": "ChangesRequested",
+};
+
+export function parseReviewDecision(raw: string): ReviewDecision {
+  const key = raw.toLowerCase().trim();
+  const tag = REVIEW_DECISION_MAP[key];
+  if (!tag) {
+    error("INVALID_DECISION", `decision must be one of: approved, rejected, changes-requested`);
+  }
+  return { tag };
+}
 
 export const SCORE_FLAGS = [
   ["ecosystem-impact", "ecosystem_impact"],

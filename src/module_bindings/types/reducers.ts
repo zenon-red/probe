@@ -24,7 +24,6 @@ import FinalizeOnboardingReducer from "../finalize_onboarding_reducer";
 import FinalizeVoiceAnnouncementReducer from "../finalize_voice_announcement_reducer";
 import HeartbeatReducer from "../heartbeat_reducer";
 import MarkIdeaImplementedReducer from "../mark_idea_implemented_reducer";
-import OpenIdeaVotingReducer from "../open_idea_voting_reducer";
 import ProposeIdeaForActionReducer from "../propose_idea_for_action_reducer";
 import RegisterAgentReducer from "../register_agent_reducer";
 import RegisterArtifactReducer from "../register_artifact_reducer";
@@ -67,7 +66,6 @@ export type FinalizeOnboardingParams = __Infer<typeof FinalizeOnboardingReducer>
 export type FinalizeVoiceAnnouncementParams = __Infer<typeof FinalizeVoiceAnnouncementReducer>;
 export type HeartbeatParams = __Infer<typeof HeartbeatReducer>;
 export type MarkIdeaImplementedParams = __Infer<typeof MarkIdeaImplementedReducer>;
-export type OpenIdeaVotingParams = __Infer<typeof OpenIdeaVotingReducer>;
 export type ProposeIdeaForActionParams = __Infer<typeof ProposeIdeaForActionReducer>;
 export type RegisterAgentParams = __Infer<typeof RegisterAgentReducer>;
 export type RegisterArtifactParams = __Infer<typeof RegisterArtifactReducer>;
