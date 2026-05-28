@@ -35,7 +35,7 @@ export function createActionExecutor(
       {
         id: action.id,
         kind: actionKind,
-        skill: action.skill || actionKind.toLowerCase(),
+        skills: action.skills?.length ? action.skills : [actionKind.toLowerCase()],
         instruction: action.instruction || `Execute ${actionKind}`,
         route: enumName(action.route),
         targetType: action.targetType,

@@ -32,6 +32,7 @@ export const ActionKind = __t.enum("ActionKind", {
   ValidateReview: __t.unit(),
   MergeReadyTask: __t.unit(),
   ProjectSetup: __t.unit(),
+  SubmitPlan: __t.unit(),
   CreateTasks: __t.unit(),
   ReviewDiscovery: __t.unit(),
 });
@@ -84,7 +85,7 @@ export const AgentAction = __t.object("AgentAction", {
   },
   createdAt: __t.timestamp(),
   updatedAt: __t.timestamp(),
-  skill: __t.string(),
+  skills: __t.array(__t.string()),
   instruction: __t.string(),
   triggerType: __t.string(),
   triggerId: __t.option(__t.string()),
@@ -292,6 +293,7 @@ export const DispatchRoute = __t.enum("DispatchRoute", {
   AssignOpenTask: __t.unit(),
   ProposalScout: __t.unit(),
   ProjectSetup: __t.unit(),
+  SubmitPlan: __t.unit(),
   CreateTasks: __t.unit(),
   MergeReadyTask: __t.unit(),
   ReviewDiscovery: __t.unit(),
@@ -307,7 +309,7 @@ export const DispatchRouteConfig = __t.object("DispatchRouteConfig", {
     return ActionKind;
   },
   capability: __t.string(),
-  skill: __t.string(),
+  skills: __t.array(__t.string()),
 });
 export type DispatchRouteConfig = __Infer<typeof DispatchRouteConfig>;
 

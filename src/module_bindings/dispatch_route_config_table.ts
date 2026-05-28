@@ -24,5 +24,5 @@ export default __t.row({
     return ActionKind;
   },
   capability: __t.string(),
-  skill: __t.string(),
+  skills: __t.array(__t.string()),
 });

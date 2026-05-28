@@ -19,7 +19,7 @@ const baseAction: ExecutableAction = {
   id: 42n,
   agentId: "agent-1",
   kind: { tag: "ExecuteTask" },
-  skill: "test",
+  skills: ["test"],
   instruction: "do it",
   route: { tag: "ContinueOwnedTask" },
   targetType: undefined,

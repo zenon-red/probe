@@ -10,7 +10,7 @@ describe("executable-action", () => {
     reasonCode: "dispatch",
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-01-01T00:00:00Z",
-    skill: "zr-run",
+    skills: ["zr-run"],
     instruction: "run",
     triggerType: "dispatch_run",
     route: { tag: "ExecuteTask" },

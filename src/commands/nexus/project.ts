@@ -3,12 +3,14 @@ import { defineSubcommandParent } from "~/utils/subcommand.js";
 import projectCreate from "./project/create.js";
 import projectGet from "./project/get.js";
 import projectList from "./project/list.js";
+import projectReviewPlan from "./project/review-plan.js";
 import projectSetStatus from "./project/set-status.js";
 import projectStatus from "./project/status.js";
+import projectSubmitPlan from "./project/submit-plan.js";
 
 export default defineSubcommandParent({
   name: "project",
-  description: "Project commands — list, get, status, create, set-status",
+  description: "Project commands — list, get, status, create, set-status, submit-plan, review-plan",
   args: {
     wallet: { type: "string", description: "Wallet name" },
     host: { type: "string", description: "SpacetimeDB host" },
@@ -25,6 +27,8 @@ export default defineSubcommandParent({
       { name: "status <id>", detail: "Show project status" },
       { name: "create", detail: "Create a project" },
       { name: "set-status <id>", detail: "Set project status" },
+      { name: "submit-plan <id>", detail: "Submit a project plan for human review" },
+      { name: "review-plan <id>", detail: "Review a project plan (human role)" },
     ],
   },
   subCommands: {
@@ -33,5 +37,7 @@ export default defineSubcommandParent({
     status: projectStatus,
     create: projectCreate,
     "set-status": projectSetStatus,
+    "submit-plan": projectSubmitPlan,
+    "review-plan": projectReviewPlan,
   },
 });

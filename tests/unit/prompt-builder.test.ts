@@ -12,7 +12,7 @@ describe("buildActionPrompt", () => {
     const prompt = buildActionPrompt({
       id: 42,
       kind: "Vote",
-      skill: "zr-vote",
+      skills: ["zr-vote"],
       route: "Vote",
       targetType: "idea",
       targetId: "7",
@@ -22,7 +22,7 @@ describe("buildActionPrompt", () => {
 
     expect(prompt.startsWith("zenon.red{action:42}\n")).toBe(true);
     expect(prompt).not.toContain("Action #42");
-    expect(prompt).toContain("Skill: zr-vote");
+    expect(prompt).toContain("Skills: zr-vote");
     expect(prompt).toContain("Kind: Vote");
     expect(prompt).toContain("Route: Vote");
     expect(prompt).toContain("Target: idea #7");
@@ -37,7 +37,7 @@ describe("buildActionPrompt", () => {
     const reviewPrompt = buildActionPrompt({
       id: 9,
       kind: "ReviewTask",
-      skill: "zr-execute",
+      skills: ["zr-execute"],
       route: "ReviewTask",
       targetType: "task",
       targetId: "3",

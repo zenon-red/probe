@@ -73,7 +73,7 @@ function formatActionRow(
     kind: enumName(action.kind),
     route: routeTag,
     capability: routeConfig?.capability ?? "—",
-    skill: action.skill,
+    skills: action.skills,
     instruction: action.instruction,
     target_type: action.targetType ?? "—",
     target_id: action.targetId ?? "—",

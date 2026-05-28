@@ -63,6 +63,13 @@ function requireString(value: unknown, field: string): string {
   return value;
 }
 
+function requireArray(value: unknown, field: string): unknown[] {
+  if (!Array.isArray(value) || value.length === 0) {
+    throw new Error(`${field} must be a non-empty array`);
+  }
+  return value;
+}
+
 function rejectUnknownTopLevel(obj: Record<string, unknown>): void {
   for (const key of Object.keys(obj)) {
     if (!ALLOWED_TOP_LEVEL.has(key)) {
@@ -126,7 +133,7 @@ function validateRoutes(routesObj: Record<string, unknown>): void {
       throw new Error(`dispatch.routes.${routeKey}.kind must be '${expectedKind}' (got '${kind}')`);
     }
     requireString(entry.capability, `dispatch.routes.${routeKey}.capability`);
-    requireString(entry.skill, `dispatch.routes.${routeKey}.skill`);
+    requireArray(entry.skills, `dispatch.routes.${routeKey}.skills`);
   }
 }
 

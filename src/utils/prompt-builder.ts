@@ -11,7 +11,7 @@ export function buildActionPrompt(
   action: {
     id: bigint | number;
     kind: string;
-    skill: string;
+    skills: string[];
     instruction: string;
     route: string;
     targetType?: string | null;
@@ -21,9 +21,10 @@ export function buildActionPrompt(
   options?: { promptMarkerTemplate?: string },
 ): string {
   const markerTemplate = options?.promptMarkerTemplate;
+  const skillsList = action.skills.join(", ");
   const lines: string[] = [
     actionCorrelationFlag(action.id, markerTemplate),
-    `Skill: ${action.skill}`,
+    `Skills: ${skillsList}`,
     `Kind: ${action.kind}`,
     `Route: ${action.route}`,
     `Target: ${action.targetType ?? "—"} #${action.targetId ?? "—"}`,

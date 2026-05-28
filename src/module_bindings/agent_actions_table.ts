@@ -31,7 +31,7 @@ export default __t.row({
   },
   createdAt: __t.timestamp().name("created_at"),
   updatedAt: __t.timestamp().name("updated_at"),
-  skill: __t.string(),
+  skills: __t.array(__t.string()),
   instruction: __t.string(),
   triggerType: __t.string().name("trigger_type"),
   triggerId: __t.option(__t.string()).name("trigger_id"),

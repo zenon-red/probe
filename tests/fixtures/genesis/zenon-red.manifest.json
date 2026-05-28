@@ -30,57 +30,79 @@
       "authorized_directive": {
         "kind": "inbox",
         "capability": "directive.read",
-        "skill": "zr-inbox"
+        "skills": [
+          "zr-inbox"
+        ]
       },
       "continue_owned_task": {
         "kind": "execute_task",
         "capability": "task.execute",
-        "skill": "zr-execute"
+        "skills": [
+          "zr-execute"
+        ]
       },
       "assign_open_task": {
         "kind": "execute_task",
         "capability": "task.execute",
-        "skill": "zr-execute"
+        "skills": [
+          "zr-execute"
+        ]
       },
       "review_task": {
         "kind": "review_task",
         "capability": "task.review",
-        "skill": "zr-execute"
+        "skills": [
+          "zr-execute"
+        ]
       },
       "validate_review": {
         "kind": "validate_review",
         "capability": "review.validate",
-        "skill": "zr-validate"
+        "skills": [
+          "zr-validate"
+        ]
       },
       "merge_ready_task": {
         "kind": "merge_ready_task",
         "capability": "task.merge_ready",
-        "skill": "zr-validate"
+        "skills": [
+          "zr-validate"
+        ]
       },
       "vote": {
         "kind": "vote",
         "capability": "idea.vote",
-        "skill": "nexus-vote"
+        "skills": [
+          "nexus-vote"
+        ]
       },
       "proposal_scout": {
         "kind": "propose",
         "capability": "idea.propose",
-        "skill": "nexus-proposal-scout"
+        "skills": [
+          "nexus-proposal-scout"
+        ]
       },
       "project_setup": {
         "kind": "project_setup",
         "capability": "project.setup",
-        "skill": "zr-project-setup"
+        "skills": [
+          "zr-project-setup"
+        ]
       },
       "create_tasks": {
         "kind": "create_tasks",
         "capability": "task.create",
-        "skill": "zr-create-tasks"
+        "skills": [
+          "zr-create-tasks"
+        ]
       },
       "review_discovery": {
         "kind": "review_discovery",
         "capability": "discovery.review",
-        "skill": "zr-review-discoveries"
+        "skills": [
+          "zr-review-discoveries"
+        ]
       }
     }
   }

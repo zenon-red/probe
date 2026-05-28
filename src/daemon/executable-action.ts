@@ -5,7 +5,7 @@ export type ExecutableAction = {
   readonly id: bigint;
   readonly agentId: string;
   readonly kind: AgentAction["kind"];
-  readonly skill: string;
+  readonly skills: string[];
   readonly instruction: string;
   readonly route: AgentAction["route"];
   readonly targetType: AgentAction["targetType"];
@@ -34,7 +34,7 @@ export function toExecutableAction(row: unknown): ExecutableAction | null {
     id: toActionId(action.id),
     agentId: action.agentId,
     kind: action.kind,
-    skill: action.skill,
+    skills: action.skills,
     instruction: action.instruction,
     route: action.route,
     targetType: action.targetType,

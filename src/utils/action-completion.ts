@@ -9,6 +9,7 @@ import {
   proposalCompleteCommand,
   reviewCompleteCommand,
   reviewValidateCommand,
+  submitPlanCompleteCommand,
   voteCompleteCommand,
 } from "~/utils/action-prompts.js";
 import { enumName } from "~/utils/enums.js";
@@ -54,6 +55,12 @@ const ROUTE_COMPLETION_POLICIES: Record<string, ActionCompletionPolicy> = {
       note: `Then: ${projectSetupCompleteCommand(id)}`,
     }),
   },
+  SubmitPlan: {
+    genericAllowed: false,
+    guide: (id) => ({
+      command: `probe project submit-plan <project-id> --path <plan-path> --commit <sha> (then: probe action complete ${id})`,
+    }),
+  },
   CreateTasks: {
     genericAllowed: false,
     guide: (id) => ({
@@ -90,5 +97,10 @@ export function successCommandForAction(action: {
 
 export function completionGuideForAction(action: AgentAction): ActionCompletionGuide {
   const route = enumName(action.route);
+  if (route === "SubmitPlan" && action.targetId) {
+    return {
+      command: submitPlanCompleteCommand(action.id, action.targetId),
+    };
+  }
   return completionPolicyForRoute(route).guide(action.id);
 }
