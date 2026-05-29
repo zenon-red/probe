@@ -24,6 +24,7 @@ export type {
 } from "~/module_bindings/types.js";
 
 import { getConfig, resolveSpacetimeArgs } from "./config.js";
+import { configureSdkLogLevel } from "./output-mode.js";
 import { error } from "./output.js";
 import { getCachedToken } from "./token-cache.js";
 import { getWalletInfo } from "./wallet.js";
@@ -186,6 +187,7 @@ export class CommandContext implements AsyncDisposable {
   }
 
   static async create(options: CommandContextOptions = {}): Promise<CommandContext> {
+    configureSdkLogLevel();
     const config = await getConfig();
     const { host, module } = resolveSpacetimeArgs(options, config);
     const moduleName = module;

@@ -17,6 +17,19 @@ describe("genesis manifest parse", () => {
     expect(parsed.feedChannels).toContain("general");
   });
 
+  test("parses optional openspec.version", async () => {
+    const raw = await readFile(join(fixturesDir, "zenon-red-openspec.manifest.json"), "utf8");
+    const parsed = parseGenesisManifestJson(raw);
+    expect(parsed.openspecVersion).toBe("1.3.1");
+  });
+
+  test("rejects openspec semver ranges", async () => {
+    const raw = await readFile(join(fixturesDir, "zenon-red-lab.manifest.json"), "utf8");
+    const manifest = JSON.parse(raw);
+    manifest.openspec = { version: "^1.3.0" };
+    expect(() => parseGenesisManifestJson(JSON.stringify(manifest))).toThrow(/exact semver/);
+  });
+
   test("rejects unknown top-level key", () => {
     expect(() => parseGenesisManifestJson('{"schemaVersion":1,"extra":true}')).toThrow(
       /Unknown manifest key/,

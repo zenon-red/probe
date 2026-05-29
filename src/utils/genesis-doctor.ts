@@ -4,6 +4,7 @@ import { enumName } from "~/utils/enums.js";
 import { compareSemver, computeSyncStatus } from "~/utils/genesis-runtime.js";
 import { probeVersion } from "~/probe-version.js";
 import { checkSkillsCompatForGenesis } from "~/utils/genesis-skills.js";
+import { checkOpenspecCompatForGenesis } from "~/utils/openspec-check.js";
 import type { NexusConfig } from "~/types/config.js";
 
 const GITHUB_CAPABILITIES = new Set([
@@ -86,6 +87,25 @@ export function runGenesisDoctorChecks(
     });
   }
 
+  if (config.openspecVersion) {
+    const openspec = checkOpenspecCompatForGenesis(config.openspecVersion);
+    if (openspec.status === "warn" && !openspec.installed) {
+      addIssue({
+        code: "OPENSPEC_NOT_FOUND",
+        severity: "warn",
+        message: openspec.message,
+        fix_command: openspec.fixCommand,
+      });
+    } else if (openspec.status === "warn") {
+      addIssue({
+        code: "OPENSPEC_VERSION_MISMATCH",
+        severity: "warn",
+        message: openspec.message,
+        fix_command: openspec.fixCommand,
+      });
+    }
+  }
+
   const skills = checkSkillsCompatForGenesis(applied.skillsSource, applied.skillsRef);
   if (skills.status !== "ok") {
     addIssue({
@@ -103,12 +123,12 @@ export function runGenesisDoctorChecks(
         code: "PROBE_VERSION_BELOW_MIN",
         severity: "fail",
         message: `Probe ${probeVersion()} < minProbeVersion ${applied.minProbeVersion}`,
-        fix_command: "probe upgrade",
+        fix_command: "probe upgrade --yes",
       });
     }
   }
 
-  const { status, syncError } = computeSyncStatus({
+  const { status, syncError, syncFailedReason } = computeSyncStatus({
     localHash: config.genesisHash,
     applied: {
       genesisHash: applied.genesisHash,
@@ -118,22 +138,21 @@ export function runGenesisDoctorChecks(
       githubOrg: applied.githubOrg,
     },
     localProbeVersion: probeVersion(),
+    localOpenspecVersion: config.openspecVersion,
     localSkillsSource: config.skillsSource,
     localSkillsRef: config.skillsRef,
   });
 
   const syncTag = enumName(status);
-  if (syncTag !== "Synced") {
+  if (syncTag !== "Synced" && !(syncTag === "SyncFailed" && syncFailedReason === "openspec")) {
     addIssue({
       code: `GENESIS_SYNC_${syncTag.toUpperCase()}`,
       severity: syncTag === "ProbeUpgradeRequired" ? "fail" : "warn",
       message: syncError ?? `sync_status is ${syncTag}`,
       fix_command:
-        syncTag === "ProbeUpgradeRequired"
-          ? "probe upgrade"
-          : syncTag === "SkillsUpgradeRequired"
-            ? skills.fixCommand
-            : "probe genesis sync",
+        syncTag === "ProbeUpgradeRequired" || syncTag === "SkillsUpgradeRequired"
+          ? "probe upgrade --yes"
+          : "probe genesis sync",
     });
   }
 

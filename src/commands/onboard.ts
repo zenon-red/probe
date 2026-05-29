@@ -9,6 +9,7 @@ import {
   configureHarness,
   createWalletStep,
   ensureNexusLayout,
+  installOpenspecStep,
   installSkillsStep,
   registerAgentStep,
   resolveIdentity,
@@ -183,6 +184,8 @@ export default defineCommand({
       finish(state);
       return;
     }
+
+    await installOpenspecStep(state);
 
     if (!(await resolveIdentity(state))) {
       finish(state);

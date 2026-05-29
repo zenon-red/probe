@@ -5,6 +5,7 @@ import type { ParsedGenesisManifest } from "~/utils/genesis-manifest.js";
 import { loadUserConfig, saveUserConfig } from "~/utils/user-config.js";
 import type { NexusConfig } from "~/types/config.js";
 import { checkSkillsCompatForGenesis } from "~/utils/genesis-skills.js";
+import { checkOpenspecCompatForGenesis } from "~/utils/openspec-check.js";
 import { probeVersion } from "~/probe-version.js";
 
 export type GenesisLocalConfig = {
@@ -17,6 +18,7 @@ export type GenesisLocalConfig = {
   orgName?: string;
   skillsSource?: string;
   skillsRef?: string;
+  openspecVersion?: string;
   minProbeVersion?: string;
   promptMarkerTemplate?: string;
 };
@@ -49,7 +51,7 @@ export function assertMinProbeVersion(minProbeVersion: string | undefined): void
   }
   if (cmp < 0) {
     throw new Error(
-      `Probe ${version} is below genesis minProbeVersion ${minProbeVersion}. Run: probe upgrade`,
+      `Probe ${version} is below genesis minProbeVersion ${minProbeVersion}. Run: probe upgrade --yes`,
     );
   }
 }
@@ -75,6 +77,7 @@ export async function persistGenesisLocal(
     orgName: parsed.orgName,
     skillsSource: parsed.skillsSource,
     skillsRef: parsed.skillsRef,
+    openspecVersion: parsed.openspecVersion,
     minProbeVersion: parsed.minProbeVersion,
     promptMarkerTemplate: parsed.promptMarker,
     spacetime: {
@@ -98,14 +101,28 @@ export type AppliedGenesisRow = {
   githubOrg: string;
 };
 
+export type SyncStatusResult = {
+  status: AgentSyncStatus;
+  syncError?: string;
+  syncFailedReason?: "openspec";
+};
+
 export function computeSyncStatus(options: {
   localHash?: string;
   applied?: AppliedGenesisRow | null;
   localProbeVersion: string;
+  localOpenspecVersion?: string;
   localSkillsSource?: string;
   localSkillsRef?: string;
-}): { status: AgentSyncStatus; syncError?: string } {
-  const { localHash, applied, localProbeVersion, localSkillsSource, localSkillsRef } = options;
+}): SyncStatusResult {
+  const {
+    localHash,
+    applied,
+    localProbeVersion,
+    localOpenspecVersion,
+    localSkillsSource,
+    localSkillsRef,
+  } = options;
 
   if (applied?.minProbeVersion) {
     const cmp = compareSemver(localProbeVersion, applied.minProbeVersion);
@@ -113,6 +130,17 @@ export function computeSyncStatus(options: {
       return {
         status: { tag: "ProbeUpgradeRequired" },
         syncError: `Probe ${localProbeVersion} < minProbeVersion ${applied.minProbeVersion}`,
+      };
+    }
+  }
+
+  if (localOpenspecVersion) {
+    const openspec = checkOpenspecCompatForGenesis(localOpenspecVersion);
+    if (openspec.status !== "ok") {
+      return {
+        status: { tag: "SyncFailed" },
+        syncError: openspec.message,
+        syncFailedReason: "openspec",
       };
     }
   }

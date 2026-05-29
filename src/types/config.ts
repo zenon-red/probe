@@ -26,6 +26,7 @@ export interface NexusConfig {
   orgName?: string;
   skillsSource?: string;
   skillsRef?: string;
+  openspecVersion?: string;
   minProbeVersion?: string;
   promptMarkerTemplate?: string;
 }

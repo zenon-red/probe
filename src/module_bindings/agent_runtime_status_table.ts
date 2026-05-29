@@ -20,6 +20,7 @@ export default __t.row({
   reportedProbeVersion: __t.option(__t.string()).name("reported_probe_version"),
   reportedSkillsSource: __t.option(__t.string()).name("reported_skills_source"),
   reportedSkillsRef: __t.option(__t.string()).name("reported_skills_ref"),
+  harness: __t.option(__t.string()),
   get syncStatus() {
     return AgentSyncStatus.name("sync_status");
   },

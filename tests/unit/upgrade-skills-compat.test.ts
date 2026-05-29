@@ -1,11 +1,8 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { skillsInstallCommand, type SkillsCompat } from "../../src/utils/genesis-skills.js";
 import { applyJsonMode, setJsonMode } from "../../src/utils/output-mode.js";
 import { emitUpgradeFinish } from "../../src/utils/upgrade-skills-output.js";
+import type { ToolchainReport } from "../../src/utils/upgrade-toolchain.js";
 
-const SOURCE = "acme/skills";
-const REF = "v1.0.0";
-const INSTALL_CMD = skillsInstallCommand(SOURCE, REF);
 const realConsoleLog = console.log.bind(console);
 const realConsoleError = console.error.bind(console);
 
@@ -19,22 +16,20 @@ const base = {
   checkOnly: false,
 };
 
-const okCompat: SkillsCompat = {
-  status: "ok",
-  expectedSource: SOURCE,
-  expectedRef: REF,
-  foundRef: REF,
-  message: "ok",
-  fixCommand: INSTALL_CMD,
+const sampleToolchain: ToolchainReport = {
+  genesisConfigured: true,
+  probe: { installed: "1.1.0", expected: "1.0.0", status: "ok" },
+  openspec: { expected: "1.3.1", installed: "1.3.1", status: "ok" },
+  skills: { expected: "acme/skills@v1.0.0", installed: "acme/skills@v1.0.0", status: "ok" },
 };
 
-const warnCompat: SkillsCompat = {
-  status: "warn",
-  expectedSource: SOURCE,
-  expectedRef: REF,
-  foundRef: "v0.9.0",
-  message: "Skills ref mismatch: expected v1.0.0, found v0.9.0",
-  fixCommand: INSTALL_CMD,
+const toolchainDeps = {
+  buildToolchainReport: async () => sampleToolchain,
+  syncToolchainFromGenesis: async () => ({
+    report: sampleToolchain,
+    warnings: ["OpenSpec install command failed — npm install -g @fission-ai/openspec@1.3.1"],
+  }),
+  formatToolchainHuman: () => ["probe 1.1.0 ok", "openspec 1.3.1 ok"],
 };
 
 function captureConsole(): { stdout: string[]; stderr: string[] } {
@@ -55,61 +50,39 @@ afterEach(() => {
   setJsonMode(false);
 });
 
-describe("emitUpgradeFinish skills compat", () => {
-  it("does not load or check skills when upgrade did not run", async () => {
+describe("emitUpgradeFinish toolchain", () => {
+  it("includes toolchain on --check without syncing", async () => {
     applyJsonMode({ json: true });
     const { stdout } = captureConsole();
-    await emitUpgradeFinish({ ...base, updated: false, checkOnly: true }, false, {
-      loadSkillsSpec: async () => {
-        throw new Error("should not load skills");
-      },
-      checkSkillsCompat: () => {
-        throw new Error("should not check skills");
-      },
-    });
+    await emitUpgradeFinish(
+      { ...base, updated: false, checkOnly: true },
+      { checkOnly: true, syncStack: false },
+      toolchainDeps,
+    );
 
-    const payload = JSON.parse(stdout.join("\n")) as { data: { skillsCompat?: unknown } };
+    const payload = JSON.parse(stdout.join("\n")) as {
+      data: { toolchain: ToolchainReport; skillsCompat?: unknown };
+    };
+    expect(payload.data.toolchain.probe.status).toBe("ok");
     expect(payload.data.skillsCompat).toBeUndefined();
   });
 
-  it("includes skillsCompat in JSON when updated", async () => {
-    applyJsonMode({ json: true });
-    const { stdout, stderr } = captureConsole();
-    await emitUpgradeFinish(base, true, {
-      loadSkillsSpec: async () => ({ source: SOURCE, ref: REF }),
-      checkSkillsCompat: () => okCompat,
-    });
-
-    const payload = JSON.parse(stdout.join("\n")) as {
-      data: { skillsCompat: { status: string } };
-    };
-    expect(payload.data.skillsCompat.status).toBe("ok");
-    expect(stderr.join("\n")).toBe("");
-  });
-
-  it("prints warn compat only to stderr in human mode", async () => {
-    const { stdout, stderr } = captureConsole();
-    await emitUpgradeFinish(base, true, {
-      loadSkillsSpec: async () => ({ source: SOURCE, ref: REF }),
-      checkSkillsCompat: () => warnCompat,
-    });
-
-    expect(stdout.join("\n")).not.toContain(INSTALL_CMD);
-    expect(stderr.join("\n")).toContain("⚠");
-    expect(stderr.join("\n")).toContain(INSTALL_CMD);
-  });
-
-  it("reports unknown compat when genesis skills are not configured", async () => {
+  it("syncs toolchain after upgrade with warnings", async () => {
     applyJsonMode({ json: true });
     const { stdout } = captureConsole();
-    await emitUpgradeFinish(base, true, {
-      loadSkillsSpec: async () => null,
-    });
+    await emitUpgradeFinish(base, { syncStack: true }, toolchainDeps);
 
     const payload = JSON.parse(stdout.join("\n")) as {
-      data: { skillsCompat: { status: string; message: string } };
+      data: { toolchain: ToolchainReport; warnings: string[] };
     };
-    expect(payload.data.skillsCompat.status).toBe("unknown");
-    expect(payload.data.skillsCompat.message).toContain("No genesis skills configured");
+    expect(payload.data.toolchain.openspec?.status).toBe("ok");
+    expect(payload.data.warnings[0]).toContain("OpenSpec install");
+  });
+
+  it("prints toolchain lines to stderr in human mode", async () => {
+    const { stderr } = captureConsole();
+    await emitUpgradeFinish(base, { syncStack: true }, toolchainDeps);
+
+    expect(stderr.join("\n")).toContain("openspec 1.3.1 ok");
   });
 });

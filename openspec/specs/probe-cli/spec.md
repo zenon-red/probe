@@ -120,102 +120,72 @@ Generated enum decoders SHALL match the SpacetimeDB module binding enums. CI SHA
 - **WHEN** the schema drift test runs
 - **THEN** the test SHALL fail
 
-### Requirement: Post-upgrade skills compatibility check
+### Requirement: Post-upgrade genesis toolchain report
 
-After `probe upgrade` completes a successful in-place upgrade (`updated: true`), the command SHALL read the global Skills CLI lock file and compare every installed `zenon-red/skills` entry’s `ref` to the probe-bundled expected ref.
+When local genesis is configured (`genesisHash` or `genesisSource` in user config), `probe upgrade` SHALL report genesis-pinned toolchain status in `data.toolchain` with components:
 
-The check SHALL NOT run when `--check` is used, when no upgrade was performed (`updated: false`), or when upgrade failed.
+- `probe` — installed semver and optional `expected` from `minProbeVersion`; `status` `ok` or `warn`
+- `openspec` — when `openspecVersion` is pinned: `expected`, optional `installed`, `status` (`ok` | `warn` | `unknown`)
+- `skills` — when skills source/ref are configured: `expected` as `source@ref`, optional `installed`, `status` (`ok` | `warn` | `unknown`)
 
-The check SHALL be warn-only: it MUST NOT change exit codes or block the upgrade.
+With `--check`, the command SHALL build the toolchain report without installing. With `--yes` and a configured genesis, the command SHALL attempt OpenSpec and skills installs before building the final report.
 
-Lock file resolution SHALL match Skills CLI behavior:
+Install failures during sync SHALL add `data.warnings` strings. Toolchain reporting SHALL be warn-only (MUST NOT change exit code on mismatch).
+
+Lock file resolution for skills SHALL match Skills CLI behavior:
 
 1. `$XDG_STATE_HOME/skills/.skill-lock.json` when `XDG_STATE_HOME` is set
 2. Otherwise `~/.agents/.skill-lock.json`
 
-The lock file `skills` field SHALL be interpreted as a map of entries. Matching entries are those whose `source` equals exactly `zenon-red/skills`. A global `zenon-red/skills --skill='*'` install produces multiple matching rows (one per skill name); the check SHALL consider all of them.
+Skills `status`: `ok` when every matching lock entry has the expected ref; `warn` on ref mismatch or missing ref; `unknown` when lock missing/unreadable or no matching entries.
 
-Compatibility status SHALL be determined as follows:
+#### Scenario: Toolchain report after upgrade with genesis
 
-- `ok` — at least one matching entry and every matching entry has `ref` equal to the probe expected ref
-- `warn` — at least one matching entry and any of: missing `ref`, `ref` not equal to expected, or inconsistent `ref` values across matching entries
-- `unknown` — lock file missing or unreadable, invalid JSON, no `skills` map, or zero matching entries
+- **GIVEN** `probe upgrade --yes` succeeds with local genesis configured
+- **WHEN** the command finishes
+- **THEN** JSON output SHALL include `data.toolchain.skills.status`
+- **AND** `data.toolchain.probe.status` SHALL be present
 
-#### Scenario: Skills ref matches after upgrade
+#### Scenario: Check-only includes toolchain without sync
 
-- **GIVEN** a successful `probe upgrade --yes`
-- **AND** the global lock file contains one or more entries with `source = "zenon-red/skills"`
-- **AND** every such entry has `ref` equal to the probe expected ref
-- **WHEN** the upgrade command finishes
-- **THEN** the result SHALL include `skillsCompat.status = "ok"`
-- **AND** `skillsCompat.expectedRef` SHALL equal the probe expected ref
-
-#### Scenario: Skills ref mismatch after upgrade
-
-- **GIVEN** a successful `probe upgrade --yes`
-- **AND** the global lock file contains a `zenon-red/skills` entry whose `ref` differs from the probe expected ref
-- **WHEN** the upgrade command finishes
-- **THEN** the result SHALL include `skillsCompat.status = "warn"`
-- **AND** `skillsCompat.foundRef` SHALL report an offending ref value
-- **AND** `skillsCompat.fixCommand` SHALL be `npx skills add zenon-red/skills#<expectedRef> --skill='*' -y -g`
-
-#### Scenario: Lock entry without ref
-
-- **GIVEN** a successful `probe upgrade --yes`
-- **AND** the global lock file contains a `zenon-red/skills` entry with no `ref` field (e.g. manual unpinned install)
-- **WHEN** the upgrade command finishes
-- **THEN** the result SHALL include `skillsCompat.status = "warn"`
-- **AND** `skillsCompat.fixCommand` SHALL equal the probe pinned install command
-
-#### Scenario: Multiple zenon-red skills rows must all match
-
-- **GIVEN** a successful `probe upgrade --yes`
-- **AND** the lock file contains `zr-vote` and `zr-execute` both with `source = "zenon-red/skills"`
-- **AND** `zr-vote` has the expected ref but `zr-execute` has a different ref
-- **WHEN** the upgrade command finishes
-- **THEN** the result SHALL include `skillsCompat.status = "warn"`
-
-#### Scenario: Skills lock missing after upgrade
-
-- **GIVEN** a successful `probe upgrade --yes`
-- **AND** no readable global lock file exists, or no entry has `source = "zenon-red/skills"`
-- **WHEN** the upgrade command finishes
-- **THEN** the result SHALL include `skillsCompat.status = "unknown"`
-- **AND** `skillsCompat.fixCommand` SHALL include the pinned install command for the expected ref
-
-#### Scenario: Check-only upgrade skips skills check
-
-- **GIVEN** `probe upgrade --check` runs successfully
+- **GIVEN** `probe upgrade --check --json` with local genesis configured
 - **WHEN** the command completes
-- **THEN** the result SHALL NOT include `skillsCompat`
+- **THEN** the result SHALL include `data.toolchain`
+- **AND** the command SHALL NOT run global npm/npx installs for toolchain sync
 
-### Requirement: Skills compatibility human output
+#### Scenario: Skills ref mismatch in toolchain report
 
-When `probe upgrade` runs without `--json` and a skills compatibility check ran, human-readable compatibility lines SHALL be written to stderr only. The TOON success payload on stdout SHALL NOT include `skillsCompat`.
+- **GIVEN** genesis pins `zenon-red/skills` at ref `v1.0.0`
+- **AND** the global lock has a matching entry with a different ref
+- **WHEN** `probe upgrade --check --json` completes
+- **THEN** `data.toolchain.skills.status` SHALL be `warn`
 
-- `status = "ok"` MAY print a single confirmation line including the expected ref on stderr
-- `status = "warn"` or `unknown` SHALL print a warning line and the `fixCommand` on stderr
+### Requirement: Toolchain human output
 
-#### Scenario: Mismatch warning on stderr
+When `probe upgrade` runs without `--json` and a toolchain report is built, human-readable toolchain lines SHALL be written to stderr only. The TOON success payload on stdout SHALL NOT include `toolchain`.
 
-- **GIVEN** a successful upgrade without `--json`
-- **AND** `skillsCompat.status = "warn"`
+`data.warnings` entries SHALL be printed to stderr with a leading warning marker in human mode.
+
+#### Scenario: Toolchain lines on stderr
+
+- **GIVEN** `probe upgrade --yes` without `--json` and local genesis configured
 - **WHEN** the command completes
-- **THEN** stderr SHALL contain the warning message and fix command
-- **AND** stdout SHALL contain only the structured upgrade success payload without `skillsCompat`
+- **THEN** stderr SHALL contain toolchain summary lines (`probe`, and `openspec`/`skills` when configured)
+- **AND** stdout SHALL contain only the structured upgrade success payload without `toolchain`
 
-### Requirement: Skills compatibility JSON output
+### Requirement: Toolchain JSON output
 
-When `probe upgrade --json` completes a successful upgrade with a skills check, the JSON success envelope on stdout SHALL include `data.skillsCompat` with fields: `status`, `expectedRef`, optional `foundRef`, `message`, and optional `fixCommand`.
+When `probe upgrade --json` completes, the JSON success envelope on stdout SHALL include `data.toolchain` with `genesisConfigured`, `probe`, and optional `openspec` and `skills` component objects (`expected`, `installed`, `status`, optional `message`, optional `fixCommand`).
 
-The command SHALL NOT print human warning text for skills compatibility when `--json` is set.
+Optional `data.warnings` SHALL be a string array when install steps failed.
 
-#### Scenario: JSON includes skillsCompat
+The command SHALL NOT print human toolchain prose to stderr when `--json` is set (except structured errors).
 
-- **GIVEN** `probe upgrade --yes --json` succeeds with skills check enabled
+#### Scenario: JSON includes toolchain
+
+- **GIVEN** `probe upgrade --yes --json` succeeds with genesis configured
 - **WHEN** the command completes
-- **THEN** stdout SHALL contain `{ "success": true, "data": { ..., "skillsCompat": { ... } } }`
-- **AND** stderr SHALL not contain skills-specific warning prose beyond structured errors
+- **THEN** stdout SHALL contain `{ "success": true, "data": { ..., "toolchain": { ... } } }`
 
 ### Requirement: Skills ref release reminder script
 

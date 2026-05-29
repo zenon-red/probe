@@ -40,8 +40,28 @@ export function renderProbeErrorAndExit(err: ProbeError): never {
   return nativeProcessExit(err.exitCode);
 }
 
+function mapCliError(err: Error & { code: string }): {
+  code: string;
+  message: string;
+  suggestion?: string;
+} {
+  const message = err.message;
+  if (err.code === "EARG") {
+    const tokens = process.argv.slice(2);
+    const path = tokens.filter((a) => !a.startsWith("-")).join(" ");
+    const command = path ? `probe ${path}` : "probe";
+    return {
+      code: "ARGS_REQUIRED",
+      message,
+      suggestion: `Run: ${command} --help`,
+    };
+  }
+  return { code: err.code, message };
+}
+
 export function renderCliErrorAndExit(err: Error & { code: string }): never {
-  renderFormattedError(err.code, err.message);
+  const mapped = mapCliError(err);
+  renderFormattedError(mapped.code, mapped.message, mapped.suggestion);
   return nativeProcessExit(1);
 }
 

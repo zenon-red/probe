@@ -72,13 +72,17 @@ export function buildDoctorNextCommands(
     commands.push("probe genesis sync");
   }
   if (codes.has("PROBE_VERSION_BELOW_MIN")) {
-    commands.push("probe upgrade");
+    commands.push("probe upgrade --yes");
+  }
+  if (codes.has("OPENSPEC_NOT_FOUND") || codes.has("OPENSPEC_VERSION_MISMATCH")) {
+    commands.push("probe upgrade --yes");
   }
   if (codes.has("GH_TOKEN_MISSING")) {
     commands.push("export GH_TOKEN=<token>");
   }
 
-  return commands.length > 0 ? commands : ["probe --help"];
+  const unique = [...new Set(commands)];
+  return unique.length > 0 ? unique : ["probe --help"];
 }
 
 export interface DoctorFixResult {

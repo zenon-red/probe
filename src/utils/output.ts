@@ -1,7 +1,7 @@
 import { emit } from "./emit.js";
 import { ProbeError } from "./errors.js";
 
-export { applyJsonMode, isJsonMode, setJsonMode } from "./output-mode.js";
+export { applyJsonMode, configureSdkLogLevel, isJsonMode, setJsonMode } from "./output-mode.js";
 
 export function success<T>(data: T, next_commands?: string[]): void {
   emit({ data, next_commands });

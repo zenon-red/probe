@@ -432,17 +432,17 @@ probe config set autoUpdate false
 ## Upgrade
 
 ```bash
-probe upgrade
+probe upgrade --yes
 probe upgrade --check
-probe upgrade <version>
-probe upgrade --method npm
+probe upgrade <version> --yes
+probe upgrade --method npm --yes
 probe upgrade --method binary --yes
 probe upgrade --json --check
 ```
 
-Upgrades Probe to the latest or a specified version. Use `--method` to force npm or binary upgrade paths. Binary upgrades verify SHA256 checksums before replacing the executable.
+Upgrades Probe to the latest or a specified version. With local genesis configured, also syncs pinned OpenSpec and skills. Use `--method` to force npm or binary paths; binary upgrades verify SHA256 before replacing the executable.
 
-After a successful upgrade (`updated: true`), probe reads the global Skills CLI lock and compares installed rows for genesis `skills.source` to genesis `skills.ref` in local config. Human mode prints compat lines on stderr; JSON mode includes `data.skillsCompat`. Warn-only — does not change exit code.
+`--yes` is required for any mutation (probe upgrade and/or toolchain sync). `--check` reports probe/openspec/skills vs genesis without changes. Human mode prints toolchain lines on stderr; JSON mode includes `data.toolchain` (`status`: `ok` | `warn` | `unknown`). Install failures add `data.warnings` (warn-only).
 
 Pinned skills install (onboard and fix command):
 
@@ -450,14 +450,29 @@ Pinned skills install (onboard and fix command):
 npx skills add <skills.source>#<skills.ref> --skill='*' -y -g
 ```
 
+OpenSpec install (genesis apply/sync with `--install-openspec`, or via `probe upgrade --yes`):
+
+```bash
+npm install -g @fission-ai/openspec@<openspec.version>
+```
+
 Release maintainers: bump `skills.ref` in org genesis, then run `npm run check:skills-ref` (compares fixture manifest to latest remote tag; CI uses `--strict`).
 
-| Option                         | Description                         |
-| ------------------------------ | ----------------------------------- |
-| `--check`                      | Check for updates without upgrading |
-| `--method <auto\|npm\|binary>` | Force installation method           |
-| `--yes`                        | Skip confirmation prompts           |
-| `--json`                       | JSON output                         |
+| Option                         | Description                                             |
+| ------------------------------ | ------------------------------------------------------- |
+| `--check`                      | Report probe and toolchain vs genesis without upgrading |
+| `--method <auto\|npm\|binary>` | Force installation method                               |
+| `--yes`                        | Confirm probe upgrade and/or toolchain sync             |
+| `--json`                       | JSON output                                             |
+
+## Version
+
+```bash
+probe version
+probe version --json
+```
+
+Reports installed `probe` semver, skills as `source@ref` (from lock when installed), and OpenSpec (`openspec` = installed binary, `openspecPin` = genesis pin). Use `probe --version` for probe semver only (scripting).
 
 ## Sign
 

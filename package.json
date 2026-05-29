@@ -1,6 +1,6 @@
 {
   "name": "@zenon-red/probe",
-  "version": "1.3.9",
+  "version": "1.3.10",
   "description": "All-in-one CLI tool for interacting with Nexus.",
   "homepage": "https://zenon.red",
   "bugs": {

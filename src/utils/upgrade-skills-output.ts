@@ -1,6 +1,9 @@
-import { checkSkillsCompatForGenesis, type SkillsCompat } from "./genesis-skills.js";
-import { loadSkillsSpecFromConfig } from "./genesis-skills-spec.js";
-import { printSkillsCompatToStderr } from "./skills-check.js";
+import {
+  buildToolchainReport,
+  formatToolchainHuman,
+  syncToolchainFromGenesis,
+  type ToolchainReport,
+} from "./upgrade-toolchain.js";
 import { isJsonMode, success } from "./output.js";
 
 export interface UpgradeResultBase {
@@ -13,44 +16,59 @@ export interface UpgradeResultBase {
   checkOnly: boolean;
 }
 
-export type CheckSkillsCompatFn = (spec: { source: string; ref: string }) => SkillsCompat;
+export interface UpgradeFinishOptions {
+  syncStack?: boolean;
+  checkOnly?: boolean;
+}
 
-/** Emit upgrade success payload and optional skills compat stderr hints. */
+export interface UpgradeFinishDeps {
+  buildToolchainReport?: typeof buildToolchainReport;
+  syncToolchainFromGenesis?: typeof syncToolchainFromGenesis;
+  formatToolchainHuman?: typeof formatToolchainHuman;
+}
+
 export async function emitUpgradeFinish(
   base: UpgradeResultBase,
-  updated: boolean,
-  deps?: {
-    checkSkillsCompat?: CheckSkillsCompatFn;
-    loadSkillsSpec?: () => Promise<{ source: string; ref: string } | null>;
-  },
+  options: UpgradeFinishOptions = {},
+  deps?: UpgradeFinishDeps,
 ): Promise<void> {
-  const loadSpec = deps?.loadSkillsSpec ?? loadSkillsSpecFromConfig;
-  const check =
-    deps?.checkSkillsCompat ?? ((spec) => checkSkillsCompatForGenesis(spec.source, spec.ref));
+  const checkOnly = options.checkOnly ?? base.checkOnly;
+  const syncStack = !checkOnly && options.syncStack === true;
+  const buildReport = deps?.buildToolchainReport ?? buildToolchainReport;
+  const syncToolchain = deps?.syncToolchainFromGenesis ?? syncToolchainFromGenesis;
+  const formatHuman = deps?.formatToolchainHuman ?? formatToolchainHuman;
 
-  let skillsCompat: SkillsCompat | undefined;
-  if (updated) {
-    const spec = await loadSpec();
-    if (spec) {
-      skillsCompat = check(spec);
-    } else {
-      skillsCompat = {
-        status: "unknown",
-        expectedSource: "",
-        expectedRef: "",
-        message: "No genesis skills configured locally (run probe genesis apply)",
-        fixCommand: "probe genesis apply <path-to-genesis.json> --install-skills",
-      };
-    }
+  let toolchain: ToolchainReport | undefined;
+  let warnings: string[] = [];
+
+  if (checkOnly) {
+    toolchain = await buildReport();
+  } else if (syncStack) {
+    const result = await syncToolchain(true);
+    toolchain = result.report;
+    warnings = result.warnings;
+  } else {
+    toolchain = await buildReport();
   }
 
+  const payload = {
+    ...base,
+    toolchain,
+    ...(warnings.length > 0 ? { warnings } : {}),
+  };
+
   if (isJsonMode()) {
-    success(skillsCompat ? { ...base, skillsCompat } : base);
+    success(payload);
     return;
   }
 
   success(base);
-  if (skillsCompat) {
-    printSkillsCompatToStderr(skillsCompat);
+  if (toolchain) {
+    for (const line of formatHuman(toolchain)) {
+      console.error(line);
+    }
+  }
+  for (const warning of warnings) {
+    console.error(`⚠ ${warning}`);
   }
 }

@@ -10,6 +10,8 @@ import { persistGenesisFromSource } from "~/utils/genesis-apply.js";
 import { checkSkillsCompatForGenesis } from "~/utils/genesis-skills.js";
 import { formatSkillsSpec, loadSkillsSpecFromConfig } from "~/utils/genesis-skills-spec.js";
 import { installSkills } from "~/utils/skills-install.js";
+import { installOpenspec } from "~/utils/openspec-install.js";
+import { checkOpenspecCompatForGenesis } from "~/utils/openspec-check.js";
 import { daemonAdapters, detectDaemon, type DaemonAdapter } from "~/utils/daemon.js";
 import {
   formatAmbiguousHarnessMessage,
@@ -430,6 +432,34 @@ export async function applyGenesisStep(state: OnboardState): Promise<boolean> {
   } catch (err) {
     addStep(state, "genesis", "fail", errorMessage(err, "Genesis apply failed"));
     return false;
+  }
+}
+
+export async function installOpenspecStep(state: OnboardState): Promise<void> {
+  const config = await loadUserConfig();
+  const pin = config.openspecVersion?.trim();
+  if (!pin) {
+    addStep(state, "openspec", "skip", "No openspec pin in genesis");
+    return;
+  }
+
+  if (state.args["dry-run"]) {
+    addStep(state, "openspec", "skip", `Would install @fission-ai/openspec@${pin} (dry-run)`);
+    return;
+  }
+
+  const compatBefore = checkOpenspecCompatForGenesis(pin);
+  if (compatBefore.status === "ok") {
+    addStep(state, "openspec", "pass", compatBefore.message);
+    return;
+  }
+
+  const result = await installOpenspec(pin);
+  if (result.installed) {
+    const compatAfter = checkOpenspecCompatForGenesis(pin);
+    addStep(state, "openspec", compatAfter.status === "ok" ? "pass" : "warn", result.detail);
+  } else {
+    addStep(state, "openspec", "warn", result.detail);
   }
 }
 

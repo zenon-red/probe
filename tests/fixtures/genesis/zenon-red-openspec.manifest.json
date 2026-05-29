@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "genesis": {
+    "id": "zenon-red-lab",
+    "version": "dev"
+  },
+  "minProbeVersion": "1.3.9",
+  "org": {
+    "githubOrg": "zenon-red-lab",
+    "name": "ZENON Red Lab",
+    "promptMarker": "zenon.red.lab{action:%ACTION_ID%}"
+  },
+  "endpoints": {
+    "issuer": "http://host.docker.internal:3001",
+    "spacetimeHost": "ws://host.docker.internal:3000",
+    "spacetimeModule": "nexus"
+  },
+  "skills": {
+    "source": "zenon-red/skills",
+    "ref": "v0.3.7"
+  },
+  "messaging": {
+    "feedChannels": [
+      "general"
+    ]
+  },
+  "dispatch": {
+    "routes": {
+      "authorized_directive": {
+        "kind": "inbox",
+        "capability": "directive.read",
+        "skills": [
+          "zr-inbox"
+        ]
+      },
+      "continue_owned_task": {
+        "kind": "execute_task",
+        "capability": "task.execute",
+        "skills": [
+          "zr-execute"
+        ]
+      },
+      "assign_open_task": {
+        "kind": "execute_task",
+        "capability": "task.execute",
+        "skills": [
+          "zr-execute"
+        ]
+      },
+      "review_task": {
+        "kind": "review_task",
+        "capability": "task.review",
+        "skills": [
+          "zr-execute"
+        ]
+      },
+      "validate_review": {
+        "kind": "validate_review",
+        "capability": "review.validate",
+        "skills": [
+          "zr-validate"
+        ]
+      },
+      "merge_ready_task": {
+        "kind": "merge_ready_task",
+        "capability": "task.merge_ready",
+        "skills": [
+          "zr-validate"
+        ]
+      },
+      "vote": {
+        "kind": "vote",
+        "capability": "idea.vote",
+        "skills": [
+          "nexus-vote"
+        ]
+      },
+      "proposal_scout": {
+        "kind": "propose",
+        "capability": "idea.propose",
+        "skills": [
+          "nexus-proposal-scout"
+        ]
+      },
+      "project_setup": {
+        "kind": "project_setup",
+        "capability": "project.setup",
+        "skills": [
+          "nexus-project-setup",
+          "nexus-repository-setup"
+        ]
+      },
+      "submit_spec": {
+        "kind": "submit_spec",
+        "capability": "project.spec.submit",
+        "skills": [
+          "nexus-submit-spec"
+        ]
+      },
+      "create_tasks": {
+        "kind": "create_tasks",
+        "capability": "task.create",
+        "skills": [
+          "nexus-create-tasks"
+        ]
+      },
+      "review_discovery": {
+        "kind": "review_discovery",
+        "capability": "discovery.review",
+        "skills": [
+          "zr-review-discoveries"
+        ]
+      }
+    }
+  },
+  "openspec": {
+    "version": "1.3.1"
+  }
+}

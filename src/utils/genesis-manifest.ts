@@ -1,5 +1,6 @@
 import { genesisHashFromManifest } from "~/utils/genesis-hash.js";
 import { validateSkillsSpec } from "~/utils/genesis-skills.js";
+import { validateOpenspecVersion } from "~/utils/openspec-install.js";
 import { PROMPT_MARKER_PLACEHOLDER } from "~/utils/prompt-marker.js";
 
 export const DEPLOYED_SCHEMA_VERSION = 1;
@@ -13,6 +14,7 @@ const ALLOWED_TOP_LEVEL = new Set([
   "org",
   "endpoints",
   "skills",
+  "openspec",
   "messaging",
   "dispatch",
 ]);
@@ -43,6 +45,7 @@ export type ParsedGenesisManifest = {
   promptMarker: string;
   skillsSource: string;
   skillsRef: string;
+  openspecVersion?: string;
   issuer: string;
   spacetimeHost: string;
   spacetimeModule: string;
@@ -197,6 +200,12 @@ export function parseGenesisManifestJson(manifestJson: string): ParsedGenesisMan
       ? undefined
       : requireString(root.minProbeVersion, "minProbeVersion");
 
+  let openspecVersion: string | undefined;
+  if (root.openspec !== undefined) {
+    const openspec = requireObject(root.openspec, "openspec");
+    openspecVersion = validateOpenspecVersion(requireString(openspec.version, "openspec.version"));
+  }
+
   const genesisHash = genesisHashFromManifest(value);
 
   return {
@@ -210,6 +219,7 @@ export function parseGenesisManifestJson(manifestJson: string): ParsedGenesisMan
     promptMarker,
     skillsSource: skillsSpec.source,
     skillsRef: skillsSpec.ref,
+    openspecVersion,
     issuer,
     spacetimeHost,
     spacetimeModule,

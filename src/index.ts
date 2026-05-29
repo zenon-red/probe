@@ -21,6 +21,7 @@ import query from "./commands/query.js";
 import sign from "./commands/sign.js";
 import token from "./commands/token/index.js";
 import upgrade from "./commands/upgrade.js";
+import versionCmd from "./commands/version.js";
 import wallet from "./commands/wallet/index.js";
 import whoami from "./commands/whoami.js";
 import {
@@ -31,15 +32,22 @@ import {
   printConciseRootHelp,
   printHelp,
   setForceHelpRequested,
+  setHelpJsonRequested,
+  helpJsonRequested,
   suggestCommand,
 } from "./utils/help.js";
+import {
+  ROOT_HELP_COMMAND_ORDER,
+  TOP_LEVEL_COMMAND_DESCRIPTIONS,
+  rootHelpDiscoveryJson,
+} from "./utils/help-discovery.js";
 import { guardNexusDaemonArgv, guardUnknownSubcommand } from "./utils/subcommand.js";
 import {
   exitProcess,
   renderBoundaryErrorAndExit,
   renderProbeErrorAndExit,
 } from "./utils/boundary.js";
-import { error } from "./utils/output.js";
+import { configureSdkLogLevel, error } from "./utils/output.js";
 import { isProbeError } from "./utils/errors.js";
 import { probeDescription, probeVersion } from "./probe-version.js";
 
@@ -62,6 +70,7 @@ const topLevelCommands = new Set([
   "doctor",
   "whoami",
   "upgrade",
+  "version",
   "onboard",
   "action",
   "genesis",
@@ -86,6 +95,10 @@ const main = defineCommand({
     }
 
     if (forceHelpRequested() || argv.includes("--help") || argv.includes("-h")) {
+      if (helpJsonRequested()) {
+        console.log(JSON.stringify(rootHelpDiscoveryJson(description), null, 2));
+        return;
+      }
       printHelp({
         command: "probe",
         description,
@@ -94,38 +107,10 @@ const main = defineCommand({
           'probe idea propose --title "Better task scoring" --category planning',
           "probe task claim 42 --wallet agent-wallet",
         ],
-        actions: [
-          { name: "wallet", detail: "Wallet lifecycle commands" },
-          { name: "login", detail: "Authenticate wallet and cache token" },
-          { name: "auth", detail: "Inspect cached authentication status" },
-          { name: "token", detail: "Inspect or clear cached token" },
-          { name: "sign", detail: "Sign text payloads" },
-          {
-            name: "nexus",
-            detail: "Run persistent Nexus daemon (action executor + heartbeat)",
-          },
-          { name: "agent", detail: "Agent identity and status" },
-          { name: "cooldown", detail: "Dispatch cadence: show, set, off, inherit" },
-          { name: "task", detail: "Task lifecycle and claiming" },
-          { name: "idea", detail: "Idea proposal and voting" },
-          { name: "discover", detail: "Discovery reporting and review" },
-          { name: "message", detail: "Channel and project messaging" },
-          { name: "project", detail: "Project management" },
-          {
-            name: "action",
-            detail: "Action lifecycle: show, complete, fail, skip",
-          },
-          { name: "artifact", detail: "Register and list action artifacts" },
-          { name: "review", detail: "Complete review and validation actions" },
-          { name: "query", detail: "Execute SQL queries against Nexus" },
-          { name: "doctor", detail: "Run setup and connectivity diagnostics" },
-          { name: "onboard", detail: "Idempotent agent setup for autonomous participation" },
-          { name: "genesis", detail: "Apply and sync org/environment Genesis manifest" },
-          { name: "whoami", detail: "Show current authenticated agent profile" },
-          { name: "upgrade", detail: "Upgrade Probe to the latest version" },
-          { name: "config", detail: "Read/write CLI configuration" },
-          { name: "admin", detail: "Privileged ops (e.g. assign Human role)" },
-        ],
+        actions: ROOT_HELP_COMMAND_ORDER.map((name) => ({
+          name,
+          detail: TOP_LEVEL_COMMAND_DESCRIPTIONS[name] ?? name,
+        })),
         options: [{ name: "--json", detail: JSON_FLAG_HELP_DETAIL }],
         notes: [
           "Secrets and confirmations require flags or env vars — interactive prompts are not supported.",
@@ -160,6 +145,7 @@ const main = defineCommand({
     review,
     action,
     upgrade,
+    version: versionCmd,
     whoami,
     admin,
   },
@@ -175,9 +161,12 @@ const prepareCliArgv = (): string[] => {
   const argv = process.argv.slice(2);
   const normalized = normalizeHelpArgv(argv);
   setForceHelpRequested(normalized.forceHelp);
+  setHelpJsonRequested(normalized.forceHelpJson);
   process.argv = [...process.argv.slice(0, 2), ...normalized.argv];
   return normalized.argv;
 };
+
+configureSdkLogLevel();
 
 const argv = prepareCliArgv();
 

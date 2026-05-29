@@ -25,11 +25,12 @@ export async function ensureGenesisSyncedBeforeHarness(
       }
     : null;
 
-  let { status, syncError } = computeSyncStatus({
+  let { status, syncError, syncFailedReason } = computeSyncStatus({
     localHash: local.genesisHash,
     applied,
     localProbeVersion: probeVersion(),
     localSkillsSource: local.skillsSource,
+    localOpenspecVersion: local.openspecVersion,
     localSkillsRef: local.skillsRef,
   });
 
@@ -51,7 +52,10 @@ export async function ensureGenesisSyncedBeforeHarness(
   }
 
   try {
-    await syncGenesis(ctx, { installSkills: tag === "SkillsUpgradeRequired" });
+    await syncGenesis(ctx, {
+      installSkills: tag === "SkillsUpgradeRequired",
+      installOpenspec: syncFailedReason === "openspec",
+    });
     const afterStatus = await reportRuntimeStatus(ctx);
     if (afterStatus !== "Synced") {
       emit({

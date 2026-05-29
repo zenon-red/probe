@@ -2,6 +2,7 @@ import { defineCommand } from "citty";
 import { printHelp } from "~/utils/help.js";
 import { applyJsonMode, error } from "~/utils/output.js";
 import { emitUpgradeFinish } from "~/utils/upgrade-skills-output.js";
+import { loadUserConfig } from "~/utils/user-config.js";
 import {
   type InstallMethodArg,
   detectMethod,
@@ -20,7 +21,7 @@ const VALID_METHODS = new Set<InstallMethodArg>(["auto", "npm", "binary"]);
 export default defineCommand({
   meta: {
     name: "upgrade",
-    description: "Upgrade Probe to the latest or a specific version",
+    description: "Upgrade Probe and sync genesis-pinned OpenSpec and skills",
   },
   args: {
     target: {
@@ -30,7 +31,7 @@ export default defineCommand({
     },
     check: {
       type: "boolean",
-      description: "Check for updates without upgrading",
+      description: "Check probe and toolchain versions without upgrading",
       default: false,
     },
     method: {
@@ -39,7 +40,7 @@ export default defineCommand({
     },
     yes: {
       type: "boolean",
-      description: "Confirm upgrade (required when upgrade would proceed)",
+      description: "Confirm upgrade and toolchain sync",
       default: false,
     },
     json: {
@@ -54,25 +55,24 @@ export default defineCommand({
     if (args.target === "--help" || args.target === "-h") {
       printHelp({
         command: "probe upgrade",
-        description: "Upgrade Probe to the latest or a specific version",
+        description: "Upgrade Probe and sync genesis-pinned OpenSpec and skills",
         usage: [
           "probe upgrade",
           "probe upgrade --check",
-          "probe upgrade 1.2.0",
-          "probe upgrade --method npm",
-          "probe upgrade --method binary --yes",
+          "probe upgrade --yes",
+          "probe upgrade 1.2.0 --yes",
+          "probe upgrade --method npm --yes",
           "probe upgrade --json --check",
         ],
         options: [
-          {
-            name: "--check",
-            detail: "Check for updates without upgrading",
-          },
+          { name: "--check", detail: "Report probe/openspec/skills vs genesis without changes" },
           { name: "--method", detail: "Force install method: auto, npm, binary" },
-          { name: "--yes", detail: "Required — confirm upgrade (no interactive prompt)" },
+          { name: "--yes", detail: "Required — confirm probe upgrade and toolchain sync" },
           { name: "--json", detail: "JSON output" },
         ],
-        notes: ["Interactive confirmation is not supported. Pass --yes to upgrade."],
+        notes: [
+          "Syncs genesis toolchain (OpenSpec, skills) when configured; runs even if probe is already at target.",
+        ],
       });
       return;
     }
@@ -125,8 +125,10 @@ export default defineCommand({
     }
 
     const updateAvailable = targetVersion !== currentVersion;
+    const config = await loadUserConfig();
+    const hasGenesis = Boolean(config.genesisHash || config.genesisSource);
 
-    const finishUpgrade = async (updated: boolean, checkOnly: boolean) => {
+    const finishUpgrade = async (updated: boolean, checkOnly: boolean, syncStack: boolean) => {
       await emitUpgradeFinish(
         {
           method,
@@ -137,16 +139,16 @@ export default defineCommand({
           updated,
           checkOnly,
         },
-        updated,
+        { checkOnly, syncStack },
       );
     };
 
     if (args.check) {
-      await finishUpgrade(false, true);
+      await finishUpgrade(false, true, false);
       return;
     }
 
-    if (method === "unknown") {
+    if (method === "unknown" && updateAvailable) {
       error(
         "METHOD_UNKNOWN",
         "Could not detect installation method for in-place upgrade.",
@@ -154,39 +156,51 @@ export default defineCommand({
       );
     }
 
-    if (!updateAvailable) {
-      await finishUpgrade(false, false);
+    const needsMutation = updateAvailable || hasGenesis;
+
+    if (!needsMutation) {
+      await finishUpgrade(false, false, false);
       return;
     }
 
     if (!args.yes) {
       const targetArg = args.target ? ` ${args.target}` : "";
-      error(
-        "CONFIRMATION_REQUIRED",
-        `Upgrade from ${currentVersion} to ${targetVersion} requires --yes`,
-        `Run: probe upgrade${targetArg} --yes`,
-      );
+      const hint = updateAvailable
+        ? `Upgrade from ${currentVersion} to ${targetVersion} requires --yes`
+        : "Sync genesis toolchain (OpenSpec/skills) requires --yes";
+      error("CONFIRMATION_REQUIRED", hint, `Run: probe upgrade${targetArg} --yes`);
     }
 
-    try {
-      if (method === "npm") {
-        await upgradeViaNpm(targetVersion);
-      } else {
-        const release = targetRelease || (await fetchGitHubReleaseByVersion(targetVersion));
-        await upgradeViaBinary(release, targetVersion);
+    let probeUpdated = false;
+    if (updateAvailable) {
+      if (method === "unknown") {
+        error(
+          "METHOD_UNKNOWN",
+          "Could not detect installation method for in-place upgrade.",
+          "Use --method npm|binary explicitly.",
+        );
       }
-    } catch (err) {
-      const message = errorMessage(err, "Upgrade failed");
-      const code = message.includes("CHECKSUM_MISMATCH")
-        ? "CHECKSUM_MISMATCH"
-        : message.includes("ROLLBACK_FAILED")
-          ? "ROLLBACK_FAILED"
-          : message.includes("PERMISSION") || message.includes("EACCES")
-            ? "PERMISSION_DENIED"
-            : "UPGRADE_FAILED";
-      error(code, message);
+      try {
+        if (method === "npm") {
+          await upgradeViaNpm(targetVersion);
+        } else {
+          const release = targetRelease || (await fetchGitHubReleaseByVersion(targetVersion));
+          await upgradeViaBinary(release, targetVersion);
+        }
+        probeUpdated = true;
+      } catch (err) {
+        const message = errorMessage(err, "Upgrade failed");
+        const code = message.includes("CHECKSUM_MISMATCH")
+          ? "CHECKSUM_MISMATCH"
+          : message.includes("ROLLBACK_FAILED")
+            ? "ROLLBACK_FAILED"
+            : message.includes("PERMISSION") || message.includes("EACCES")
+              ? "PERMISSION_DENIED"
+              : "UPGRADE_FAILED";
+        error(code, message);
+      }
     }
 
-    await finishUpgrade(true, false);
+    await finishUpgrade(probeUpdated, false, hasGenesis);
   },
 });

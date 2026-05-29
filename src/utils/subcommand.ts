@@ -1,6 +1,13 @@
 import type { CommandDef, Resolvable } from "citty";
 import { defineCommand } from "citty";
-import { forceHelpRequested, printHelp, type HelpSpec } from "./help.js";
+import {
+  forceHelpRequested,
+  helpJsonRequested,
+  printHelp,
+  printHelpJson,
+  type HelpSpec,
+} from "./help.js";
+import { wrapSubCommands } from "./leaf-command.js";
 import { error } from "./output.js";
 import {
   SUBCOMMAND_PARENT_BOOLEAN_FLAGS,
@@ -86,10 +93,12 @@ function firstUnknownSubcommandAfterParent(
 export function defineSubcommandParent(spec: SubcommandParentSpec) {
   const subcommandNames = new Set(Object.keys(spec.subCommands));
 
+  const parentPath = spec.help.command;
+
   return defineCommand({
     meta: { name: spec.name, description: spec.description },
     args: spec.args,
-    subCommands: spec.subCommands,
+    subCommands: wrapSubCommands(spec.subCommands, parentPath),
     run(ctx) {
       const cittyPositionals = (ctx.args._ as string[] | undefined) ?? [];
       const subcommand = resolveKnownSubcommand(spec.name, subcommandNames, cittyPositionals);
@@ -99,7 +108,11 @@ export function defineSubcommandParent(spec: SubcommandParentSpec) {
       }
 
       if (forceHelpRequested()) {
-        printHelp(spec.help);
+        if (helpJsonRequested()) {
+          printHelpJson(spec.help);
+        } else {
+          printHelp(spec.help);
+        }
         return;
       }
 

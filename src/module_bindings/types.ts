@@ -143,6 +143,7 @@ export const AgentRuntimeStatus = __t.object("AgentRuntimeStatus", {
   reportedProbeVersion: __t.option(__t.string()),
   reportedSkillsSource: __t.option(__t.string()),
   reportedSkillsRef: __t.option(__t.string()),
+  harness: __t.option(__t.string()),
   get syncStatus() {
     return AgentSyncStatus;
   },

@@ -37,6 +37,11 @@ const applyCommand = defineCommand({
       description: "Run skills install for genesis source/ref",
       default: false,
     },
+    "install-openspec": {
+      type: "boolean",
+      description: "Install OpenSpec for genesis openspec.version pin",
+      default: false,
+    },
     ...connectionArgs,
   },
   async run({ args }) {
@@ -51,6 +56,7 @@ const applyCommand = defineCommand({
           verifyOrg: !!args.verify,
           pushToNexus: !!args["push-to-nexus"],
           installSkills: !!args["install-skills"],
+          installOpenspec: !!args["install-openspec"],
         });
         success({
           genesis_hash: result.genesisHash,
@@ -61,6 +67,16 @@ const applyCommand = defineCommand({
           pushed_to_nexus: result.pushedToNexus,
           sync_status: result.syncStatus,
           skills_install: result.skillsInstallCommand,
+          openspec_install: result.openspecInstallCommand,
+          ...(result.openspecInstall && {
+            openspec_install_result: {
+              installed: result.openspecInstall.installed,
+              detail: result.openspecInstall.detail,
+              ...(result.openspecInstall.recovery && {
+                recovery: result.openspecInstall.recovery,
+              }),
+            },
+          }),
           issuer: result.parsed.issuer,
           spacetime_host: result.parsed.spacetimeHost,
           spacetime_module: result.parsed.spacetimeModule,
@@ -95,6 +111,11 @@ const syncCommand = defineCommand({
       description: "Run skills install for genesis source/ref",
       default: false,
     },
+    "install-openspec": {
+      type: "boolean",
+      description: "Install OpenSpec for genesis openspec.version pin",
+      default: false,
+    },
     ...connectionArgs,
   },
   async run({ args }) {
@@ -108,6 +129,7 @@ const syncCommand = defineCommand({
           verifyOrg: !!args.verify,
           pushToNexus: !!args["push-to-nexus"],
           installSkills: !!args["install-skills"],
+          installOpenspec: !!args["install-openspec"],
         });
         success({
           genesis_hash: result.genesisHash,

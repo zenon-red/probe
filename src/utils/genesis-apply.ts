@@ -14,6 +14,11 @@ import {
   type ParsedGenesisManifest,
 } from "~/utils/genesis-manifest.js";
 import { skillsInstallArgs, skillsInstallCommand } from "~/utils/genesis-skills.js";
+import {
+  installOpenspec,
+  openspecInstallCommand,
+  type OpenspecResult,
+} from "~/utils/openspec-install.js";
 import { commandExists } from "~/utils/system.js";
 import { SHELL_TIMEOUT } from "~/utils/timeouts.js";
 import { enumName } from "~/utils/enums.js";
@@ -25,6 +30,8 @@ export type GenesisApplyResult = {
   pushedToNexus: boolean;
   syncStatus: string;
   skillsInstallCommand: string;
+  openspecInstallCommand?: string;
+  openspecInstall?: OpenspecResult;
 };
 
 const GENESIS_SUBSCRIBE = [
@@ -69,6 +76,7 @@ export async function reportRuntimeStatus(ctx: CommandContext): Promise<string> 
     localHash: local.genesisHash,
     applied,
     localProbeVersion: probeVersion(),
+    localOpenspecVersion: local.openspecVersion,
     localSkillsSource: local.skillsSource,
     localSkillsRef: local.skillsRef,
   });
@@ -78,6 +86,7 @@ export async function reportRuntimeStatus(ctx: CommandContext): Promise<string> 
     reportedProbeVersion: probeVersion(),
     reportedSkillsSource: local.skillsSource ?? undefined,
     reportedSkillsRef: local.skillsRef ?? undefined,
+    harness: local.harness ?? undefined,
     syncStatus: status,
     syncError: syncError ?? undefined,
   });
@@ -98,7 +107,12 @@ export async function persistGenesisFromSource(source: string): Promise<{
 export async function applyGenesisFromSource(
   ctx: CommandContext,
   source: string,
-  options: { verifyOrg?: boolean; pushToNexus?: boolean; installSkills?: boolean },
+  options: {
+    verifyOrg?: boolean;
+    pushToNexus?: boolean;
+    installSkills?: boolean;
+    installOpenspec?: boolean;
+  },
 ): Promise<GenesisApplyResult> {
   const { manifestJson, parsed, persistedSource } = await loadGenesisManifestFromSource(source);
   assertMinProbeVersion(parsed.minProbeVersion);
@@ -115,6 +129,11 @@ export async function applyGenesisFromSource(
 
   await persistGenesisLocal(parsed, persistedSource);
 
+  let openspecInstall: OpenspecResult | undefined;
+  if (options.installOpenspec && parsed.openspecVersion) {
+    openspecInstall = await installOpenspec(parsed.openspecVersion);
+  }
+
   if (options.installSkills && commandExists("npx")) {
     try {
       execFileSync(
@@ -125,9 +144,7 @@ export async function applyGenesisFromSource(
           timeout: SHELL_TIMEOUT.VERY_LONG,
         },
       );
-    } catch {
-      // deferred install — doctor reports skills_upgrade_required
-    }
+    } catch {}
   }
 
   const syncStatus = await reportRuntimeStatus(ctx);
@@ -139,6 +156,10 @@ export async function applyGenesisFromSource(
     pushedToNexus,
     syncStatus,
     skillsInstallCommand: skillsInstallCommand(parsed.skillsSource, parsed.skillsRef),
+    openspecInstallCommand: parsed.openspecVersion
+      ? openspecInstallCommand(parsed.openspecVersion)
+      : undefined,
+    openspecInstall,
   };
 }
 
@@ -149,6 +170,7 @@ export async function syncGenesis(
     verifyOrg?: boolean;
     pushToNexus?: boolean;
     installSkills?: boolean;
+    installOpenspec?: boolean;
   },
 ): Promise<GenesisApplyResult> {
   const { loadUserConfig } = await import("~/utils/user-config.js");
