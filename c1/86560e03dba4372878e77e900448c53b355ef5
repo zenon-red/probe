@@ -1,0 +1,225 @@
+src/types/acp-config.ts
+  s_17af0287321ec8::t_c87524ce9784d6 9-10
+  s_26030882f4ffae::t_7494891a164d08 1-8,11-25
+tests/unit/acp-permissions.test.ts
+  s_17af0287321ec8::t_8556100c85f904 1-6,8-9,12-18
+src/daemon/session.ts
+  s_26030882f4ffae::t_560fe5ced8f6c6 6
+  s_26030882f4ffae::t_376232f6ca9e75 75
+  s_26030882f4ffae::t_eea485151a3b29 34
+src/mcp/bundle.ts
+  s_17af0287321ec8::t_f6d66ac5165c22 1-2,34-44,46-47,74
+  s_26030882f4ffae::t_971e28d2413be7 3-5,7-10,13-24,26-29,33,50-68,70-73,75,78-79,81-101,103-104
+src/acp/agents/registry.ts
+  s_26030882f4ffae::t_a93553a1e4006d 1-30
+src/acp/client.ts
+  s_26030882f4ffae::t_93cdf9fe3492af 1-11,14-15,17-18,39-40,42-45,48-49,70-73,76-84,88-92,94-96
+  s_26030882f4ffae::t_50f6dbb95497a0 16
+  s_17af0287321ec8::t_b62cff8e08fcf2 52
+  s_26030882f4ffae::t_a61f9677287ac5 50,54-60,69
+  s_17af0287321ec8::t_c87524ce9784d6 12,20-21,24-36,51,53,61-62,65-68,74-75,93,97
+src/acp/run-action.ts
+  s_26030882f4ffae::t_d1c9825f6ba14a 1-2
+src/daemon/action-executor.ts
+  s_17af0287321ec8::t_cf2fecbe516dc1 121
+  s_17af0287321ec8::t_6e40f6dab68063 42-71,83-86
+  s_26030882f4ffae::t_5c6c6adf16e1c6 129
+  s_26030882f4ffae::t_de0343cc4604fc 2,10,12,24,26,32-33,38,72,78,105-108,113-118,128,132-133,135-136,143-151,154,178-193
+  s_26030882f4ffae::t_5acfc99979240e 3,5,7-8
+  s_26030882f4ffae::t_857845658475f3 110,120,122-124,130-131
+src/acp/spawn.ts
+  s_26030882f4ffae::t_6f30ce0bf85991 1-4,6-7,9-12,14-17,19-35,39,42-43,45-46,48-52,101-109,112-113,115-116,120-124,126,129-130
+  s_17af0287321ec8::t_f6d66ac5165c22 55-64,66-87,89-98
+  s_26030882f4ffae::t_7b55af6b159a5a 125
+src/acp/types.ts
+  s_17af0287321ec8::t_f26348ee634ec6 20
+  s_26030882f4ffae::t_cdb99549f2c7ff 1-19,21-22,26,29
+  s_26030882f4ffae::t_513f8ced7ffa55 30-31
+src/acp/session-store.ts
+  s_26030882f4ffae::t_48649efe547cde 1,5-11,13,15-18,20-25,29-33,36-40
+src/acp/session.ts
+  s_26030882f4ffae::t_a09a61a0a11458 4-6,8,12-14,26-30,38,40-42,44,46-50,56-67,72-76,83-88,90-96,103,110,129-131,133-139,142,156-159,168-169
+  s_26030882f4ffae::t_d6a1b93df24b02 132
+  s_17af0287321ec8::t_725dfa892a2ddd 79
+  s_17af0287321ec8::t_fb3b38bc02b220 54
+  s_17af0287321ec8::t_851edd0ebe82c9 146-147,149
+  s_17af0287321ec8::t_2dfff466d54399 15
+  s_26030882f4ffae::t_821ef1135f384d 1-3,7,9-11,16-25,31-32,35-37,39,45,51-53,55,71,77-78,80-82,89,97-102,104-109,111-118,121-123,125-126,141,143-145,148,150-152,162,164-167,170,173-179,183,191-192,194-196,198,200-202
+  s_17af0287321ec8::t_713abd5d6b17b0 43
+  s_17af0287321ec8::t_34b8a4dc88ef4a 182,184-186,188-189,193,199
+src/acp/doctor.ts
+  s_26030882f4ffae::t_05145b1f6c1475 1-27
+src/commands/mcp.ts
+  s_26030882f4ffae::t_dd3b5313262fd5 1-25
+src/utils/nexus-prompt-boundaries.ts
+  s_26030882f4ffae::t_87aeb73e0b2b87 1,4,21,23-34
+  s_26030882f4ffae::t_bd32570a52f22f 2-3,5-20,22,35-45
+tests/unit/mcp-bundle.test.ts
+  s_26030882f4ffae::t_2970d616082709 1-23,25,27-35
+  s_17af0287321ec8::t_8556100c85f904 24,26
+src/acp/permissions.ts
+  s_26030882f4ffae::t_f2f531b1688507 1-5,7-17,20-21,24-25,28-34,36-46
+  s_17af0287321ec8::t_d25382b34004b7 47
+src/acp/route-session-policy.ts
+  s_26030882f4ffae::t_1ff091bd902fe2 1,3-7
+src/acp/telemetry.ts
+  s_17af0287321ec8::t_b6a054903e27d4 135
+  s_17af0287321ec8::t_c87524ce9784d6 19-22,37-45,47-54,57-66,68,71,73,80,125-127,133,136-137,149,151-154,161-164,180,192
+  s_26030882f4ffae::t_c7caac2724d9ca 1-4,6-15,23-36,55-56,67,69-70,72,77-79,82-100,119-124,128-129,134,138-139,142-144,155-156,159-160,165-179,181-191,193-197
+  s_17af0287321ec8::t_990c8853b0dc86 130,132
+  s_17af0287321ec8::t_4ee35b31a43c2b 145
+  s_26030882f4ffae::t_2a67866b240d87 101-118
+  s_17af0287321ec8::t_3564ce9f611277 146,148,150
+src/index.ts
+  s_26030882f4ffae::t_facbc1889508a7 2,4
+  s_26030882f4ffae::t_7710c76dd07e0c 155-156
+  s_26030882f4ffae::t_7277e225335e4f 82-83
+src/commands/acp.ts
+  s_26030882f4ffae::t_4e8f4bcfd36102 1-71
+src/utils/onboard/steps.ts
+  s_26030882f4ffae::t_191b25cc6dbe7f 585-603
+src/mcp/nexus-tools.ts
+  s_26030882f4ffae::t_5e37250267b353 1-134
+src/acp/agents/launch.ts
+  s_26030882f4ffae::t_e506db5be2cfa2 1-42,45-86
+package.json
+  s_26030882f4ffae::t_68d4524280713b 32
+  s_26030882f4ffae::t_11471101911795 34
+  s_1633333196737b::t_b38e7d96ffc8dc 3
+src/daemon/loop.ts
+  s_26030882f4ffae::t_9754f637d86b66 26-27
+  s_26030882f4ffae::t_981f5553a051a5 240
+  s_26030882f4ffae::t_6953b0afedff4d 114
+src/mcp/serve.ts
+  s_26030882f4ffae::t_a36168bef26e27 1-22
+src/acp/readiness.ts
+  s_17af0287321ec8::t_f6d66ac5165c22 52-54
+  s_26030882f4ffae::t_f699dbbabc8236 2-7,9-11,15-19,21,23-26,28-36,38-51,55-57,59-70
+src/utils/harness-detection.ts
+  s_26030882f4ffae::t_d99f60e120fd35 64-77
+tests/unit/acp-outcome.test.ts
+  s_17af0287321ec8::t_8556100c85f904 1-15
+tests/unit/prompt-builder-acp.test.ts
+  s_26030882f4ffae::t_91ed9bf1da8b2c 1-22
+src/acp/resume.ts
+  s_26030882f4ffae::t_829a545005fd86 9,12,14
+  s_26030882f4ffae::t_7304aae706d25a 1-8,10-11,13,15-34
+docs/acp-openclaw.md
+  s_17af0287321ec8::t_8556100c85f904 3
+docs/todo/acp-acpx-port-map.md
+  s_80af5c0baef4fa::t_8eccec79b7beee 87-89,91-98,100,102-104,106,108
+  s_80af5c0baef4fa::t_e4a5074c2da0a6 68
+  s_5dad7b733f00a4::t_45a8d622281863 142-145
+  s_5dad7b733f00a4::t_5681720ae17091 157
+  s_2d1ad025b5fc14::t_d76d60af54f744 120,122,124-129,131,133
+  s_2d1ad025b5fc14::t_f1e420a2b49041 140-141,156
+  s_80af5c0baef4fa::t_9f878dad2971e0 146
+  s_80af5c0baef4fa::t_6e51d4cd6db913 158
+  s_2d1ad025b5fc14::t_460e448c73b6f4 69-70
+  s_2d1ad025b5fc14::t_9c972afc8e634b 26,28-34,37,39-41,43,45
+src/commands/onboard.ts
+  s_26030882f4ffae::t_e3a9b776ab442a 106-115,120
+  s_26030882f4ffae::t_1a5cd75709a8c9 147-150
+  s_26030882f4ffae::t_084e611b3a3033 77
+tests/unit/acp-spawn.test.ts
+  s_17af0287321ec8::t_8556100c85f904 1-5,7-25
+src/utils/prompt-builder-acp.ts
+  s_26030882f4ffae::t_ac1fc4eda798de 2,4-37,39-52
+tests/unit/nexus-prompt-boundaries.test.ts
+  s_26030882f4ffae::t_9b49c0d3187d00 48
+  s_26030882f4ffae::t_7785791e8934df 4-9,11,19-20,22,24-25,36,38-40,42-45,47,49-50
+  s_26030882f4ffae::t_adb42ececd69cf 3,10,13,15-16,23,26,30-34,41,46
+src/acp/outcome.ts
+  s_26030882f4ffae::t_e80008c1d4bab1 21-25
+  s_26030882f4ffae::t_b9ac6acc694fad 1-20,26-29
+src/acp/connection.ts
+  s_26030882f4ffae::t_0b5451e896e02f 28
+  s_26030882f4ffae::t_9376d6ac9f320a 5
+  s_17af0287321ec8::t_f6d66ac5165c22 10,17,19-23,29,31-32,37-38,40,50-52,57-66
+  s_26030882f4ffae::t_0c6a40cf027a96 1-4,6-9,12-14,25-27,30,33-35,41-49,54,69
+src/acp/agents/profiles.ts
+  s_17af0287321ec8::t_29d7ac71c6ec42 8
+  s_17af0287321ec8::t_c17e295e4e5d8c 47
+  s_17af0287321ec8::t_6726d2d2580ec3 17,23,29,35,41,54
+  s_26030882f4ffae::t_27c887f8f34c95 1-7,9-16,18-22,24-28,30-34,36-40,42-46,48-53,55-60
+tests/unit/acp-telemetry.test.ts
+  s_26030882f4ffae::t_71a96d990fceb7 1,3,5-7,9,11-15,19-24,26-28,30-31,33
+  s_17af0287321ec8::t_8556100c85f904 2,18,25,32,36-54,56-57,61-73,75-76
+  s_26030882f4ffae::t_2aca3e3bf452cc 8
+src/acp/setup.ts
+  s_26030882f4ffae::t_23ce9f18182c91 1-41
+src/mcp/nexus-context.ts
+  s_26030882f4ffae::t_86be52dc8fdb13 1-42,50-51,53-55
+  s_26030882f4ffae::t_ed03ff80d63ac7 43-49
+tests/unit/daemon-invariants.test.ts
+  s_26030882f4ffae::t_f590904dde96fb 99
+  s_26030882f4ffae::t_80c379d65ce1c2 75,86,91
+  s_26030882f4ffae::t_12caad7975e0da 209,265
+  s_26030882f4ffae::t_a62defe69543e8 224,280,341
+  s_26030882f4ffae::t_080a2400f5bc49 4-6,10-14,22
+  s_26030882f4ffae::t_24b150140c83f3 106
+  s_26030882f4ffae::t_199008fa48cfbd 180-183,185-187,190-194,203-204
+  s_26030882f4ffae::t_da5784c1e39adb 196-202
+  s_26030882f4ffae::t_96c2671a3cf86d 51-57
+  s_26030882f4ffae::t_62c0ebaf24bb83 111
+  s_26030882f4ffae::t_dad61d6d6cfcea 131-136
+  s_26030882f4ffae::t_3861cf45a2776c 15-21
+  s_26030882f4ffae::t_1406118b9c9ee4 326
+  s_26030882f4ffae::t_749103f9f9472e 395,433
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "c186560e03dba4372878e77e900448c53b355ef5",
+  "prompts": {},
+  "sessions": {
+    "s_1633333196737b": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_189c29dd1ffeBWs5t7aGrzUzKo",
+        "model": "glm-5.1"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_17af0287321ec8": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "5738c17a-c81b-468d-ae38-d01f54b4a5a5",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_26030882f4ffae": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "4dc144ea-3136-4e6e-9b33-0202a00a8e9c",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_2d1ad025b5fc14": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "7e91f9b8-d689-4451-9ab6-8425d7fc443c",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_5dad7b733f00a4": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_18f897315ffemNdkANE83C6P3g",
+        "model": "mimo-v2.5-pro"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_80af5c0baef4fa": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "91baf423-10a0-4eb4-9283-cfc5e094553c",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
