@@ -28,6 +28,7 @@ import ProposeIdeaForActionReducer from "../propose_idea_for_action_reducer";
 import RegisterAgentReducer from "../register_agent_reducer";
 import RegisterArtifactReducer from "../register_artifact_reducer";
 import ReportActionRunFinishedReducer from "../report_action_run_finished_reducer";
+import ReportActionRunProgressReducer from "../report_action_run_progress_reducer";
 import ReportActionRunStartedReducer from "../report_action_run_started_reducer";
 import ReportAgentRuntimeStatusReducer from "../report_agent_runtime_status_reducer";
 import ResubmitIdeaRevisionReducer from "../resubmit_idea_revision_reducer";
@@ -70,6 +71,7 @@ export type ProposeIdeaForActionParams = __Infer<typeof ProposeIdeaForActionRedu
 export type RegisterAgentParams = __Infer<typeof RegisterAgentReducer>;
 export type RegisterArtifactParams = __Infer<typeof RegisterArtifactReducer>;
 export type ReportActionRunFinishedParams = __Infer<typeof ReportActionRunFinishedReducer>;
+export type ReportActionRunProgressParams = __Infer<typeof ReportActionRunProgressReducer>;
 export type ReportActionRunStartedParams = __Infer<typeof ReportActionRunStartedReducer>;
 export type ReportAgentRuntimeStatusParams = __Infer<typeof ReportAgentRuntimeStatusReducer>;
 export type ResubmitIdeaRevisionParams = __Infer<typeof ResubmitIdeaRevisionReducer>;

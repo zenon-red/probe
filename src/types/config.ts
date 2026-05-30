@@ -1,4 +1,4 @@
-export type HarnessType = "pi" | "hermes" | "openclaw" | "opencode" | "custom";
+export type HarnessType = "pi" | "hermes" | "openclaw" | "opencode" | "claude" | "codex" | "custom";
 
 export interface NexusConfig {
   issuer: string;

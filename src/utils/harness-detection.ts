@@ -61,6 +61,20 @@ const HARNESS_PROBES: HarnessProbe[] = [
     command: "opencode",
     preArgs: ["run"],
   },
+  {
+    id: "claude",
+    pathCheck: "claude-agent-acp",
+    knownDir: join(homedir(), ".claude"),
+    command: "claude-agent-acp",
+    preArgs: [],
+  },
+  {
+    id: "codex",
+    pathCheck: "codex-acp",
+    knownDir: join(homedir(), ".codex"),
+    command: "codex-acp",
+    preArgs: [],
+  },
 ];
 
 function hasKnownDir(dir: string, deps: HarnessDetectionDeps): boolean {

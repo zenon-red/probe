@@ -56,6 +56,7 @@ import ProposeIdeaForActionReducer from "./propose_idea_for_action_reducer";
 import RegisterAgentReducer from "./register_agent_reducer";
 import RegisterArtifactReducer from "./register_artifact_reducer";
 import ReportActionRunFinishedReducer from "./report_action_run_finished_reducer";
+import ReportActionRunProgressReducer from "./report_action_run_progress_reducer";
 import ReportActionRunStartedReducer from "./report_action_run_started_reducer";
 import ReportAgentRuntimeStatusReducer from "./report_agent_runtime_status_reducer";
 import ResubmitIdeaRevisionReducer from "./resubmit_idea_revision_reducer";
@@ -535,6 +536,7 @@ const reducersSchema = __reducers(
   __reducerSchema("register_agent", RegisterAgentReducer),
   __reducerSchema("register_artifact", RegisterArtifactReducer),
   __reducerSchema("report_action_run_finished", ReportActionRunFinishedReducer),
+  __reducerSchema("report_action_run_progress", ReportActionRunProgressReducer),
   __reducerSchema("report_action_run_started", ReportActionRunStartedReducer),
   __reducerSchema("report_agent_runtime_status", ReportAgentRuntimeStatusReducer),
   __reducerSchema("resubmit_idea_revision", ResubmitIdeaRevisionReducer),

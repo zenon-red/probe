@@ -279,13 +279,11 @@ probe nexus [--wallet <name>] [--log-level critical|info|debug] [--log-file <pat
 
 See [nexus.md](./nexus.md) for daemon behavior and log event format.
 
-After each harness run, the daemon reports `input_tokens` and `output_tokens` on the action row by reading harness session stores (correlated via `zenon.red{action:<id>}` in the prompt). Extraction failures are non-fatal and record `0`/`0`.
+After each harness run, the daemon reports `input_tokens`, `output_tokens`, and `token_source` from ACP (`PromptResponse.usage` and `usage_update` in `session/update`). When usage is unavailable, `token_source` is `none` and the daemon emits `acp_usage_unavailable` on stdout (JSONL).
 
-**Runtime:** run `probe nexus` with the published Node binary (`probe` → `dist/index.js`). Hermes token reads use built-in `node:sqlite` (Node ≥22.13). Running the daemon via `bun run ./src/index.ts` cannot open Hermes `state.db` and will record `0`/`0`.
+Run `probe acp doctor` to verify the configured harness ACP adapter initializes. When probe-nexus MCP is attached per session, agents must call `nexus_action_complete`, `nexus_action_fail`, or `nexus_action_skip` for the bound action id (see `probe/docs/acp-openclaw.md` for OpenClaw gateway MCP).
 
-**Diagnostics:** when extraction fails with a diagnostic reason, the daemon emits `harness_usage_extraction_failed` on stdout (JSONL) with a stable `reason` (for example `sqlite_unavailable`, `hermes_session_not_found`). This event is in the critical set and appears at default `--log-level critical` when a reason is present.
-
-Hermes opens `~/.hermes/state.db` once and correlates via `messages.timestamp` (not `state.db` mtime). Run `npm run test:hermes` for SQLite integration tests (requires Node ≥22.13).
+**Runtime:** run `probe nexus` with the published Node binary (`probe` → `dist/index.js`).
 
 ## Genesis
 

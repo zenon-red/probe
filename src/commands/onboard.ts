@@ -74,7 +74,7 @@ export default defineCommand({
     },
     harness: {
       type: "string",
-      description: "Harness: auto, pi, hermes, openclaw, opencode, custom",
+      description: "Harness: auto, pi, hermes, openclaw, opencode, claude, codex, custom",
       default: "auto",
     },
     "harness-command": {
@@ -103,12 +103,21 @@ export default defineCommand({
   async run({ args }) {
     applyJsonMode(args);
 
-    const allowedHarnesses = new Set(["auto", "pi", "hermes", "openclaw", "opencode", "custom"]);
+    const allowedHarnesses = new Set([
+      "auto",
+      "pi",
+      "hermes",
+      "openclaw",
+      "opencode",
+      "claude",
+      "codex",
+      "custom",
+    ]);
     if (!allowedHarnesses.has(String(args.harness))) {
       error(
         "INVALID_HARNESS",
         `Invalid --harness value: ${args.harness}`,
-        "Use one of: auto, pi, hermes, openclaw, opencode, custom",
+        "Use one of: auto, pi, hermes, openclaw, opencode, claude, codex, custom",
       );
     }
 
@@ -135,7 +144,10 @@ export default defineCommand({
           { name: "--capabilities", detail: "Comma-separated list" },
           { name: "--bio", detail: "Agent bio text" },
           { name: "--daemon", detail: "auto | systemd | tmux | docker | stateless" },
-          { name: "--harness", detail: "auto | pi | hermes | openclaw | opencode | custom" },
+          {
+            name: "--harness",
+            detail: "auto | pi | hermes | openclaw | opencode | claude | codex | custom",
+          },
           {
             name: "--harness-command",
             detail: "Custom harness binary (required with --harness custom)",

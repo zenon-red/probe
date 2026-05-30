@@ -14,6 +14,7 @@ import {
 export const ActionEventType = __t.enum("ActionEventType", {
   Issued: __t.unit(),
   Started: __t.unit(),
+  Progress: __t.unit(),
   Completed: __t.unit(),
   Skipped: __t.unit(),
   Failed: __t.unit(),
@@ -101,6 +102,13 @@ export const AgentAction = __t.object("AgentAction", {
   harness: __t.option(__t.string()),
   inputTokens: __t.u64(),
   outputTokens: __t.u64(),
+  toolCallsTotal: __t.u64(),
+  toolCallsSucceeded: __t.u64(),
+  toolCallsFailed: __t.u64(),
+  nexusToolCalls: __t.u64(),
+  nexusToolCallsFailed: __t.u64(),
+  tokenSource: __t.option(__t.string()),
+  mcpTelemetryJson: __t.option(__t.string()),
   resultIdeaId: __t.option(__t.u64()),
   resultVoteId: __t.option(__t.u64()),
 });

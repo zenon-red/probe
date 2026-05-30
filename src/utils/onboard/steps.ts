@@ -582,6 +582,25 @@ export async function configureHarness(state: OnboardState): Promise<void> {
   await saveUserConfig(userConfig);
 
   addStep(state, "harness", "pass", `Harness configured: ${harness.harness}`);
+
+  try {
+    const { runAcpDoctor } = await import("~/acp/doctor.js");
+    const report = await runAcpDoctor({
+      harness: harness.harness,
+      harnessCommand: harness.harness === "custom" ? harness.command : undefined,
+    });
+    const row = report.harnesses[0];
+    if (!report.acpOk) {
+      const detail = row?.issues.map((i) => i.message).join("; ") || "ACP readiness failed";
+      addStep(state, "acp", "warn", detail);
+    } else if (row?.issues.length) {
+      addStep(state, "acp", "warn", row.issues.map((i) => i.message).join("; "));
+    } else {
+      addStep(state, "acp", "pass", "ACP harness ready");
+    }
+  } catch (err) {
+    addStep(state, "acp", "warn", errorMessage(err, "ACP doctor check failed"));
+  }
 }
 
 export async function sendAnnouncement(state: OnboardState): Promise<void> {

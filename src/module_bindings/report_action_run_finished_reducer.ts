@@ -22,4 +22,11 @@ export default {
   durationSecs: __t.u64(),
   inputTokens: __t.u64(),
   outputTokens: __t.u64(),
+  tokenSource: __t.string(),
+  toolCallsTotal: __t.u64(),
+  toolCallsSucceeded: __t.u64(),
+  toolCallsFailed: __t.u64(),
+  nexusToolCalls: __t.u64(),
+  nexusToolCallsFailed: __t.u64(),
+  mcpTelemetryJson: __t.option(__t.string()),
 };

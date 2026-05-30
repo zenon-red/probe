@@ -47,6 +47,13 @@ export default __t.row({
   harness: __t.option(__t.string()),
   inputTokens: __t.u64().name("input_tokens"),
   outputTokens: __t.u64().name("output_tokens"),
+  toolCallsTotal: __t.u64().name("tool_calls_total"),
+  toolCallsSucceeded: __t.u64().name("tool_calls_succeeded"),
+  toolCallsFailed: __t.u64().name("tool_calls_failed"),
+  nexusToolCalls: __t.u64().name("nexus_tool_calls"),
+  nexusToolCallsFailed: __t.u64().name("nexus_tool_calls_failed"),
+  tokenSource: __t.option(__t.string()).name("token_source"),
+  mcpTelemetryJson: __t.option(__t.string()).name("mcp_telemetry_json"),
   resultIdeaId: __t.option(__t.u64()).name("result_idea_id"),
   resultVoteId: __t.option(__t.u64()).name("result_vote_id"),
 });

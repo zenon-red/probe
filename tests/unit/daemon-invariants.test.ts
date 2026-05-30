@@ -1,18 +1,25 @@
 import { EventEmitter } from "node:events";
 import { afterEach, describe, expect, it, mock } from "bun:test";
 import type { ChildProcess } from "node:child_process";
+import type { RunAcpSessionOptions } from "../../src/acp/run-action.js";
+import { emptyTelemetry } from "../../src/acp/telemetry.js";
+import type { AgentRunOutcome } from "../../src/acp/types.js";
 import { createActionExecutor, type ExecutableAction } from "../../src/daemon/action-executor.js";
 import { runDaemonSession } from "../../src/daemon/session.js";
-import type { SpawnRunner } from "../../src/daemon/harness-runner.js";
 
-function mockChildExit(code: number): ChildProcess {
-  const child = new EventEmitter() as ChildProcess;
-  queueMicrotask(() => child.emit("close", code, null));
-  return child;
-}
-
-function createSpawnMock(exitCode: number): SpawnRunner {
-  return () => mockChildExit(exitCode);
+function createAcpSessionMock(outcome: AgentRunOutcome) {
+  return mock(async (options: RunAcpSessionOptions) => {
+    const child = new EventEmitter() as ChildProcess;
+    options.onChild?.(child);
+    queueMicrotask(() => child.emit("close", outcome === "Clean" ? 0 : 1, null));
+    return {
+      outcome,
+      durationSecs: 1,
+      telemetry: emptyTelemetry(),
+      completionReported: true,
+      nexusMcpAttached: false,
+    };
+  });
 }
 
 const baseAction: ExecutableAction = {
@@ -41,7 +48,13 @@ function createMockCtx(reducerBehavior: "ok" | "fail" = "ok") {
   });
 
   return {
-    config: { harnessTimeoutSecs: 30, requestTimeout: 100 },
+    config: {
+      harnessTimeoutSecs: 30,
+      requestTimeout: 100,
+      spacetime: { host: "wss://test.example", module: "nexus-test" },
+    },
+    agents: [],
+    auth: { wallet: "test-wallet", token: "test-token", identity: null },
     conn: {
       reducers: { reportActionRunStarted, reportActionRunFinished },
     },
@@ -59,7 +72,7 @@ describe("createActionExecutor", () => {
     runningActionId = null;
   });
 
-  function makeExecutor(spawnFn: SpawnRunner, reducerBehavior: "ok" | "fail" = "ok") {
+  function makeExecutor(outcome: AgentRunOutcome, reducerBehavior: "ok" | "fail" = "ok") {
     return createActionExecutor({
       ctx: createMockCtx(reducerBehavior) as never,
       harness: { harness: "pi", command: "pi", args: [] },
@@ -70,12 +83,12 @@ describe("createActionExecutor", () => {
       setRunningActionId: (id) => {
         runningActionId = id;
       },
-      spawnFn,
+      runAcpSession: createAcpSessionMock(outcome),
     });
   }
 
   it("emits action_completed on clean harness exit", async () => {
-    await makeExecutor(createSpawnMock(0))(baseAction);
+    await makeExecutor("Clean")(baseAction);
     expect(events.some((e) => e.type === "action_started")).toBe(true);
     expect(events.some((e) => e.type === "action_completed" && e.outcome === "Clean")).toBe(true);
     expect(runningActionId).toBeNull();
@@ -83,19 +96,19 @@ describe("createActionExecutor", () => {
   });
 
   it("emits action_failed_infra on non-zero exit", async () => {
-    await makeExecutor(createSpawnMock(1))(baseAction);
+    await makeExecutor("Signal")(baseAction);
     expect(events.some((e) => e.type === "action_failed_infra" && e.outcome === "Signal")).toBe(
       true,
     );
   });
 
   it("continues when run-started reducer fails", async () => {
-    await makeExecutor(createSpawnMock(0), "fail")(baseAction);
+    await makeExecutor("Clean", "fail")(baseAction);
     expect(events.some((e) => e.type === "action_completed")).toBe(true);
   });
 
   it("continues when run-finished reducer fails", async () => {
-    await makeExecutor(createSpawnMock(0), "fail")(baseAction);
+    await makeExecutor("Clean", "fail")(baseAction);
     expect(events.some((e) => e.type === "action_completed")).toBe(true);
   });
 });
@@ -115,7 +128,12 @@ describe("runDaemonSession invariants", () => {
     return {
       identity: { toHexString: () => "abc" },
       agents: [{ id: "agent-1" }],
-      config: { harnessTimeoutSecs, requestTimeout: 100 },
+      config: {
+        harnessTimeoutSecs,
+        requestTimeout: 100,
+        spacetime: { host: "wss://test.example", module: "nexus-test" },
+      },
+      auth: { wallet: "test-wallet", token: "test-token", identity: null },
       conn: {
         subscriptionBuilder: () => {
           const builder = {
@@ -159,26 +177,36 @@ describe("runDaemonSession invariants", () => {
     }
   }
 
-  function createHangSpawn(): { spawn: SpawnRunner; releaseFirst: () => void } {
+  function createHangAcpSession(): {
+    runAcpSession: ReturnType<typeof createAcpSessionMock>;
+    releaseFirst: () => void;
+  } {
     let releaseFirst!: () => void;
-    let spawnCount = 0;
-    const spawn: SpawnRunner = () => {
-      spawnCount += 1;
+    let sessionCount = 0;
+    const runAcpSession = mock(async (options: RunAcpSessionOptions) => {
+      sessionCount += 1;
       const child = new EventEmitter() as ChildProcess;
       (child as { kill: (signal?: string) => void }).kill = () => {};
-      if (spawnCount === 1) {
-        releaseFirst = () => child.emit("close", 0, null);
-      } else {
-        queueMicrotask(() => child.emit("close", 0, null));
+      options.onChild?.(child);
+      if (sessionCount === 1) {
+        await new Promise<void>((resolve) => {
+          releaseFirst = resolve;
+        });
       }
-      return child;
-    };
-    return { spawn, releaseFirst: () => releaseFirst() };
+      return {
+        outcome: "Clean" as const,
+        durationSecs: 1,
+        telemetry: emptyTelemetry(),
+        completionReported: true,
+        nexusMcpAttached: false,
+      };
+    });
+    return { runAcpSession, releaseFirst: () => releaseFirst() };
   }
 
   it("queues and drains action when insert arrives during running harness", async () => {
     let stop = false;
-    const { spawn: hangSpawn, releaseFirst } = createHangSpawn();
+    const { runAcpSession: hangAcpSession, releaseFirst } = createHangAcpSession();
 
     const sessionPromise = runDaemonSession({
       ctx: createSessionCtx(300) as never,
@@ -193,7 +221,7 @@ describe("runDaemonSession invariants", () => {
       stopWaiter: new Promise(() => {}),
       sleep: sessionSleep,
       withJitter: () => 50,
-      spawnFn: hangSpawn,
+      runAcpSession: hangAcpSession,
     });
 
     await waitFor(() => insertHandler !== undefined);
@@ -234,7 +262,7 @@ describe("runDaemonSession invariants", () => {
 
   it("drains multiple queued actions in order", async () => {
     let stop = false;
-    const { spawn: hangSpawn, releaseFirst } = createHangSpawn();
+    const { runAcpSession: hangAcpSession, releaseFirst } = createHangAcpSession();
 
     const sessionPromise = runDaemonSession({
       ctx: createSessionCtx(300) as never,
@@ -249,7 +277,7 @@ describe("runDaemonSession invariants", () => {
       stopWaiter: new Promise(() => {}),
       sleep: sessionSleep,
       withJitter: () => 50,
-      spawnFn: hangSpawn,
+      runAcpSession: hangAcpSession,
     });
 
     await waitFor(() => insertHandler !== undefined);
@@ -295,7 +323,7 @@ describe("runDaemonSession invariants", () => {
 
   it("abandons queued actions on shutdown", async () => {
     let stop = false;
-    const { spawn: hangSpawn } = createHangSpawn();
+    const { runAcpSession: hangAcpSession } = createHangAcpSession();
 
     const sessionPromise = runDaemonSession({
       ctx: createSessionCtx(300) as never,
@@ -310,7 +338,7 @@ describe("runDaemonSession invariants", () => {
       stopWaiter: new Promise(() => {}),
       sleep: sessionSleep,
       withJitter: () => 50,
-      spawnFn: hangSpawn,
+      runAcpSession: hangAcpSession,
     });
 
     await waitFor(() => insertHandler !== undefined);
@@ -364,7 +392,7 @@ describe("runDaemonSession invariants", () => {
       stopWaiter: new Promise(() => {}),
       sleep: sessionSleep,
       withJitter: () => 50,
-      spawnFn: createSpawnMock(0),
+      runAcpSession: createAcpSessionMock("Clean"),
     });
 
     await waitFor(() => insertHandler !== undefined);
@@ -402,7 +430,7 @@ describe("runDaemonSession invariants", () => {
         jitterValues.push(base);
         return 20;
       },
-      spawnFn: createSpawnMock(0),
+      runAcpSession: createAcpSessionMock("Clean"),
     });
 
     await new Promise((r) => setTimeout(r, 50));

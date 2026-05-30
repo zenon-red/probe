@@ -1,5 +1,7 @@
 import { defineCommand, runCommand } from "citty";
+import acp from "./commands/acp.js";
 import admin from "./commands/admin/index.js";
+import mcp from "./commands/mcp.js";
 import auth from "./commands/auth/index.js";
 import login from "./commands/login.js";
 import config from "./commands/config/index.js";
@@ -77,6 +79,8 @@ const topLevelCommands = new Set([
   "artifact",
   "review",
   "admin",
+  "acp",
+  "mcp",
 ]);
 
 const version = probeVersion();
@@ -148,6 +152,8 @@ const main = defineCommand({
     version: versionCmd,
     whoami,
     admin,
+    acp,
+    mcp,
   },
 });
 

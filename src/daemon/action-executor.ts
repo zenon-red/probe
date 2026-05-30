@@ -1,14 +1,17 @@
 import type { ChildProcess } from "node:child_process";
+import { runAcpSession, type RunAcpSessionOptions } from "~/acp/run-action.js";
+import { buildMcpBundleContext } from "~/mcp/bundle.js";
 import { callReducer, type CommandContext } from "~/utils/context.js";
+import { resolveSpacetimeArgs } from "~/utils/config.js";
 import { enumName } from "~/utils/enums.js";
+import { getCachedToken } from "~/utils/token-cache.js";
+import type { AcpConfig } from "~/types/acp-config.js";
 import type { HarnessDetectionResult } from "~/utils/harness-detection.js";
-import { buildActionPrompt } from "~/utils/prompt-builder.js";
+import { buildActionPromptAcp } from "~/utils/prompt-builder-acp.js";
 import { HARNESS_TIMEOUT_SECS } from "~/utils/timeouts.js";
+import { loadUserConfig } from "~/utils/user-config.js";
 import type { ExecutableAction } from "./executable-action.js";
 import type { EventEmitter } from "./events.js";
-import { extractUsage } from "./harness-usage/index.js";
-import { runHarness, type SpawnRunner } from "./harness-runner.js";
-import { loadUserConfig } from "~/utils/user-config.js";
 
 export type { ExecutableAction } from "./executable-action.js";
 
@@ -18,31 +21,69 @@ export type ActionExecutorDeps = {
   emit: EventEmitter;
   setRunningHarness: (child: ChildProcess | null) => void;
   setRunningActionId: (id: bigint | null) => void;
-  spawnFn?: SpawnRunner;
+  runAcpSession?: (
+    options: RunAcpSessionOptions,
+  ) => Promise<Awaited<ReturnType<typeof runAcpSession>>>;
 };
 
 export function createActionExecutor(
   deps: ActionExecutorDeps,
 ): (action: ExecutableAction) => Promise<void> {
+  const executeSession = deps.runAcpSession ?? runAcpSession;
+
   return async (action: ExecutableAction) => {
     deps.setRunningActionId(action.id);
 
     const actionKind = enumName(action.kind);
+    const route = enumName(action.route);
     const localConfig = await loadUserConfig();
     const promptMarkerTemplate =
       localConfig.promptMarkerTemplate ?? deps.ctx.config.promptMarkerTemplate;
-    const prompt = buildActionPrompt(
+
+    const walletName = deps.ctx.auth?.wallet;
+    const { host, module } = resolveSpacetimeArgs({}, deps.ctx.config);
+    const tokenRow = walletName ? await getCachedToken(walletName) : null;
+    const agent = deps.ctx.agents[0];
+    const mcpBundle =
+      walletName && tokenRow?.token && agent
+        ? buildMcpBundleContext({
+            actionId: action.id,
+            token: tokenRow.token,
+            host,
+            module,
+            wallet: walletName,
+          })
+        : undefined;
+
+    if (!mcpBundle) {
+      deps.emit({
+        type: "nexus_mcp_unavailable",
+        action_id: action.id.toString(),
+        reason: !walletName
+          ? "no_wallet"
+          : !tokenRow?.token
+            ? "no_cached_token"
+            : !agent
+              ? "no_agent"
+              : "unknown",
+      });
+    }
+
+    const { text: promptText, meta: promptMeta } = buildActionPromptAcp(
       {
         id: action.id,
         kind: actionKind,
         skills: action.skills?.length ? action.skills : [actionKind.toLowerCase()],
         instruction: action.instruction || `Execute ${actionKind}`,
-        route: enumName(action.route),
+        route,
         targetType: action.targetType,
         targetId: action.targetId,
         triggerType: action.triggerType,
       },
-      { promptMarkerTemplate },
+      {
+        promptMarkerTemplate,
+        includeShellCompletion: !mcpBundle,
+      },
     );
 
     try {
@@ -60,48 +101,57 @@ export function createActionExecutor(
       harness: deps.harness.harness,
     });
 
-    const runStartedAt = new Date();
     const timeoutSecs = deps.ctx.config.harnessTimeoutSecs ?? HARNESS_TIMEOUT_SECS;
-    let outcome: Awaited<ReturnType<typeof runHarness>>["outcome"];
-    let durationSecs: number;
+    const harnessCommand =
+      deps.harness.harness === "custom"
+        ? (deps.ctx.config.harnessCommand ?? deps.harness.command)
+        : undefined;
+
+    const acpConfig = (localConfig as { acp?: AcpConfig }).acp;
 
     try {
-      ({ outcome, durationSecs } = await runHarness({
-        harness: deps.harness,
-        prompt,
+      const result = await executeSession({
+        harness: deps.harness.harness,
+        harnessCommand,
+        promptText,
+        promptMeta,
+        cwd: process.cwd(),
         timeoutSecs,
-        spawnFn: deps.spawnFn,
+        route,
+        agentId: agent?.id,
+        acpConfig,
+        mcpBundle,
+        attachNexusMcp: Boolean(mcpBundle),
         onChild: (child) => {
           deps.setRunningHarness(child);
         },
-      }));
-
-      const extraction = extractUsage({
-        harness: deps.harness.harness,
-        actionId: action.id,
-        runStartedAt,
-        promptMarkerTemplate,
+        onEvent: (event) => {
+          deps.emit({ type: String(event.type), ...event });
+          if (event.type === "acp_tool_call" || event.type === "acp_nexus_tool_call") {
+            void reportProgress(deps, action.id, String(event.type), event).catch(() => {});
+          }
+        },
       });
-      if (extraction.debugReason) {
-        deps.emit({
-          type: "harness_usage_extraction_failed",
-          action_id: action.id.toString(),
-          harness: deps.harness.harness,
-          reason: extraction.debugReason,
-        });
-      }
-      const { inputTokens, outputTokens } = extraction.usage;
+
+      const { outcome, durationSecs, telemetry } = result;
 
       try {
         await callReducer(deps.ctx, deps.ctx.conn.reducers.reportActionRunFinished, {
           actionId: action.id,
           outcome: { tag: outcome },
           durationSecs: BigInt(durationSecs),
-          inputTokens: BigInt(inputTokens),
-          outputTokens: BigInt(outputTokens),
+          inputTokens: BigInt(telemetry.inputTokens),
+          outputTokens: BigInt(telemetry.outputTokens),
+          tokenSource: telemetry.tokenSource,
+          toolCallsTotal: BigInt(telemetry.toolCallsTotal),
+          toolCallsSucceeded: BigInt(telemetry.toolCallsSucceeded),
+          toolCallsFailed: BigInt(telemetry.toolCallsFailed),
+          nexusToolCalls: BigInt(telemetry.nexusToolCalls),
+          nexusToolCallsFailed: BigInt(telemetry.nexusToolCallsFailed),
+          mcpTelemetryJson: JSON.stringify(telemetry.mcpServerBreakdown),
         });
       } catch {
-        // non-fatal
+        // non-fatal until bindings regenerated
       }
 
       if (outcome === "Clean") {
@@ -124,4 +174,21 @@ export function createActionExecutor(
       deps.setRunningActionId(null);
     }
   };
+}
+
+async function reportProgress(
+  deps: ActionExecutorDeps,
+  actionId: bigint,
+  eventCode: string,
+  event: Record<string, unknown>,
+): Promise<void> {
+  const progress = deps.ctx.conn.reducers.reportActionRunProgress;
+  if (!progress) {
+    return;
+  }
+  await callReducer(deps.ctx, progress, {
+    actionId,
+    eventCode,
+    note: JSON.stringify(event),
+  });
 }

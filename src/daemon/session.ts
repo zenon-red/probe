@@ -3,12 +3,10 @@ import { enumName } from "~/utils/enums.js";
 import { HEARTBEAT } from "~/utils/timeouts.js";
 import { callReducer, type CommandContext } from "~/utils/context.js";
 import type { HarnessDetectionResult } from "~/utils/harness-detection.js";
-import { createActionExecutor } from "./action-executor.js";
+import { createActionExecutor, type ActionExecutorDeps } from "./action-executor.js";
 import { ensureGenesisSyncedBeforeHarness } from "./genesis-gate.js";
 import { toExecutableAction, type ExecutableAction } from "./executable-action.js";
 import { sanitizeValue, type EventEmitter } from "./events.js";
-import type { SpawnRunner } from "./harness-runner.js";
-
 export type SessionEnd = {
   reason: "disconnected" | "heartbeat_failed" | "stop" | "harness_error";
   details?: unknown;
@@ -33,7 +31,7 @@ export type DaemonSessionOptions = {
   stopWaiter: Promise<void>;
   sleep: (ms: number) => Promise<void>;
   withJitter: (baseMs: number) => number;
-  spawnFn?: SpawnRunner;
+  runAcpSession?: ActionExecutorDeps["runAcpSession"];
 };
 
 export async function runDaemonSession(options: DaemonSessionOptions): Promise<SessionEnd | null> {
@@ -74,7 +72,7 @@ export async function runDaemonSession(options: DaemonSessionOptions): Promise<S
     setRunningActionId: (id) => {
       runningActionId = id;
     },
-    spawnFn: options.spawnFn,
+    runAcpSession: options.runAcpSession,
   });
 
   const abandonQueued = (reason: string) => {

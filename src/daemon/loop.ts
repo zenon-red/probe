@@ -23,7 +23,8 @@ import {
   type EventEmitter,
   type LogLevel,
 } from "./events.js";
-import type { SpawnRunner } from "./harness-runner.js";
+import type { RunAcpSessionOptions } from "~/acp/run-action.js";
+import type { AcpRunResult } from "~/acp/types.js";
 
 export const nexusDaemonArgs = {
   wallet: {
@@ -110,7 +111,7 @@ export type RunDaemonLoopOptions = {
   getConfigFn?: typeof getConfig;
   resolveLogStreamFn?: typeof resolveLogStream;
   runDaemonSessionFn?: typeof runDaemonSession;
-  spawnFn?: SpawnRunner;
+  runAcpSession?: (options: RunAcpSessionOptions) => Promise<AcpRunResult>;
   sleepFn?: (ms: number) => Promise<void>;
   backoffMsFn?: (attempt: number) => number;
 };
@@ -236,7 +237,7 @@ export async function runDaemonLoop(options: RunDaemonLoopOptions): Promise<void
             stopWaiter,
             sleep: sleepFn,
             withJitter: (baseMs) => withJitter(baseMs),
-            spawnFn: options.spawnFn,
+            runAcpSession: options.runAcpSession,
           });
         },
       );
