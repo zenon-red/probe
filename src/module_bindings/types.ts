@@ -10,6 +10,81 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+export const AcpAgentInfo = __t.object("AcpAgentInfo", {
+  name: __t.string(),
+  title: __t.option(__t.string()),
+  version: __t.option(__t.string()),
+});
+export type AcpAgentInfo = __Infer<typeof AcpAgentInfo>;
+
+export const AcpAuthCapabilities = __t.object("AcpAuthCapabilities", {
+  logout: __t.bool(),
+  get methods() {
+    return __t.array(AcpAuthMethod);
+  },
+});
+export type AcpAuthCapabilities = __Infer<typeof AcpAuthCapabilities>;
+
+export const AcpAuthMethod = __t.object("AcpAuthMethod", {
+  id: __t.string(),
+  name: __t.string(),
+  methodType: __t.string(),
+});
+export type AcpAuthMethod = __Infer<typeof AcpAuthMethod>;
+
+export const AcpAvailableCommand = __t.object("AcpAvailableCommand", {
+  name: __t.string(),
+  description: __t.string(),
+  inputHint: __t.option(__t.string()),
+});
+export type AcpAvailableCommand = __Infer<typeof AcpAvailableCommand>;
+
+export const AcpMcpCapabilities = __t.object("AcpMcpCapabilities", {
+  http: __t.bool(),
+  sse: __t.bool(),
+  acp: __t.bool(),
+});
+export type AcpMcpCapabilities = __Infer<typeof AcpMcpCapabilities>;
+
+export const AcpNamedCapability = __t.object("AcpNamedCapability", {
+  id: __t.string(),
+  name: __t.string(),
+});
+export type AcpNamedCapability = __Infer<typeof AcpNamedCapability>;
+
+export const AcpPromptCapabilities = __t.object("AcpPromptCapabilities", {
+  image: __t.bool(),
+  audio: __t.bool(),
+  embeddedContext: __t.bool(),
+});
+export type AcpPromptCapabilities = __Infer<typeof AcpPromptCapabilities>;
+
+export const AcpSessionCapabilities = __t.object("AcpSessionCapabilities", {
+  load: __t.bool(),
+  list: __t.bool(),
+  resume: __t.bool(),
+  close: __t.bool(),
+  delete: __t.bool(),
+  fork: __t.bool(),
+  additionalDirectories: __t.bool(),
+});
+export type AcpSessionCapabilities = __Infer<typeof AcpSessionCapabilities>;
+
+export const AcpSessionConfigCapability = __t.object("AcpSessionConfigCapability", {
+  id: __t.string(),
+  name: __t.string(),
+  category: __t.option(__t.string()),
+  optionType: __t.string(),
+});
+export type AcpSessionConfigCapability = __Infer<typeof AcpSessionConfigCapability>;
+
+export const AcpSessionMode = __t.object("AcpSessionMode", {
+  id: __t.string(),
+  name: __t.string(),
+  description: __t.option(__t.string()),
+});
+export type AcpSessionMode = __Infer<typeof AcpSessionMode>;
+
 // The tagged union or sum type for the algebraic type `ActionEventType`.
 export const ActionEventType = __t.enum("ActionEventType", {
   Issued: __t.unit(),
@@ -56,7 +131,9 @@ export const Agent = __t.object("Agent", {
   get role() {
     return AgentRole;
   },
-  capabilities: __t.array(__t.string()),
+  get capabilities() {
+    return AgentCapabilities;
+  },
   get status() {
     return AgentStatus;
   },
@@ -126,6 +203,41 @@ export const AgentActionEvent = __t.object("AgentActionEvent", {
   createdAt: __t.timestamp(),
 });
 export type AgentActionEvent = __Infer<typeof AgentActionEvent>;
+
+export const AgentCapabilities = __t.object("AgentCapabilities", {
+  get agent() {
+    return __t.option(AcpAgentInfo);
+  },
+  protocolVersion: __t.string(),
+  get prompt() {
+    return AcpPromptCapabilities;
+  },
+  get mcp() {
+    return AcpMcpCapabilities;
+  },
+  get session() {
+    return AcpSessionCapabilities;
+  },
+  get auth() {
+    return AcpAuthCapabilities;
+  },
+  get configuredMcpServers() {
+    return __t.array(AcpNamedCapability);
+  },
+  get commands() {
+    return __t.array(AcpAvailableCommand);
+  },
+  get modes() {
+    return __t.array(AcpSessionMode);
+  },
+  get configOptions() {
+    return __t.array(AcpSessionConfigCapability);
+  },
+  get models() {
+    return __t.array(AcpNamedCapability);
+  },
+});
+export type AgentCapabilities = __Infer<typeof AgentCapabilities>;
 
 // The tagged union or sum type for the algebraic type `AgentRole`.
 export const AgentRole = __t.enum("AgentRole", {

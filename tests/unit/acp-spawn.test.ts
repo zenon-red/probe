@@ -11,15 +11,23 @@ describe("splitCommandLine", () => {
 });
 
 describe("buildAcpAgentEnv", () => {
-  it("copies base keys and API prefixes", () => {
+  it("inherits the full host environment", () => {
     const env = buildAcpAgentEnv({
       PATH: "/bin",
       HOME: "/home/x",
       ANTHROPIC_API_KEY: "secret",
-      UNRELATED: "drop",
+      GH_TOKEN: "gho_test",
+      UNRELATED: "keep",
     });
     expect(env.PATH).toBe("/bin");
     expect(env.ANTHROPIC_API_KEY).toBe("secret");
-    expect(env.UNRELATED).toBeUndefined();
+    expect(env.GH_TOKEN).toBe("gho_test");
+    expect(env.UNRELATED).toBe("keep");
+  });
+
+  it("merges optional overrides on top of host env", () => {
+    const env = buildAcpAgentEnv({ PATH: "/bin", GH_TOKEN: "old" }, { GH_TOKEN: "new" });
+    expect(env.PATH).toBe("/bin");
+    expect(env.GH_TOKEN).toBe("new");
   });
 });

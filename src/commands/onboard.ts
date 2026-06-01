@@ -59,10 +59,6 @@ export default defineCommand({
       type: "string",
       description: "Path to wallet password file",
     },
-    capabilities: {
-      type: "string",
-      description: "Comma-separated capabilities",
-    },
     bio: {
       type: "string",
       description: "Agent bio",
@@ -141,7 +137,6 @@ export default defineCommand({
           { name: "--wallet", detail: "Wallet name" },
           { name: "--host, --module", detail: "SpacetimeDB overrides" },
           { name: "--password-file", detail: "Path to password file" },
-          { name: "--capabilities", detail: "Comma-separated list" },
           { name: "--bio", detail: "Agent bio text" },
           { name: "--daemon", detail: "auto | systemd | tmux | docker | stateless" },
           {
@@ -219,11 +214,11 @@ export default defineCommand({
     }
 
     await setBioStep(state);
-    await setCapabilitiesStep(state);
     await ensureNexusLayout(state);
     await installSkillsStep(state);
     await configureDaemon(state);
     await configureHarness(state);
+    await setCapabilitiesStep(state);
     await sendAnnouncement(state);
     await runVerification(state);
 

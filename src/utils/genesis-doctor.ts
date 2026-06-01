@@ -7,17 +7,9 @@ import { checkSkillsCompatForGenesis } from "~/utils/genesis-skills.js";
 import { checkOpenspecCompatForGenesis } from "~/utils/openspec-check.js";
 import type { NexusConfig } from "~/types/config.js";
 
-const GITHUB_CAPABILITIES = new Set([
-  "idea.propose",
-  "idea.vote",
-  "task.execute",
-  "task.review",
-  "artifact.register",
-]);
-
 function agentNeedsGithubAuth(agent: Agent | null): boolean {
   if (!agent) return false;
-  return agent.capabilities.some((c) => GITHUB_CAPABILITIES.has(c));
+  return agent.capabilities.configuredMcpServers.some((server) => server.id === "nexus");
 }
 
 export function runGenesisDoctorChecks(

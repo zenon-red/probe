@@ -52,50 +52,11 @@ export function splitCommandLine(value: string): CommandParts {
   return { command: parts[0], args: parts.slice(1) };
 }
 
-const BASE_ENV_KEYS = [
-  "PATH",
-  "HOME",
-  "USER",
-  "LANG",
-  "LC_ALL",
-  "TMPDIR",
-  "TMP",
-  "TEMP",
-  "SHELL",
-  "TERM",
-] as const;
-
-const ENV_KEY_PREFIXES = [
-  "ANTHROPIC_",
-  "OPENAI_",
-  "CLAUDE_",
-  "CODEX_",
-  "GOOGLE_",
-  "AZURE_",
-  "AWS_",
-  "HERMES_",
-  "OPENCODE_",
-  "PROBE_",
-] as const;
-
-/** Minimal env for ACP child agents: base paths plus known API-key prefixes. */
-export function buildAcpAgentEnv(source: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
-  const env: NodeJS.ProcessEnv = {};
-  for (const key of BASE_ENV_KEYS) {
-    const value = source[key];
-    if (value !== undefined) {
-      env[key] = value;
-    }
-  }
-  for (const [key, value] of Object.entries(source)) {
-    if (value === undefined) {
-      continue;
-    }
-    if (ENV_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))) {
-      env[key] = value;
-    }
-  }
-  return env;
+export function buildAcpAgentEnv(
+  source: NodeJS.ProcessEnv = process.env,
+  overrides?: NodeJS.ProcessEnv,
+): NodeJS.ProcessEnv {
+  return overrides ? { ...source, ...overrides } : { ...source };
 }
 
 export function spawnAcpAgent(

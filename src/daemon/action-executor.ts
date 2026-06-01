@@ -5,13 +5,17 @@ import { callReducer, type CommandContext } from "~/utils/context.js";
 import { resolveSpacetimeArgs } from "~/utils/config.js";
 import { enumName } from "~/utils/enums.js";
 import { getCachedToken } from "~/utils/token-cache.js";
-import type { AcpConfig } from "~/types/acp-config.js";
 import type { HarnessDetectionResult } from "~/utils/harness-detection.js";
 import { buildActionPromptAcp } from "~/utils/prompt-builder-acp.js";
 import { HARNESS_TIMEOUT_SECS } from "~/utils/timeouts.js";
 import { loadUserConfig } from "~/utils/user-config.js";
+import type { ActionRunTelemetry, AgentRunOutcome } from "~/acp/types.js";
+import { resolveRunTokens, type ResolvedRunTokens } from "./session-usage/index.js";
 import type { ExecutableAction } from "./executable-action.js";
 import type { EventEmitter } from "./events.js";
+
+const REPORT_FINISH_ATTEMPTS = 5;
+const REPORT_FINISH_DELAY_MS = 400;
 
 export type { ExecutableAction } from "./executable-action.js";
 
@@ -69,6 +73,8 @@ export function createActionExecutor(
       });
     }
 
+    const runStartedAt = new Date();
+
     const { text: promptText, meta: promptMeta } = buildActionPromptAcp(
       {
         id: action.id,
@@ -91,9 +97,7 @@ export function createActionExecutor(
         actionId: action.id,
         harness: deps.harness.harness,
       });
-    } catch {
-      // non-fatal
-    }
+    } catch {}
 
     deps.emit({
       type: "action_started",
@@ -107,7 +111,7 @@ export function createActionExecutor(
         ? (deps.ctx.config.harnessCommand ?? deps.harness.command)
         : undefined;
 
-    const acpConfig = (localConfig as { acp?: AcpConfig }).acp;
+    const acpConfig = localConfig.acp;
 
     try {
       const result = await executeSession({
@@ -133,26 +137,46 @@ export function createActionExecutor(
         },
       });
 
-      const { outcome, durationSecs, telemetry } = result;
+      const { outcome, durationSecs, telemetry: acpTelemetry } = result;
 
-      try {
-        await callReducer(deps.ctx, deps.ctx.conn.reducers.reportActionRunFinished, {
-          actionId: action.id,
-          outcome: { tag: outcome },
-          durationSecs: BigInt(durationSecs),
-          inputTokens: BigInt(telemetry.inputTokens),
-          outputTokens: BigInt(telemetry.outputTokens),
-          tokenSource: telemetry.tokenSource,
-          toolCallsTotal: BigInt(telemetry.toolCallsTotal),
-          toolCallsSucceeded: BigInt(telemetry.toolCallsSucceeded),
-          toolCallsFailed: BigInt(telemetry.toolCallsFailed),
-          nexusToolCalls: BigInt(telemetry.nexusToolCalls),
-          nexusToolCallsFailed: BigInt(telemetry.nexusToolCallsFailed),
-          mcpTelemetryJson: JSON.stringify(telemetry.mcpServerBreakdown),
+      const resolved = await resolveRunTokens(
+        deps.harness.harness,
+        action.id,
+        runStartedAt,
+        acpTelemetry,
+        {
+          markerTemplate: promptMarkerTemplate,
+          dataRoots: acpConfig?.sessionDataRoots,
+        },
+      );
+
+      if (resolved.tokenMismatch) {
+        deps.emit({
+          type: "token_mismatch",
+          action_id: action.id.toString(),
+          acp_input_tokens: acpTelemetry.inputTokens,
+          acp_output_tokens: acpTelemetry.outputTokens,
+          session_input_tokens: resolved.inputTokens,
+          session_output_tokens: resolved.outputTokens,
         });
-      } catch {
-        // non-fatal until bindings regenerated
       }
+
+      if (resolved.tokenSource === "none") {
+        deps.emit({
+          type: "acp_usage_unavailable",
+          action_id: action.id.toString(),
+          reason: resolved.sessionReason ?? "no_usage",
+        });
+        if (resolved.sessionReason) {
+          deps.emit({
+            type: "harness_usage_extraction_failed",
+            action_id: action.id.toString(),
+            reason: resolved.sessionReason,
+          });
+        }
+      }
+
+      await reportRunFinished(deps, action.id, outcome, durationSecs, resolved, acpTelemetry);
 
       if (outcome === "Clean") {
         deps.emit({
@@ -190,5 +214,51 @@ async function reportProgress(
     actionId,
     eventCode,
     note: JSON.stringify(event),
+  });
+}
+
+async function reportRunFinished(
+  deps: ActionExecutorDeps,
+  actionId: bigint,
+  outcome: AgentRunOutcome,
+  durationSecs: number,
+  resolved: ResolvedRunTokens,
+  acpTelemetry: ActionRunTelemetry,
+): Promise<void> {
+  const params = {
+    actionId,
+    outcome: { tag: outcome },
+    durationSecs: BigInt(durationSecs),
+    inputTokens: BigInt(resolved.inputTokens),
+    outputTokens: BigInt(resolved.outputTokens),
+    tokenSource: resolved.tokenSource,
+    toolCallsTotal: BigInt(acpTelemetry.toolCallsTotal),
+    toolCallsSucceeded: BigInt(acpTelemetry.toolCallsSucceeded),
+    toolCallsFailed: BigInt(acpTelemetry.toolCallsFailed),
+    nexusToolCalls: BigInt(acpTelemetry.nexusToolCalls),
+    nexusToolCallsFailed: BigInt(acpTelemetry.nexusToolCallsFailed),
+    mcpTelemetryJson: JSON.stringify(acpTelemetry.mcpServerBreakdown),
+  };
+
+  let lastError = "unknown";
+  for (let attempt = 1; attempt <= REPORT_FINISH_ATTEMPTS; attempt++) {
+    try {
+      await callReducer(deps.ctx, deps.ctx.conn.reducers.reportActionRunFinished, params);
+      return;
+    } catch (err) {
+      lastError = err instanceof Error ? err.message : String(err);
+      if (attempt < REPORT_FINISH_ATTEMPTS) {
+        await new Promise((resolve) => setTimeout(resolve, REPORT_FINISH_DELAY_MS * attempt));
+      }
+    }
+  }
+
+  deps.emit({
+    type: "report_action_run_failed",
+    action_id: actionId.toString(),
+    error: lastError,
+    input_tokens: resolved.inputTokens,
+    output_tokens: resolved.outputTokens,
+    token_source: resolved.tokenSource,
   });
 }

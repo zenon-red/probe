@@ -33,9 +33,9 @@ The marker SHALL NOT be stored in SpacetimeDB; it exists only in the prompt pass
 - **WHEN** the daemon builds a prompt for action id `42`
 - **THEN** the first line of the prompt SHALL be exactly `zenon.red{action:42}`
 
-### Requirement: Post-run session token extraction
+### Requirement: Post-run session token extraction (ACP-primary fallback)
 
-After a harness process exits, the probe daemon SHALL derive `input_tokens` and `output_tokens` by reading harness session persistence on disk, not by parsing harness stdout.
+When ACP did not report usage (or ACP totals diverge from session beyond tolerance), the probe daemon SHALL derive `input_tokens` and `output_tokens` by reading harness session persistence on disk, not by parsing harness stdout.
 
 Supported harnesses for extraction: `pi`, `hermes`, `opencode`, `openclaw`. All other harness values (including `custom`) SHALL yield `0`/`0` without error.
 

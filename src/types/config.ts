@@ -1,3 +1,5 @@
+import type { AcpConfig } from "./acp-config.js";
+
 export type HarnessType = "pi" | "hermes" | "openclaw" | "opencode" | "claude" | "codex" | "custom";
 
 export interface NexusConfig {
@@ -12,6 +14,7 @@ export interface NexusConfig {
   harnessCommand?: string;
   harnessArgs?: string[];
   harnessTimeoutSecs?: number;
+  acp?: AcpConfig;
   spacetime: {
     host: string;
     module: string;

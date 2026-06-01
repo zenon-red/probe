@@ -4,6 +4,7 @@ import {
   PROTOCOL_VERSION,
   type Agent,
   type Client,
+  type InitializeResponse,
 } from "@agentclientprotocol/sdk";
 import type { ChildProcessByStdio } from "node:child_process";
 import type { Readable, Writable } from "node:stream";
@@ -12,6 +13,7 @@ import { agentStdioWebStreams, buildAcpAgentEnv, isChildRunning, spawnAcpAgent }
 export type AcpConnection = {
   connection: ClientSideConnection;
   child: ChildProcessByStdio<Writable, Readable, Readable>;
+  initializeResponse: InitializeResponse;
 };
 
 export const ACP_INIT_TIMEOUT_MS = 15_000;
@@ -54,7 +56,8 @@ export async function openAcpConnection(
   });
 
   try {
-    await Promise.race([initPromise, timeoutPromise]);
+    const initializeResponse = await Promise.race([initPromise, timeoutPromise]);
+    return { connection, child, initializeResponse };
   } catch (error) {
     if (isChildRunning(child)) {
       child.kill("SIGTERM");
@@ -65,6 +68,4 @@ export async function openAcpConnection(
       clearTimeout(timer);
     }
   }
-
-  return { connection, child };
 }

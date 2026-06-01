@@ -7,6 +7,7 @@ import { createActionExecutor, type ActionExecutorDeps } from "./action-executor
 import { ensureGenesisSyncedBeforeHarness } from "./genesis-gate.js";
 import { toExecutableAction, type ExecutableAction } from "./executable-action.js";
 import { sanitizeValue, type EventEmitter } from "./events.js";
+import { reportRuntimeStatus } from "~/utils/genesis-apply.js";
 export type SessionEnd = {
   reason: "disconnected" | "heartbeat_failed" | "stop" | "harness_error";
   details?: unknown;
@@ -47,6 +48,17 @@ export async function runDaemonSession(options: DaemonSessionOptions): Promise<S
 
   const agentId = currentAgent.id as string;
   await subscribeToActions(options.ctx, agentId);
+
+  await reportRuntimeStatus(options.ctx)
+    .then((syncStatus) => {
+      options.emit({ type: "runtime_status_reported", sync_status: syncStatus });
+    })
+    .catch((err) => {
+      options.emit({
+        type: "runtime_status_report_failed",
+        error: err instanceof Error ? err.message : String(err),
+      });
+    });
 
   options.emit({
     type: "ready",

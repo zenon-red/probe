@@ -11,6 +11,7 @@ import {
 } from "spacetimedb";
 import {
   AgentRole,
+  AgentCapabilities,
   AgentStatus,
 } from "./types";
 
@@ -22,7 +23,9 @@ export default __t.row({
   get role() {
     return AgentRole;
   },
-  capabilities: __t.array(__t.string()),
+  get capabilities() {
+    return AgentCapabilities;
+  },
   get status() {
     return AgentStatus;
   },

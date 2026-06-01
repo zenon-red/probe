@@ -25,6 +25,7 @@ import { GITHUB_HOST, nexusRoot } from "~/utils/nexus-paths.js";
 import { loadUserConfig, saveUserConfig } from "~/utils/user-config.js";
 import { errorMessage } from "~/utils/errors.js";
 import { SHELL_TIMEOUT } from "~/utils/timeouts.js";
+import { collectAcpCapabilities } from "~/acp/capabilities.js";
 import type { OnboardStep } from "./types.js";
 
 type MembershipCheck =
@@ -41,7 +42,6 @@ export interface OnboardState {
     host?: string;
     module?: string;
     "password-file"?: string;
-    capabilities?: string;
     bio?: string;
     daemon: string;
     harness: string;
@@ -344,23 +344,22 @@ export async function setBioStep(state: OnboardState): Promise<void> {
 }
 
 export async function setCapabilitiesStep(state: OnboardState): Promise<void> {
-  if (!state.args.capabilities) {
-    addStep(state, "capabilities", "skip", "Not provided");
-    return;
-  }
   if (state.args["dry-run"]) {
-    addStep(state, "capabilities", "skip", "Would set capabilities (dry-run)");
+    addStep(state, "capabilities", "skip", "Would collect ACP capabilities (dry-run)");
     return;
   }
   try {
-    const caps = [
-      ...new Set(
-        state.args.capabilities
-          .split(",")
-          .map((c) => c.trim().toLowerCase())
-          .filter(Boolean),
-      ),
-    ];
+    const localConfig = await loadUserConfig();
+    const harness = localConfig.harness;
+    if (!harness) {
+      addStep(state, "capabilities", "warn", "Harness is not configured");
+      return;
+    }
+    const capabilities = await collectAcpCapabilities({
+      harness,
+      harnessCommand: localConfig.harnessCommand,
+      acpConfig: localConfig.acp,
+    });
     await withAuth(
       commandContextOptions(
         { wallet: state.walletName, host: state.args.host, module: state.args.module },
@@ -368,13 +367,18 @@ export async function setCapabilitiesStep(state: OnboardState): Promise<void> {
       ),
       async (ctx) => {
         await callReducer(ctx, ctx.conn.reducers.updateAgentCapabilities, {
-          capabilities: caps,
+          capabilities,
         });
       },
     );
-    addStep(state, "capabilities", "pass", `Capabilities: ${caps.join(", ")}`);
-  } catch {
-    addStep(state, "capabilities", "warn", "Failed to set capabilities");
+    addStep(
+      state,
+      "capabilities",
+      "pass",
+      `ACP capabilities collected (${capabilities.configuredMcpServers.length} MCP servers, ${capabilities.commands.length} commands)`,
+    );
+  } catch (err) {
+    addStep(state, "capabilities", "warn", errorMessage(err, "Failed to collect capabilities"));
   }
 }
 
@@ -542,7 +546,7 @@ export async function configureHarness(state: OnboardState): Promise<void> {
           state,
           "harness",
           "fail",
-          "No harness detected. Install pi, hermes, openclaw, or opencode — or use --harness custom.",
+          "No harness detected. Install pi, hermes, openclaw, opencode, claude, or codex — or use --harness custom.",
         );
         return;
       }
@@ -572,7 +576,6 @@ export async function configureHarness(state: OnboardState): Promise<void> {
     return;
   }
 
-  // Write harness to config
   const userConfig = await loadUserConfig();
   userConfig.harness = harness.harness;
   if (harness.harness === "custom") {

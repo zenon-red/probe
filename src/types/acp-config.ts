@@ -1,3 +1,5 @@
+import type { HarnessType } from "./config.js";
+
 export type AcpMcpServerConfig = {
   enabled?: boolean;
   command: string;
@@ -8,6 +10,7 @@ export type AcpMcpServerConfig = {
 export type AcpConfig = {
   /** When false, do not attach per-session MCP servers to ACP sessions. */
   attachPerSessionMcp?: boolean;
+  sessionDataRoots?: Partial<Record<HarnessType, string>>;
   mcp?: {
     nexus?: AcpMcpServerConfig;
     seti?: AcpMcpServerConfig;

@@ -70,6 +70,18 @@ export class ProbeAcpClient implements Client {
       return;
     }
 
+    if (update.sessionUpdate === "available_commands_update") {
+      this.options.onEvent?.({
+        type: "acp_available_commands",
+        commands: update.availableCommands.map((command) => ({
+          name: command.name,
+          description: command.description ?? "",
+          inputHint: command.input?.hint ?? undefined,
+        })),
+      });
+      return;
+    }
+
     if (update.sessionUpdate === "usage_update") {
       const tokenUpdate = update as Record<string, unknown>;
       if (!usageUpdateHasTokens(tokenUpdate)) {

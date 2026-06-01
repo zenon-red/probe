@@ -1,4 +1,4 @@
-export type TokenSource = "acp_prompt" | "acp_usage_update" | "none";
+export type TokenSource = "acp_prompt" | "acp_usage_update" | "session_file" | "none";
 
 export type McpServerTelemetry = {
   calls: number;

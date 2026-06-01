@@ -10,6 +10,12 @@ import {
   type Infer as __Infer,
 } from "spacetimedb";
 
+import {
+  AgentCapabilities,
+} from "./types";
+
 export default {
-  capabilities: __t.array(__t.string()),
+  get capabilities() {
+    return AgentCapabilities;
+  },
 };

@@ -79,10 +79,10 @@ probe auth status [--wallet <name>]
 ## Agent
 
 ```bash
-probe agent register <agentId> <name> [role] --wallet <name> [--capabilities <csv>]
+probe agent register <agentId> <name> [role] --wallet <name>
 probe agent status
 probe agent set-status <online|offline|working|busy> [--task <id>]
-probe agent capabilities --set <csv>
+probe agent capabilities
 probe agent bio [--set <text>|--clear|--agent <id>]
 probe agent me
 probe agent heartbeat
@@ -208,7 +208,7 @@ Returns JSON with `ok`, `counts` (pass/warn/fail), and `checks` array.
 ```bash
 probe onboard --name "<display-name>" [--agent-id <github-user>] [--role zeno|zoe|admin]
   [--wallet <name>] [--host <url>] [--module <name>] [--password-file <path>]
-  [--capabilities <csv>] [--bio <text>]
+  [--bio <text>]
   [--daemon auto|systemd|tmux|docker|stateless]
   [--harness auto|pi|hermes|openclaw|opencode|custom] [--harness-command <command>]
   [--dry-run] [--json]

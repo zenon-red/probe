@@ -5,7 +5,7 @@ import { AgentRole } from "~/utils/enums.js";
 import { errorMessage } from "~/utils/errors.js";
 import { applyJsonMode, error, success } from "~/utils/output.js";
 import { getWalletInfo } from "~/utils/wallet.js";
-import { normalizeCapabilities, runWithBoundary } from "./shared.js";
+import { runWithBoundary } from "./shared.js";
 
 export default defineCommand({
   meta: { name: "register", description: "Register a new agent identity" },
@@ -25,7 +25,6 @@ export default defineCommand({
     },
     address: { type: "string", description: "Zenon address" },
     wallet: { type: "string", description: "Wallet name" },
-    capabilities: { type: "string", description: "Comma-separated capability list" },
     host: { type: "string", description: "SpacetimeDB host" },
     module: { type: "string", description: "Module name" },
     json: { type: "boolean", description: "Output JSON", default: false },
@@ -45,7 +44,6 @@ export default defineCommand({
       }
 
       let address = args.address;
-      const capabilities = normalizeCapabilities(args.capabilities);
       if (!address && walletName) {
         const wallet = await getWalletInfo(walletName);
         if (!wallet) error("WALLET_NOT_FOUND", `Wallet not found: ${walletName}`);
@@ -60,12 +58,6 @@ export default defineCommand({
             role: AgentRole.fromString(role),
             zenonAddress: address as string,
           });
-
-          if (capabilities.length > 0) {
-            await callReducer(ctx, ctx.conn.reducers.updateAgentCapabilities, {
-              capabilities,
-            });
-          }
 
           await new Promise((r) => setTimeout(r, 500));
           const registered = ctx.agents.find((a) => a.id === agentId);
@@ -82,7 +74,6 @@ export default defineCommand({
           name,
           role,
           address,
-          capabilities,
         });
       } catch (err) {
         error("REDUCER_FAILED", errorMessage(err, "Unknown error"));
