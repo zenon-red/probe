@@ -1,15 +1,14 @@
 import { defineSubcommandParent } from "~/utils/subcommand.js";
-import specReview from "./review.js";
 import specShow from "./show.js";
 import specSubmit from "./submit.js";
 import specValidate from "./validate.js";
 
 export default defineSubcommandParent({
   name: "spec",
-  description: "Project spec reference and review",
+  description: "Project spec reference, submit, and validate",
   help: {
     command: "probe project spec",
-    description: "Submit, review, show, and validate OpenSpec references",
+    description: "Submit, show, and validate OpenSpec references",
     usage: [
       "probe project spec <subcommand> <project-id> [options]",
       "probe project spec show <id>",
@@ -17,14 +16,12 @@ export default defineSubcommandParent({
     ],
     actions: [
       { name: "submit <id>", detail: "Submit spec ref for human review (Zoe/Admin)" },
-      { name: "review <id>", detail: "Review spec (human role)" },
       { name: "show <id>", detail: "Show spec fields from Nexus" },
       { name: "validate <id>", detail: "Run openspec validate at spec ref commit" },
     ],
   },
   subCommands: {
     submit: specSubmit,
-    review: specReview,
     show: specShow,
     validate: specValidate,
   },

@@ -1,4 +1,5 @@
 import type { AcpConfig } from "./acp-config.js";
+import { resolveDefaultGenesisUrl } from "~/utils/default-genesis-url.js";
 
 export type HarnessType = "pi" | "hermes" | "openclaw" | "opencode" | "claude" | "codex" | "custom";
 
@@ -47,8 +48,7 @@ export const DEFAULT_CONFIG: NexusConfig = {
     host: "wss://db.zenon.red",
     module: "nexus",
   },
-  defaultGenesisUrl:
-    "https://raw.githubusercontent.com/zenon-red/nexus/main/orgs/zenon-red/genesis.json",
+  defaultGenesisUrl: resolveDefaultGenesisUrl(),
 };
 
 export interface WalletInfo {

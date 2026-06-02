@@ -8,6 +8,7 @@ export type ResolvedRunTokens = {
   outputTokens: number;
   tokenSource: TokenSource;
   tokenMismatch: boolean;
+  sessionFile?: string;
   sessionReason?: string;
 };
 
@@ -38,6 +39,10 @@ function usageDiverges(acp: ActionRunTelemetry, session: SessionUsageResult): bo
   return Math.abs(acpTotal - sessionTotal) / sessionTotal > MISMATCH_RELATIVE;
 }
 
+function withSessionFile<T extends ResolvedRunTokens>(row: T, session: SessionUsageResult): T {
+  return session.sessionFile ? { ...row, sessionFile: session.sessionFile } : row;
+}
+
 export async function resolveRunTokens(
   harness: HarnessType,
   actionId: bigint,
@@ -51,22 +56,28 @@ export async function resolveRunTokens(
 
   if (sessionHasTotals) {
     if (!acpReportsUsage(acp) || !acpHasTokenTotals(acp)) {
-      return {
-        inputTokens: session.inputTokens,
-        outputTokens: session.outputTokens,
-        tokenSource: "session_file",
-        tokenMismatch: false,
-        sessionReason: session.reason,
-      };
+      return withSessionFile(
+        {
+          inputTokens: session.inputTokens,
+          outputTokens: session.outputTokens,
+          tokenSource: "session_file",
+          tokenMismatch: false,
+          sessionReason: session.reason,
+        },
+        session,
+      );
     }
     if (usageDiverges(acp, session)) {
-      return {
-        inputTokens: session.inputTokens,
-        outputTokens: session.outputTokens,
-        tokenSource: "session_file",
-        tokenMismatch: true,
-        sessionReason: session.reason,
-      };
+      return withSessionFile(
+        {
+          inputTokens: session.inputTokens,
+          outputTokens: session.outputTokens,
+          tokenSource: "session_file",
+          tokenMismatch: true,
+          sessionReason: session.reason,
+        },
+        session,
+      );
     }
   }
 

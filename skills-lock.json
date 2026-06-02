@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "ink": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/ink/SKILL.md",
+      "computedHash": "127794ab4d276c5dd3fba93d06d041edbb46481032b315b8b5bd24994e7bcff8"
+    }
+  }
+}

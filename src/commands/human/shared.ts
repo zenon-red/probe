@@ -21,3 +21,13 @@ export function parseTargetIdentityHex(raw: string): Identity {
   }
   return Identity.fromString(targetIdentity.toLowerCase());
 }
+
+export function parseDispatchMode(raw: string): "on" | "off" | "status" {
+  const mode = raw.toLowerCase().trim();
+  if (mode === "on" || mode === "off" || mode === "status") {
+    return mode;
+  }
+  error("INVALID_DISPATCH_MODE", "mode must be one of: on, off, status");
+}
+
+export { readDispatchEnabled } from "~/utils/dispatch-enabled.js";

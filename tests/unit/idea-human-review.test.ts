@@ -37,7 +37,6 @@ describe("idea subcommands", () => {
       "list",
       "pending",
       "propose",
-      "review",
       "vote",
     ]);
   });

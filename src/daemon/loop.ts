@@ -16,15 +16,21 @@ import {
   type SessionEnd,
 } from "./session.js";
 import {
-  createEventEmitter,
+  createEventBus,
   resolveLogLevel,
   resolveLogStream,
   sanitizeValue,
+  type DaemonEvent,
+  type EventBus,
   type EventEmitter,
   type LogLevel,
 } from "./events.js";
+import { isAdapterHarness, resolveAdapterLaunch } from "~/acp/agents/adapter-registry.js";
+import { mountNexusTui, runReplayTui, type NexusTuiHandle } from "./tui/render.js";
 import type { RunAcpSessionOptions } from "~/acp/run-action.js";
 import type { AcpRunResult } from "~/acp/types.js";
+import { acquireDaemonIpcLock, DaemonAlreadyRunningError } from "./ipc-lock.js";
+import { nexusAuditLogPath } from "./audit-paths.js";
 
 export const nexusDaemonArgs = {
   wallet: {
@@ -50,7 +56,11 @@ export const nexusDaemonArgs = {
   },
   harness: {
     type: "string",
-    description: "Harness override: auto, pi, hermes, openclaw, opencode, custom",
+    description: "Harness override: auto, pi, hermes, openclaw, opencode, claude, codex, custom",
+  },
+  replay: {
+    type: "string",
+    description: "Render TUI from recorded JSONL without connecting to STDB",
   },
   json: {
     type: "boolean",
@@ -97,6 +107,9 @@ export function resolveHarness(options: ResolveHarnessOptions): HarnessDetection
         args: options.config.harnessArgs || [],
       };
     }
+    if (explicit === "claude" || explicit === "codex" || explicit === "pi") {
+      return { harness: explicit, command: "", args: [] };
+    }
     const match = detect().find((d) => d.harness === explicit);
     if (!match) throw new Error(`Harness "${explicit}" not detected.`);
     return match;
@@ -114,7 +127,81 @@ export type RunDaemonLoopOptions = {
   runAcpSession?: (options: RunAcpSessionOptions) => Promise<AcpRunResult>;
   sleepFn?: (ms: number) => Promise<void>;
   backoffMsFn?: (attempt: number) => number;
+  acquireDaemonIpcLockFn?: typeof acquireDaemonIpcLock;
 };
+
+type DaemonEventSurface = {
+  bus: EventBus;
+  emit: EventEmitter;
+  logStream: WriteStream | null;
+  close: () => void;
+};
+
+type StopController = {
+  stopping: () => boolean;
+  signal: () => "SIGINT" | "SIGTERM" | null;
+  waiter: Promise<void>;
+  dispose: () => void;
+};
+
+async function createDaemonEventSurface(options: {
+  args: Record<string, unknown>;
+  wallet: string;
+  logLevel: LogLevel;
+  resolveLogStreamFn: typeof resolveLogStream;
+  publish?: (event: DaemonEvent) => void;
+}): Promise<DaemonEventSurface> {
+  const logPath =
+    (options.args["log-file"] as string | undefined) ?? nexusAuditLogPath(options.wallet);
+  const logStream = await options.resolveLogStreamFn(logPath);
+  const renderTui = process.stderr.isTTY;
+  const stdoutFeedsTerminal = process.stdout.isTTY;
+  const writeJsonlToStdout = Boolean(options.args.json) || !(renderTui && stdoutFeedsTerminal);
+  const bus = createEventBus({
+    logLevel: options.logLevel,
+    logStream,
+    write: writeJsonlToStdout ? undefined : () => {},
+  });
+  if (options.publish) bus.subscribe(options.publish);
+
+  return {
+    bus,
+    emit: bus.emit,
+    logStream,
+    close: () => {
+      if (logStream) logStream.end();
+    },
+  };
+}
+
+function createStopController(): StopController {
+  let stopping = false;
+  let stopSignal: "SIGINT" | "SIGTERM" | null = null;
+  let resolveWaiter: (() => void) | undefined;
+  const waiter = new Promise<void>((resolve) => {
+    resolveWaiter = resolve;
+  });
+  const requestStop = (signal: "SIGINT" | "SIGTERM") => {
+    if (stopping) return;
+    stopping = true;
+    stopSignal = signal;
+    resolveWaiter?.();
+  };
+  const onSigint = () => requestStop("SIGINT");
+  const onSigterm = () => requestStop("SIGTERM");
+  process.on("SIGINT", onSigint);
+  process.on("SIGTERM", onSigterm);
+
+  return {
+    stopping: () => stopping,
+    signal: () => stopSignal,
+    waiter,
+    dispose: () => {
+      process.off("SIGINT", onSigint);
+      process.off("SIGTERM", onSigterm);
+    },
+  };
+}
 
 export async function runDaemonLoop(options: RunDaemonLoopOptions): Promise<void> {
   const args = options.args;
@@ -125,6 +212,7 @@ export async function runDaemonLoop(options: RunDaemonLoopOptions): Promise<void
   const sleepFn = options.sleepFn ?? sleep;
   const backoffMsFn = options.backoffMsFn ?? backoffMs;
   const runDaemonSessionFn = options.runDaemonSessionFn ?? runDaemonSession;
+  const acquireDaemonIpcLockFn = options.acquireDaemonIpcLockFn ?? acquireDaemonIpcLock;
 
   const config = await getConfigFn();
   const { host: resolvedHost, module: resolvedModule } = resolveSpacetimeArgs(
@@ -139,138 +227,188 @@ export async function runDaemonLoop(options: RunDaemonLoopOptions): Promise<void
     renderProbeErrorAndExit(ProbeError.of("HARNESS_DETECTION_FAILED", normalizeError(err)));
   }
 
-  let logStream: WriteStream | null = null;
-  try {
-    logStream = await resolveLogStreamFn(args["log-file"] as string | undefined);
-  } catch (err) {
-    console.error(`Log file error: ${normalizeError(err)}`);
+  const replayPath = args.replay as string | undefined;
+  if (replayPath) {
+    await runReplayTui(replayPath);
     return;
   }
 
-  const emit = createEventEmitter({ logLevel, logStream });
-
-  let stopping = false;
-  let stopSignal: "SIGINT" | "SIGTERM" | null = null;
-
-  const stopWaiter = new Promise<void>((resolve) => {
-    const onSigint = () => {
-      if (!stopping) {
-        stopping = true;
-        stopSignal = "SIGINT";
-        resolve();
-      }
-    };
-    const onSigterm = () => {
-      if (!stopping) {
-        stopping = true;
-        stopSignal = "SIGTERM";
-        resolve();
-      }
-    };
-    process.on("SIGINT", onSigint);
-    process.on("SIGTERM", onSigterm);
-  });
-
-  let reconnectAttempt = 0;
-  let downtimeStartedAt: number | null = null;
-  let hasConnectedOnce = false;
-
-  while (!stopping) {
-    let sessionEnd: SessionEnd | null = null;
-
-    try {
-      await withAuthImpl(
-        commandContextOptions(
-          {
-            wallet: args.wallet as string | undefined,
-            host: args.host as string | undefined,
-            module: args.module as string | undefined,
-          },
-          {
-            onDisconnect: createSessionEndSetter(
-              () => sessionEnd,
-              (end) => {
-                sessionEnd = end;
-              },
-            ),
-            subscribeFactory: (identity) => {
-              const idHex = identity.toHexString();
-              if (!/^[0-9a-f]+$/.test(idHex)) throw new Error(`Invalid identity hex: ${idHex}`);
-              return [`SELECT * FROM agents WHERE identity = '${idHex}'`];
-            },
-          },
-        ),
-        async (ctx) => {
-          const effectiveWallet = ctx.auth?.wallet || (args.wallet as string | undefined) || null;
-
-          if (!hasConnectedOnce) {
-            emit({
-              type: "connected",
-              identity: ctx.identity?.toHexString(),
-              wallet: effectiveWallet,
-              host: resolvedHost,
-              module: resolvedModule,
-            });
-          } else {
-            emit({
-              type: "reconnected",
-              attempts: reconnectAttempt,
-              downtime_ms: downtimeStartedAt ? Date.now() - downtimeStartedAt : null,
-              identity: ctx.identity?.toHexString(),
-            });
-          }
-
-          hasConnectedOnce = true;
-          reconnectAttempt = 0;
-          downtimeStartedAt = null;
-
-          sessionEnd = await runDaemonSessionFn({
-            ctx,
-            harness,
-            emit,
-            effectiveWallet,
-            resolvedHost,
-            resolvedModule,
-            logFile: (args["log-file"] as string | undefined) || null,
-            logLevel,
-            stopping: () => stopping,
-            stopWaiter,
-            sleep: sleepFn,
-            withJitter: (baseMs) => withJitter(baseMs),
-            runAcpSession: options.runAcpSession,
-          });
-        },
-      );
-    } catch (err) {
-      const message = normalizeError(err);
-      if (connectErrorLooksAuthRelated(message)) {
-        emit({ type: "auth_failed", message });
-        break;
-      }
-      emit({ type: "subscription_error", message });
-      sessionEnd = { reason: "disconnected", details: { message } };
+  let releaseDaemonIpcLock: (() => Promise<void>) | undefined;
+  const lockWallet = (args.wallet as string | undefined) || config.defaultWallet || "default";
+  let ipcPublish: ((event: DaemonEvent) => void) | undefined;
+  try {
+    const lock = await acquireDaemonIpcLockFn(lockWallet);
+    releaseDaemonIpcLock = lock.release;
+    ipcPublish = lock.publish;
+  } catch (err) {
+    if (err instanceof DaemonAlreadyRunningError) {
+      renderProbeErrorAndExit(ProbeError.of("DAEMON_ALREADY_RUNNING", err.message));
+      return;
     }
-
-    if (stopping) break;
-
-    const reason = sessionEnd?.reason || "disconnected";
-    emit({ type: "disconnected", reason, details: sanitizeValue(sessionEnd?.details || null) });
-
-    if (downtimeStartedAt === null) downtimeStartedAt = Date.now();
-
-    reconnectAttempt += 1;
-    const waitMs = backoffMsFn(reconnectAttempt);
-    emit({ type: "reconnecting", attempt: reconnectAttempt, backoff_ms: waitMs });
-
-    await Promise.race([stopWaiter, sleepFn(waitMs)]);
+    throw err;
   }
 
-  emit({ type: "shutdown", signal: stopSignal || "unknown" });
-  if (logStream) logStream.end();
+  let eventSurface: DaemonEventSurface | null = null;
+  try {
+    eventSurface = await createDaemonEventSurface({
+      args,
+      wallet: lockWallet,
+      logLevel,
+      resolveLogStreamFn,
+      publish: ipcPublish,
+    });
+  } catch (err) {
+    console.error(`Log file error: ${normalizeError(err)}`);
+    await releaseDaemonIpcLock?.();
+    return;
+  }
+
+  const emit = eventSurface.emit;
+  let tuiHandle: NexusTuiHandle | null = null;
+  let stop: StopController | null = null;
+
+  try {
+    if (isAdapterHarness(harness.harness)) {
+      try {
+        const resolved = await resolveAdapterLaunch(harness.harness);
+        emit({
+          type: "adapter_resolved",
+          harness: harness.harness,
+          registry_id: resolved.registryId,
+          version: resolved.version,
+          source: resolved.source,
+        });
+      } catch (err) {
+        const message = normalizeError(err);
+        renderProbeErrorAndExit(ProbeError.of("ADAPTER_RESOLVE_FAILED", message));
+      }
+    }
+
+    if (process.stderr.isTTY) {
+      tuiHandle = mountNexusTui(eventSurface.bus, {
+        initial: {
+          harness: harness.harness,
+          host: resolvedHost,
+          module: resolvedModule,
+          dispatch: "unknown",
+        },
+        wallet: args.wallet as string | undefined,
+      });
+    }
+
+    stop = createStopController();
+    const activeStop = stop;
+
+    let reconnectAttempt = 0;
+    let downtimeStartedAt: number | null = null;
+    let hasConnectedOnce = false;
+
+    while (!activeStop.stopping()) {
+      let sessionEnd: SessionEnd | null = null;
+
+      try {
+        await withAuthImpl(
+          commandContextOptions(
+            {
+              wallet: args.wallet as string | undefined,
+              host: args.host as string | undefined,
+              module: args.module as string | undefined,
+            },
+            {
+              onDisconnect: createSessionEndSetter(
+                () => sessionEnd,
+                (end) => {
+                  sessionEnd = end;
+                },
+              ),
+              subscribeFactory: (identity) => {
+                const idHex = identity.toHexString();
+                if (!/^[0-9a-f]+$/.test(idHex)) throw new Error(`Invalid identity hex: ${idHex}`);
+                return [
+                  `SELECT * FROM agents WHERE identity = '${idHex}'`,
+                  `SELECT * FROM config WHERE key = 'dispatch_enabled'`,
+                ];
+              },
+            },
+          ),
+          async (ctx) => {
+            const effectiveWallet = ctx.auth?.wallet || (args.wallet as string | undefined) || null;
+
+            if (!hasConnectedOnce) {
+              emit({
+                type: "connected",
+                identity: ctx.identity?.toHexString(),
+                wallet: effectiveWallet,
+                host: resolvedHost,
+                module: resolvedModule,
+              });
+            } else {
+              emit({
+                type: "reconnected",
+                attempts: reconnectAttempt,
+                downtime_ms: downtimeStartedAt ? Date.now() - downtimeStartedAt : null,
+                identity: ctx.identity?.toHexString(),
+              });
+            }
+
+            hasConnectedOnce = true;
+            downtimeStartedAt = null;
+
+            sessionEnd = await runDaemonSessionFn({
+              ctx,
+              harness,
+              emit,
+              effectiveWallet,
+              resolvedHost,
+              resolvedModule,
+              logFile: (args["log-file"] as string | undefined) || null,
+              logLevel,
+              stopping: activeStop.stopping,
+              stopWaiter: activeStop.waiter,
+              sleep: sleepFn,
+              withJitter: (baseMs) => withJitter(baseMs),
+              runAcpSession: options.runAcpSession,
+            });
+          },
+        );
+      } catch (err) {
+        const message = normalizeError(err);
+        if (connectErrorLooksAuthRelated(message)) {
+          emit({ type: "auth_failed", message });
+          break;
+        }
+        emit({ type: "subscription_error", message });
+        sessionEnd = { reason: "disconnected", details: { message } };
+      }
+
+      if (activeStop.stopping()) break;
+
+      const reason = sessionEnd?.reason || "disconnected";
+      emit({ type: "disconnected", reason, details: sanitizeValue(sessionEnd?.details || null) });
+
+      if (downtimeStartedAt === null) downtimeStartedAt = Date.now();
+
+      if (sessionEnd?.reason !== "auth_failed") {
+        reconnectAttempt = 0;
+      }
+      reconnectAttempt += 1;
+      const waitMs = backoffMsFn(reconnectAttempt);
+      emit({ type: "reconnecting", attempt: reconnectAttempt, backoff_ms: waitMs });
+
+      await Promise.race([activeStop.waiter, sleepFn(waitMs)]);
+    }
+
+    emit({ type: "shutdown", signal: activeStop.signal() || "unknown" });
+  } finally {
+    stop?.dispose();
+    tuiHandle?.unmount();
+    eventSurface?.close();
+    await releaseDaemonIpcLock?.();
+  }
 }
 
 export async function runNexusDaemon(args: Record<string, unknown>): Promise<void> {
   await runDaemonLoop({ args });
 }
 
-export type { EventEmitter, LogLevel, SessionEnd };
+export type { EventBus, EventEmitter, LogLevel, SessionEnd };

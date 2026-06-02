@@ -2,8 +2,19 @@ import { defineCommand } from "citty";
 import { forceHelpRequested, printHelp } from "~/utils/help.js";
 import { applyDoctorFixes, buildDoctorNextCommands } from "~/utils/doctor-issues.js";
 import { exitProcess } from "~/utils/boundary.js";
-import { applyJsonMode, success } from "~/utils/output.js";
+import { applyJsonMode, error, success } from "~/utils/output.js";
 import { runHealthChecks } from "~/utils/health.js";
+import { getConfig } from "~/utils/config.js";
+import { runAcpDoctor } from "~/acp/doctor.js";
+import {
+  installAdapterFromMetadata,
+  isAdapterHarness,
+  resolveAdapterMetadata,
+} from "~/acp/agents/adapter-registry.js";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
 
 export default defineCommand({
   meta: {
@@ -32,6 +43,11 @@ export default defineCommand({
     "no-agent": {
       type: "boolean",
       description: "Skip agent registration check",
+      default: false,
+    },
+    install: {
+      type: "boolean",
+      description: "Install missing ACP adapter from registry metadata",
       default: false,
     },
     json: {
@@ -87,6 +103,32 @@ export default defineCommand({
       });
     }
 
+    if (args.install) {
+      const cfg = await getConfig();
+      const harness = cfg.harness;
+      if (!harness || !isAdapterHarness(harness)) {
+        error("ARGS_INVALID", "--install requires harness claude, codex, or pi in config");
+      }
+      const adapterHarness = harness;
+      const metadata = await resolveAdapterMetadata(adapterHarness);
+      const cmd = await installAdapterFromMetadata(metadata);
+      await execFileAsync(cmd.command, cmd.args, { timeout: 120_000 });
+      success({
+        ok: true,
+        installed: adapterHarness,
+        registry_id: metadata.registryId,
+        version: metadata.version,
+        command: `${cmd.command} ${cmd.args.join(" ")}`,
+      });
+      return;
+    }
+
+    const cfg = await getConfig();
+    const acpReport = await runAcpDoctor({
+      harness: cfg.harness,
+      harnessCommand: cfg.harnessCommand,
+    });
+
     const result = await runHealthChecks({
       wallet: args.wallet,
       host: args.host,
@@ -96,7 +138,13 @@ export default defineCommand({
 
     const { ok, counts, issues, walletName } = result;
     success(
-      { ok, counts, issues, ...(fixed.length > 0 ? { fixed } : {}) },
+      {
+        ok,
+        counts,
+        issues,
+        acp: acpReport,
+        ...(fixed.length > 0 ? { fixed } : {}),
+      },
       buildDoctorNextCommands(issues, walletName),
     );
 

@@ -5,13 +5,11 @@ import ideaGet from "./idea/get.js";
 import ideaList from "./idea/list.js";
 import ideaPending from "./idea/pending.js";
 import ideaPropose from "./idea/propose.js";
-import ideaReview from "./idea/review.js";
 import ideaVote from "./idea/vote.js";
 
 export default defineSubcommandParent({
   name: "idea",
-  description:
-    "Idea discovery, review, and voting — list, pending, get, dimensions, propose, review, vote",
+  description: "Idea discovery and voting — list, pending, get, dimensions, propose, vote",
   args: {
     wallet: { type: "string", description: "Wallet name" },
     host: { type: "string", description: "SpacetimeDB host" },
@@ -28,7 +26,6 @@ export default defineSubcommandParent({
       { name: "get <id>", detail: "Show one idea" },
       { name: "dimensions", detail: "List evaluation dimensions" },
       { name: "propose", detail: "Propose an idea" },
-      { name: "review <id>", detail: "Review an idea (human role)" },
       { name: "vote <id>", detail: "Vote on an idea" },
     ],
   },
@@ -38,7 +35,6 @@ export default defineSubcommandParent({
     get: ideaGet,
     dimensions: ideaDimensions,
     propose: ideaPropose,
-    review: ideaReview,
     vote: ideaVote,
   },
 });

@@ -1,6 +1,8 @@
-# Probe CLI — agent reference
+# Probe CLI — output contract
 
 Probe is agent-only. Parse stdout as data; read stderr for errors. Interactive prompts are not supported.
+
+Operational command guidance lives in `skills/probe/SKILL.md` and `skills/probe/references/`.
 
 ## Output policy (policy A)
 
@@ -10,7 +12,7 @@ Probe is agent-only. Parse stdout as data; read stderr for errors. Interactive p
 - **Failure (`--json`):** `{ "success": false, "error": { "code", "message", "suggestion?" } }` on stderr.
 - **stdout on failure:** empty (no success payload).
 - **Help text:** plain text only (no ANSI/color) on stdout for `probe`, `probe --help`, and subcommand `--help`.
-- **Daemon:** `probe nexus` writes JSONL events to stdout only.
+- **Daemon:** `probe nexus run` writes JSONL events to stdout when stdout is being captured or `--json` is set.
 
 Command reference: run `probe --help` (full list) or `probe <command> --help` (per-command). The npm package ships the binary only — no bundled docs.
 

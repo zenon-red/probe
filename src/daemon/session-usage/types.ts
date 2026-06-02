@@ -4,6 +4,7 @@ export type SessionUsageResult = {
   found: boolean;
   inputTokens: number;
   outputTokens: number;
+  sessionFile?: string;
   reason?: string;
 };
 

@@ -51,7 +51,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=${probePath} nexus --wallet ${config.wallet}
+ExecStart=${probePath} nexus
 Restart=always
 RestartSec=3
 ${hostLine}
@@ -136,8 +136,6 @@ const launchdAdapter: DaemonAdapter = {
 	<array>
 		<string>${probePath}</string>
 		<string>nexus</string>
-		<string>--wallet</string>
-		<string>${config.wallet}</string>
 	</array>
 	<key>RunAtLoad</key>
 	<true/>
@@ -198,7 +196,7 @@ const tmuxAdapter: DaemonAdapter = {
   async install(config) {
     try {
       execSync(
-        `tmux has-session -t nexus 2>/dev/null || tmux new-session -d -s nexus "probe nexus --wallet ${config.wallet}"`,
+        `tmux has-session -t nexus 2>/dev/null || tmux new-session -d -s nexus "probe nexus"`,
         { stdio: "ignore", timeout: 10000 },
       );
       return {

@@ -1,12 +1,13 @@
 import { defineCommand } from "citty";
+import { parseReviewDecision } from "~/commands/nexus/idea/shared.js";
 import { applyJsonMode, success } from "~/utils/output.js";
 import { runReducerCommand } from "~/utils/reducer-command.js";
-import { parseReviewDecision, runWithBoundary } from "./shared.js";
+import { runWithBoundary } from "../shared.js";
 
 export default defineCommand({
-  meta: { name: "review", description: "Review an idea (human role)" },
+  meta: { name: "spec", description: "Review a project spec (Human role)" },
   args: {
-    id: { type: "positional", name: "id", description: "Idea ID", required: true },
+    id: { type: "positional", name: "id", description: "Project ID", required: true },
     decision: {
       type: "string",
       description: "approved | rejected | changes-requested",
@@ -27,9 +28,9 @@ export default defineCommand({
 
     await runWithBoundary(async () => {
       await runReducerCommand(args, {
-        reducer: (ctx) => ctx.conn.reducers.reviewIdeaHuman,
+        reducer: (ctx) => ctx.conn.reducers.reviewProjectSpec,
         params: {
-          ideaId: BigInt(String(args.id)),
+          projectId: BigInt(args.id as string),
           decision,
           reasonCode: String(args["reason-code"] || ""),
           comment: String(args.comment || ""),
@@ -37,7 +38,7 @@ export default defineCommand({
       });
       success({
         reviewed: true,
-        idea_id: String(args.id),
+        project_id: String(args.id),
         decision: decisionRaw.toLowerCase().trim(),
       });
     });

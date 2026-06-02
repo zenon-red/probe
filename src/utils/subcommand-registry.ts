@@ -31,14 +31,12 @@ export const SUBCOMMAND_PARENTS: Record<string, ReadonlySet<string>> = {
     "voice",
   ]),
   project: new Set(["list", "get", "status", "create", "set-status", "spec"]),
-  idea: new Set(["list", "pending", "get", "dimensions", "propose", "review", "vote"]),
-  admin: new Set(["assign-human"]),
+  idea: new Set(["list", "pending", "get", "dimensions", "propose", "vote"]),
+  human: new Set(["assign", "dispatch", "review"]),
   discover: new Set(["report", "review", "list", "get"]),
   cooldown: new Set(["show", "set", "off", "inherit"]),
 };
 
-/** Parent-level flags (before subcommand) that do not take a separate argv value. */
 export const SUBCOMMAND_PARENT_BOOLEAN_FLAGS = new Set(["json", "help", "h", "raw"]);
 
-/** Parent-level flags (before subcommand) that consume the next argv token. */
 export const SUBCOMMAND_PARENT_VALUE_FLAGS = new Set(["wallet", "host", "module", "w"]);

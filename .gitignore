@@ -17,6 +17,7 @@ wallets/
 tokens/
 .cursor/
 .opencode/
+.agents/
 
 # misc
 .vscode/

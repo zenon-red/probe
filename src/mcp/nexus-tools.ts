@@ -47,7 +47,7 @@ export function registerNexusMcpTools(server: McpServer): void {
     },
     async ({ action_id }) =>
       runTool(async () =>
-        withNexusMcpContext(async (ctx, boundId) => {
+        withNexusMcpContext(async (ctx) => {
           const actionId = parseActionId(action_id);
           assertBoundActionId(actionId);
           const action = findAction(ctx, actionId);

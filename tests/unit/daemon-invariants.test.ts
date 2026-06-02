@@ -76,6 +76,7 @@ describe("createActionExecutor", () => {
     return createActionExecutor({
       ctx: createMockCtx(reducerBehavior) as never,
       harness: { harness: "pi", command: "pi", args: [] },
+      effectiveWallet: "test-wallet",
       emit: (event) => events.push(event),
       setRunningHarness: (child) => {
         runningHarness = child;
@@ -157,11 +158,15 @@ describe("runDaemonSession invariants", () => {
           reportActionRunFinished: mock(async () => {}),
         },
       },
+      stdbConfig: [{ key: "dispatch_enabled", value: "true" }],
       db: {
         agent_actions: {
           onInsert: (cb: (_ctx: unknown, row: unknown) => void) => {
             insertHandler = cb;
           },
+        },
+        config: {
+          onUpdate: () => {},
         },
       },
     };

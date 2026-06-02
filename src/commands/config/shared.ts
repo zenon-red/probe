@@ -9,6 +9,7 @@ export const VALID_CONFIG_KEYS = [
   "autoUpdate",
   "tokenCacheDir",
   "requestTimeout",
+  "defaultGenesisUrl",
   "spacetime.host",
   "spacetime.module",
 ] as const;

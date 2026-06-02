@@ -35,7 +35,7 @@ export async function checkHarnessAcpReadiness(
 
   let launch;
   try {
-    launch = resolveHarnessAgentLaunch(harness, harnessCommand);
+    launch = await resolveHarnessAgentLaunch(harness, harnessCommand);
   } catch (error) {
     issues.push({
       code: "acp_agent_missing",

@@ -156,6 +156,22 @@ describe("subcommand-only parent commands", () => {
     ).not.toThrow();
   });
 
+  it("guardNexusDaemonArgv allows nexus run and nexus status", () => {
+    expect(() => guardNexusDaemonArgv(["nexus", "run", "--wallet", "zr-zoe"])).not.toThrow();
+    expect(() =>
+      guardNexusDaemonArgv(["nexus", "status", "--wallet", "zr-zoe", "--format", "json"]),
+    ).not.toThrow();
+  });
+
+  it("guardNexusDaemonArgv rejects probe nexus task", () => {
+    try {
+      guardNexusDaemonArgv(["nexus", "task", "list"]);
+      throw new Error("expected UNKNOWN_ARGS");
+    } catch (err) {
+      expect((err as { code?: string }).code).toBe("UNKNOWN_ARGS");
+    }
+  });
+
   it("guardUnknownSubcommand reports bogus not option value as unknown subcommand", () => {
     try {
       guardUnknownSubcommand(["action", "--wallet", "alice", "bogus"]);

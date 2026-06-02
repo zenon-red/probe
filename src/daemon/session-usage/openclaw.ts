@@ -18,7 +18,7 @@ export function extractOpenclawSessionUsage(ctx: SessionUsageContext): SessionUs
   }
 
   const { inputTokens, outputTokens } = sumScopedJsonlUsage(path, ctx.marker, ctx.markerPrefix);
-  return { found: true, inputTokens, outputTokens };
+  return { found: true, inputTokens, outputTokens, sessionFile: path };
 }
 
 function empty(reason: string): SessionUsageResult {

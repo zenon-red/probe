@@ -8,8 +8,9 @@ import { ensureGenesisSyncedBeforeHarness } from "./genesis-gate.js";
 import { toExecutableAction, type ExecutableAction } from "./executable-action.js";
 import { sanitizeValue, type EventEmitter } from "./events.js";
 import { reportRuntimeStatus } from "~/utils/genesis-apply.js";
+import { dispatchLabelFromConfig } from "~/utils/dispatch-enabled.js";
 export type SessionEnd = {
-  reason: "disconnected" | "heartbeat_failed" | "stop" | "harness_error";
+  reason: "disconnected" | "heartbeat_failed" | "stop" | "harness_error" | "auth_failed";
   details?: unknown;
 };
 
@@ -43,11 +44,13 @@ export async function runDaemonSession(options: DaemonSessionOptions): Promise<S
   const currentAgent = options.ctx.agents[0];
   if (!currentAgent) {
     options.emit({ type: "auth_failed", message: "Agent not found. Are you registered?" });
-    return { reason: "stop" };
+    return { reason: "auth_failed" };
   }
 
   const agentId = currentAgent.id as string;
   await subscribeToActions(options.ctx, agentId);
+
+  await subscribeToModuleDispatch(options.ctx, options.emit);
 
   await reportRuntimeStatus(options.ctx)
     .then((syncStatus) => {
@@ -77,6 +80,7 @@ export async function runDaemonSession(options: DaemonSessionOptions): Promise<S
   const executeAction = createActionExecutor({
     ctx: options.ctx,
     harness: options.harness,
+    effectiveWallet: options.effectiveWallet,
     emit: options.emit,
     setRunningHarness: (child) => {
       runningHarness = child;
@@ -216,4 +220,31 @@ export function createSessionEndSetter(
       });
     }
   };
+}
+
+function emitModuleDispatch(
+  ctx: import("~/utils/context.js").CommandContext,
+  emit: EventEmitter,
+): void {
+  emit({
+    type: "module_dispatch",
+    dispatch: dispatchLabelFromConfig(ctx.stdbConfig),
+  });
+}
+
+async function subscribeToModuleDispatch(
+  ctx: import("~/utils/context.js").CommandContext,
+  emit: EventEmitter,
+): Promise<void> {
+  emitModuleDispatch(ctx, emit);
+
+  const configTable = ctx.db.config as ObservableTable;
+  configTable.onUpdate?.((_ctx, _old, row) => {
+    const configRow = row as { key: string; value: string };
+    if (configRow.key !== "dispatch_enabled") return;
+    emit({
+      type: "module_dispatch",
+      dispatch: configRow.value !== "false" ? "on" : "off",
+    });
+  });
 }

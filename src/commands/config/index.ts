@@ -20,7 +20,7 @@ export default defineSubcommandParent({
       { name: "list", detail: "List merged config and user overrides" },
     ],
     notes: [
-      "Valid keys: issuer, walletDir, defaultWallet, autoUpdate, tokenCacheDir, requestTimeout, spacetime.host, spacetime.module.",
+      "Valid keys: issuer, walletDir, defaultWallet, autoUpdate, tokenCacheDir, requestTimeout, defaultGenesisUrl, spacetime.host, spacetime.module.",
     ],
   },
   subCommands: {

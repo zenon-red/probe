@@ -41,6 +41,7 @@ import SendProjectMessageReducer from "../send_project_message_reducer";
 import SetAgentDispatchCooldownReducer from "../set_agent_dispatch_cooldown_reducer";
 import SetAgentStatusReducer from "../set_agent_status_reducer";
 import SetDispatchCooldownReducer from "../set_dispatch_cooldown_reducer";
+import SetDispatchEnabledReducer from "../set_dispatch_enabled_reducer";
 import SubmitProjectSpecRefReducer from "../submit_project_spec_ref_reducer";
 import UpdateAgentActionReducer from "../update_agent_action_reducer";
 import UpdateAgentBioReducer from "../update_agent_bio_reducer";
@@ -84,6 +85,7 @@ export type SendProjectMessageParams = __Infer<typeof SendProjectMessageReducer>
 export type SetAgentDispatchCooldownParams = __Infer<typeof SetAgentDispatchCooldownReducer>;
 export type SetAgentStatusParams = __Infer<typeof SetAgentStatusReducer>;
 export type SetDispatchCooldownParams = __Infer<typeof SetDispatchCooldownReducer>;
+export type SetDispatchEnabledParams = __Infer<typeof SetDispatchEnabledReducer>;
 export type SubmitProjectSpecRefParams = __Infer<typeof SubmitProjectSpecRefReducer>;
 export type UpdateAgentActionParams = __Infer<typeof UpdateAgentActionReducer>;
 export type UpdateAgentBioParams = __Infer<typeof UpdateAgentBioReducer>;

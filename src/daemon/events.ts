@@ -32,6 +32,8 @@ export const CRITICAL_EVENTS = new Set([
   "harness_spawn_violation",
   "harness_usage_extraction_failed",
   "report_action_run_failed",
+  "sidecar_write_failed",
+  "module_dispatch",
 ]);
 
 export const jsonReplacer = (_key: string, value: unknown): unknown => {
@@ -77,7 +79,50 @@ export const resolveLogStream = async (pathValue?: string): Promise<WriteStream 
   return createWriteStream(absolutePath, { flags: "a" });
 };
 
-export type EventEmitter = (event: { type: string; [key: string]: unknown }) => void;
+export type EventSubscriber = (event: DaemonEvent) => void;
+
+export type EventBus = {
+  emit: (event: { type: string; [key: string]: unknown }) => void;
+  subscribe: (subscriber: EventSubscriber) => () => void;
+};
+
+export type EventEmitter = EventBus["emit"];
+
+export function createEventBus(options: {
+  logLevel: LogLevel;
+  logStream?: WriteStream | null;
+  write?: (line: string) => void;
+  now?: () => string;
+}): EventBus {
+  const writeLine = options.write ?? ((line: string) => console.log(line));
+  const now = options.now ?? nowIso;
+  const subscribers = new Set<EventSubscriber>();
+
+  const deliver = (event: DaemonEvent): void => {
+    for (const subscriber of subscribers) {
+      subscriber(event);
+    }
+  };
+
+  const emit: EventEmitter = (event) => {
+    if (!shouldEmit(event.type, options.logLevel)) return;
+    const envelope: DaemonEvent = { source: "nexus", at: now(), ...event };
+    deliver(envelope);
+  };
+
+  const subscribe = (subscriber: EventSubscriber): (() => void) => {
+    subscribers.add(subscriber);
+    return () => subscribers.delete(subscriber);
+  };
+
+  subscribe((event) => {
+    const line = JSON.stringify(event, jsonReplacer);
+    writeLine(line);
+    if (options.logStream) options.logStream.write(`${line}\n`);
+  });
+
+  return { emit, subscribe };
+}
 
 export function createEventEmitter(options: {
   logLevel: LogLevel;
@@ -85,17 +130,5 @@ export function createEventEmitter(options: {
   write?: (line: string) => void;
   now?: () => string;
 }): EventEmitter {
-  const writeLine = options.write ?? ((line: string) => console.log(line));
-  const now = options.now ?? nowIso;
-
-  const writeEvent = (event: DaemonEvent): void => {
-    const line = JSON.stringify(event, jsonReplacer);
-    writeLine(line);
-    if (options.logStream) options.logStream.write(`${line}\n`);
-  };
-
-  return (event) => {
-    if (!shouldEmit(event.type, options.logLevel)) return;
-    writeEvent({ source: "nexus", at: now(), ...event });
-  };
+  return createEventBus(options).emit;
 }

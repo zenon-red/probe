@@ -36,7 +36,7 @@ export async function runAcpSession(options: RunAcpSessionOptions): Promise<AcpR
   const startTime = Date.now();
   const telemetry = new TelemetryCollector();
   let completionReported = false;
-  const launch = resolveHarnessAgentLaunch(options.harness, options.harnessCommand);
+  const launch = await resolveHarnessAgentLaunch(options.harness, options.harnessCommand);
   const profile = profileForHarness(options.harness);
   const attachNexus =
     options.attachNexusMcp !== false &&

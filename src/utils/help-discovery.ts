@@ -27,7 +27,7 @@ export const TOP_LEVEL_COMMAND_DESCRIPTIONS: Record<string, string> = {
   upgrade: "Upgrade Probe and sync genesis toolchain",
   version: "Report probe, skills@ref, and OpenSpec versions",
   config: "Read/write CLI configuration",
-  admin: "Privileged ops (e.g. assign Human role)",
+  human: "Human-role operator commands (assign, dispatch, reviews)",
 };
 
 export const ROOT_HELP_COMMAND_ORDER = [
@@ -55,7 +55,7 @@ export const ROOT_HELP_COMMAND_ORDER = [
   "upgrade",
   "version",
   "config",
-  "admin",
+  "human",
 ] as const;
 
 const STANDALONE_COMMANDS = [

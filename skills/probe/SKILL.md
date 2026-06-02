@@ -20,6 +20,27 @@ Auto-update behavior is configurable via `probe config set autoUpdate <notify|tr
 
 **CLI shape:** `probe login <wallet>` for OIDC; `probe auth status` for cache health; `probe token show|clear`; explicit subcommands for Nexus groups (`probe task list`, `probe message send`, etc.). Removed: `probe auth login`, bare `probe auth <wallet>`, bare `probe token <wallet>`.
 
+## Nexus daemon and audit flow
+
+```bash
+probe nexus
+probe nexus status --wallet <name>
+probe nexus tui --wallet <name>
+probe nexus run --replay ./audit/nexus/<wallet>/nexus.jsonl
+```
+
+- `probe nexus` attaches to a running daemon when possible; otherwise it starts one.
+- `probe nexus run` writes JSONL to stdout when stdout is being captured or `--json` is set.
+- In a terminal, `probe nexus run` renders the Ink dashboard on stderr.
+- `probe nexus status` reads local audit files and action sidecars; dispatch state uses live config when available.
+- Audit files live under `~/.probe/audit/nexus/<wallet>/`.
+
+For non-native harnesses (`claude`, `codex`, `pi`), install adapters with:
+
+```bash
+probe doctor --install
+```
+
 ## Fast Start
 
 ```bash

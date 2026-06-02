@@ -13,6 +13,7 @@ import type { ActionRunTelemetry, AgentRunOutcome } from "~/acp/types.js";
 import { resolveRunTokens, type ResolvedRunTokens } from "./session-usage/index.js";
 import type { ExecutableAction } from "./executable-action.js";
 import type { EventEmitter } from "./events.js";
+import { writeActionSidecar, type ActionSidecar } from "./sidecar.js";
 
 const REPORT_FINISH_ATTEMPTS = 5;
 const REPORT_FINISH_DELAY_MS = 400;
@@ -22,6 +23,7 @@ export type { ExecutableAction } from "./executable-action.js";
 export type ActionExecutorDeps = {
   ctx: CommandContext;
   harness: HarnessDetectionResult;
+  effectiveWallet: string | null;
   emit: EventEmitter;
   setRunningHarness: (child: ChildProcess | null) => void;
   setRunningActionId: (id: bigint | null) => void;
@@ -177,6 +179,24 @@ export function createActionExecutor(
       }
 
       await reportRunFinished(deps, action.id, outcome, durationSecs, resolved, acpTelemetry);
+
+      const finishedAt = new Date().toISOString();
+      if (deps.effectiveWallet) {
+        const sidecar: ActionSidecar = {
+          actionId: action.id.toString(),
+          harness: deps.harness.harness,
+          sessionFile: resolved.sessionFile,
+          startedAt: runStartedAt.toISOString(),
+          finishedAt,
+          exitCode: outcome === "Clean" ? 0 : 1,
+          tokens: { in: resolved.inputTokens, out: resolved.outputTokens },
+          toolCalls:
+            acpTelemetry.toolCallsTotal > 0
+              ? [{ name: "acp", path: `total=${acpTelemetry.toolCallsTotal}` }]
+              : [],
+        };
+        await writeActionSidecar(deps.effectiveWallet, sidecar, deps.emit);
+      }
 
       if (outcome === "Clean") {
         deps.emit({

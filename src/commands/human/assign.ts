@@ -5,7 +5,7 @@ import { parseTargetIdentityHex, runWithBoundary } from "./shared.js";
 
 export default defineCommand({
   meta: {
-    name: "assign-human",
+    name: "assign",
     description: "Assign Human role to a SpacetimeDB identity (caller must have Human role)",
   },
   args: {

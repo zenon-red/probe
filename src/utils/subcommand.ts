@@ -150,6 +150,9 @@ export function guardNexusDaemonArgv(argv: string[]): void {
   const trailing = tokens.slice(nexusIdx + 1);
   if (trailing.length === 0) return;
 
+  const first = trailing[0];
+  if (first === "run" || first === "status" || first === "tui") return;
+
   const suggested = `probe ${trailing.join(" ")}`;
   const looksLikeSibling = trailing[0] !== undefined && NEXUS_CONFUSED_SIBLINGS.has(trailing[0]);
 

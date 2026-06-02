@@ -53,10 +53,6 @@ export interface AuthInfo {
   identity: Identity | null;
 }
 
-/**
- * Host/module inventory: docs/internal/host-module-inventory.md
- * Wave 2 (task 2.7): migrate call sites to use this helper for forwarding.
- */
 export function commandContextOptions(
   args: CommandConnectionArgs,
   extra?: Omit<CommandContextOptions, keyof CommandConnectionArgs>,
@@ -194,7 +190,14 @@ export class CommandContext implements AsyncDisposable {
     const walletName = options.wallet || config.defaultWallet;
 
     let token = options.token;
-    let auth: AuthInfo | undefined;
+    let auth: AuthInfo | undefined =
+      walletName && token
+        ? {
+            wallet: walletName,
+            token,
+            identity: null,
+          }
+        : undefined;
 
     if (!token && walletName) {
       const cached = await getCachedToken(walletName);

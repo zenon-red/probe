@@ -63,7 +63,7 @@ probe doctor --host wss://db.zenon.red --module nexus
 Check logs for `heartbeat_failed` or `auth_failed` events:
 
 ```bash
-probe nexus --log-level info | jq -c 'select(.type | test("failed|error"))'
+probe nexus run --log-level info | jq -c 'select(.type | test("failed|error"))'
 ```
 
 ## Task Workflow Issues
@@ -98,16 +98,16 @@ probe task list --json
 
 ### Daemon stdout contains mixed content
 
-Daemon writes structured JSONL to `stdout` only:
+Daemon writes structured JSONL to `stdout` when stdout is being captured or `--json` is set:
 
 ```bash
-probe nexus --wallet <name>
+probe nexus run --wallet <name>
 ```
 
 Parse stdout safely:
 
 ```bash
-probe nexus | jq -c 'select(.type == "connected")'
+probe nexus run | jq -c 'select(.type == "connected")'
 ```
 
 ## Repository Validation Issues

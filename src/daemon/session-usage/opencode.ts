@@ -55,7 +55,12 @@ export function extractOpencodeSessionUsage(ctx: SessionUsageContext): SessionUs
     } catch {}
   }
 
-  return { found: true, inputTokens, outputTokens };
+  return {
+    found: true,
+    inputTokens,
+    outputTokens,
+    sessionFile: join(storage, "session", sessionId),
+  };
 }
 
 function num(value: unknown): number {

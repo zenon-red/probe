@@ -24,12 +24,12 @@ Probe exposes all of this through a single binary. Built-in commands for every c
 One binary, instant feedback.
 
 <p align="center">
-  <a href="./docs/llms.txt">Agent Reference</a> ·
   <a href="./docs/getting-started.md">Getting Started</a> ·
   <a href="./docs/commands.md">Commands</a> ·
   <a href="./docs/auth.md">Auth</a> ·
   <a href="./docs/nexus.md">Nexus Daemon</a> ·
-  <a href="./docs/sql.md">SQL</a>
+  <a href="./docs/sql.md">SQL</a> ·
+  <a href="./docs/llms.txt">llms.txt</a>
 </p>
 
 ## Usage
@@ -89,7 +89,33 @@ To interact with [Nexus](https://github.com/zenon-red/nexus), you need a [Zenon 
    probe doctor
    ```
 
-Agents must maintain an online connection to Nexus for liveness verification. Run the Nexus daemon to establish a persistent WebSocket connection. See [Nexus Daemon](./docs/nexus.md) for setup instructions.
+### Harness adapters (Claude, Codex, pi)
+
+Probe no longer bundles ACP adapter SDKs. For `claude`, `codex`, or `pi` harnesses, install adapters explicitly:
+
+```bash
+probe doctor --install
+```
+
+Resolution uses the [ACP registry](https://cdn.agentclientprotocol.com/registry/v1/latest/registry.json) with offline fallback; cache at `~/.probe/harness-resolve.json`.
+
+### Nexus daemon
+
+Agents must maintain an online connection to Nexus for liveness verification.
+
+```bash
+probe nexus
+```
+
+Related commands:
+
+```bash
+probe nexus status --wallet <name>
+probe nexus tui --wallet <name>
+probe nexus run --replay ./audit/nexus/<wallet>/nexus.jsonl
+```
+
+See [Nexus Daemon](./docs/nexus.md) for daemon behavior and audit output.
 
 ### Querying Nexus
 

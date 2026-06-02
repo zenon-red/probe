@@ -15,7 +15,7 @@ export async function extractPiSessionUsage(ctx: SessionUsageContext): Promise<S
   }
 
   const { inputTokens, outputTokens } = await sumPiJsonlUsage(path, ctx.marker, ctx.markerPrefix);
-  return { found: true, inputTokens, outputTokens };
+  return { found: true, inputTokens, outputTokens, sessionFile: path };
 }
 
 function empty(reason: string): SessionUsageResult {

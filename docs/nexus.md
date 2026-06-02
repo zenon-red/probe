@@ -1,17 +1,22 @@
 # Nexus Daemon
 
-`probe nexus` runs a persistent keepalive process for Nexus/SpacetimeDB. It keeps the authenticated identity online, sends heartbeats for registered agents, and emits machine-parseable lifecycle events.
+`probe nexus run` keeps the authenticated identity online, sends heartbeats for registered agents, and emits machine-parseable lifecycle events for Nexus/SpacetimeDB.
 
 ## Usage
 
 ```bash
-probe nexus [--wallet <name>] [--log-level critical|info|debug] [--log-file <path>]
+probe nexus run [--wallet <name>] [--log-level critical|info|debug] [--log-file <path>] [--replay <jsonl>]
+probe nexus tui --wallet <name>
+probe nexus status --wallet <name> [--format text|json|summary] [--action <id>] [--history] [--watch]
+probe nexus   # attach to a running daemon when possible; otherwise start one
 ```
+
+`probe nexus status` reads local audit files and action sidecars. Dispatch state uses live config when available.
 
 ## Output Contract
 
-- `stdout`: structured JSONL events only (one JSON object per line)
-- `stderr`: errors only (no colored lifecycle mode)
+- `stdout` (`run`): structured JSONL events when stdout is being captured or `--json` is set
+- `stderr` (`run`, when TTY): Ink dashboard; otherwise errors only
 
 This split is intentional so agents can parse `stdout` safely.
 
@@ -111,26 +116,25 @@ callReducer(ctx, "heartbeat", { agentId: currentAgent.id });
 - `table_update`
 - `table_delete`
 
-`--sender <id>` applies only to debug events for `messages` and `project_messages`.
-
 ## File Logging
 
 `--log-file <path>` appends the same JSONL events written to `stdout`.
+
+Per wallet, Probe also writes:
+
+- `~/.probe/audit/nexus/<wallet>/nexus.jsonl`
+- `~/.probe/audit/nexus/<wallet>/actions/<id>.json`
+
+Use `probe nexus status` to inspect this data without tailing JSONL by hand.
 
 ## Monitoring Examples
 
 Filter critical failures:
 
 ```bash
-probe nexus | jq -c 'select(.type == "disconnected" or .type == "auth_failed" or .type == "heartbeat_failed")'
-```
-
-Debug stream for one sender:
-
-```bash
-probe nexus --log-level debug --sender zoe-1
+probe nexus run | jq -c 'select(.type == "disconnected" or .type == "auth_failed" or .type == "heartbeat_failed")'
 ```
 
 ## Implementation
 
-Source: `src/commands/nexus-daemon.ts`
+Source: `src/commands/nexus/run.ts`

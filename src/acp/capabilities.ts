@@ -134,7 +134,7 @@ export async function collectAcpCapabilities(options: {
   cwd?: string;
   acpConfig?: AcpConfig;
 }): Promise<StructuredAgentCapabilities> {
-  const launch = resolveHarnessAgentLaunch(options.harness, options.harnessCommand);
+  const launch = await resolveHarnessAgentLaunch(options.harness, options.harnessCommand);
   const telemetry = new TelemetryCollector();
   const availableCommands: SnapshotCommand[] = [];
   const client = new ProbeAcpClient({

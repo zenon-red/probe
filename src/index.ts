@@ -1,6 +1,6 @@
 import { defineCommand, runCommand } from "citty";
 import acp from "./commands/acp.js";
-import admin from "./commands/admin/index.js";
+import human from "./commands/human/index.js";
 import mcp from "./commands/mcp.js";
 import auth from "./commands/auth/index.js";
 import login from "./commands/login.js";
@@ -18,7 +18,7 @@ import idea from "./commands/nexus/idea.js";
 import message from "./commands/nexus/message.js";
 import project from "./commands/nexus/project.js";
 import task from "./commands/nexus/task.js";
-import nexusDaemon from "./commands/nexus-daemon.js";
+import nexus from "./commands/nexus/index.js";
 import query from "./commands/query.js";
 import sign from "./commands/sign.js";
 import token from "./commands/token/index.js";
@@ -78,7 +78,7 @@ const topLevelCommands = new Set([
   "genesis",
   "artifact",
   "review",
-  "admin",
+  "human",
   "acp",
   "mcp",
 ]);
@@ -133,7 +133,7 @@ const main = defineCommand({
     sign,
     token,
     config,
-    nexus: nexusDaemon,
+    nexus,
     agent,
     task,
     message,
@@ -151,7 +151,7 @@ const main = defineCommand({
     upgrade,
     version: versionCmd,
     whoami,
-    admin,
+    human,
     acp,
     mcp,
   },

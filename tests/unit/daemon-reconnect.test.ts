@@ -107,6 +107,7 @@ describe("runDaemonLoop reconnect", () => {
         runDaemonSessionFn: runDaemonSessionFn as never,
         sleepFn: async () => {},
         backoffMsFn: () => 1,
+        acquireDaemonIpcLockFn: async () => ({ endpoint: "test", release: async () => {} }),
       });
     } finally {
       console.log = originalLog;
@@ -138,6 +139,7 @@ describe("runDaemonLoop reconnect", () => {
         getConfigFn: async () => mockConfig as never,
         resolveLogStreamFn: async () => null,
         sleepFn: async () => {},
+        acquireDaemonIpcLockFn: async () => ({ endpoint: "test", release: async () => {} }),
       });
     } finally {
       console.log = originalLog;
@@ -147,5 +149,63 @@ describe("runDaemonLoop reconnect", () => {
     expect(types).toContain("auth_failed");
     expect(types).not.toContain("reconnecting");
     expect(withAuthMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("accumulates reconnect attempts on repeated auth failure", async () => {
+    let sessionCount = 0;
+
+    const withAuthMock = mock(
+      async (_options: unknown, handler: (ctx: unknown) => Promise<unknown>) => {
+        return await handler({
+          identity: { toHexString: () => "deadbeef" },
+          auth: { wallet: "w" },
+          agents: [],
+          config: { harnessTimeoutSecs: 30 },
+          conn: {
+            subscriptionBuilder: subscriptionBuilderMock,
+            reducers: { heartbeat: mock(async () => {}) },
+          },
+          db: { agent_actions: { onInsert: () => {} } },
+        });
+      },
+    );
+
+    const runDaemonSessionFn = mock(
+      async (opts: { emit: (e: { type: string; [k: string]: unknown }) => void }) => {
+        sessionCount++;
+        opts.emit({ type: "auth_failed", message: "Agent not found. Are you registered?" });
+        if (sessionCount >= 3) process.emit("SIGINT");
+        return { reason: "auth_failed" };
+      },
+    );
+
+    const originalLog = console.log;
+    console.log = (line: string) => {
+      lines.push(line);
+    };
+
+    try {
+      await runDaemonLoop({
+        args: { wallet: "w", "log-level": "critical", harness: "custom" },
+        withAuthFn: withAuthMock as never,
+        getConfigFn: async () => mockConfig as never,
+        resolveLogStreamFn: async () => null,
+        runDaemonSessionFn: runDaemonSessionFn as never,
+        sleepFn: async () => {},
+        backoffMsFn: () => 1,
+        acquireDaemonIpcLockFn: async () => ({ endpoint: "test", release: async () => {} }),
+      });
+    } finally {
+      console.log = originalLog;
+    }
+
+    const reconnectEvents = lines
+      .map((line) => JSON.parse(line))
+      .filter((e) => e.type === "reconnecting");
+
+    const attempts = reconnectEvents.map((e) => e.attempt);
+    // Attempts grow: 1, 2 — NOT stuck at 1, 1
+    // (SIGINT fires in session 3, so only 2 reconnecting events before loop breaks)
+    expect(attempts).toEqual([1, 2]);
   });
 });
