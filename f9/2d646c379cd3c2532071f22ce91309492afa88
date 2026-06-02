@@ -1,0 +1,366 @@
+src/commands/human/shared.ts
+  s_8fd6f2a95bc4bc::t_b11c17009a2e46 24-32
+  s_8fd6f2a95bc4bc::t_6b44a57cf6175f 33
+src/utils/subcommand-registry.ts
+  s_8fd6f2a95bc4bc::t_c5ab5dbcc546ae 34-35
+src/daemon/status-schema.ts
+  s_ef5a9ab25f0b84::t_e95fe323f9926d 1-47
+src/daemon/loop.ts
+  s_725e1e78006999::t_81c8a5defb7755 133-144,147-153,156-205,251,253-259,266,268,287-288,299,403,405
+  s_a318dfcf88588d::t_6ff512b7bcfa79 32,130,215,236-237,239-241,243-248,267,270-283,285,289-295,302-305,307-330,333-365,368-370,372-381,386-387,389,394-396,399,402,404,406
+  s_725e1e78006999::t_86c5e409f1316e 154-155
+  s_7c537c9d98378f::t_d89b0617e3358c 23,238
+  s_7c537c9d98378f::t_779c70b71d23a3 33,242,249-250,262
+  s_725e1e78006999::t_b36165365a6cdc 300,306,366-367,384,398,401
+  s_86a4122d15890d::t_d219c14e4c20d4 391-393
+  s_ef5a9ab25f0b84::t_78741c606ef1e8 19,24,28,59-63,110-111,296-297,414
+  s_ef5a9ab25f0b84::t_55e9cb98e6b689 29
+  s_a318dfcf88588d::t_39ec1c6d648d66 230-235
+tests/unit/events-bus.test.ts
+  s_ef5a9ab25f0b84::t_045ec9184f601f 1-26
+scripts/verify-nexus-observability.sh
+  s_8fd6f2a95bc4bc::t_4df357a80ab000 10-14,17,19-25,27-37
+  s_ef5a9ab25f0b84::t_f06d288a744cce 1-9,15-16,18,26,38
+src/utils/default-genesis-url.ts
+  s_a318dfcf88588d::t_14e32473967725 1,57-58,60,62-76
+  s_a318dfcf88588d::t_2cae2d6b0efb02 2-56,59,61,77
+src/acp/agents/launch.ts
+  s_ef5a9ab25f0b84::t_e474aa4e439b10 4-17,20,28-36
+src/module_bindings/types/reducers.ts
+  s_8fd6f2a95bc4bc::t_5bd201aec2047c 44,88
+src/daemon/session.ts
+  ai_agent 225-228
+  s_86a4122d15890d::t_8527f8051b0390 13,47
+  s_8fd6f2a95bc4bc::t_9ef9c90d10b020 11,53-54,224,229-249
+  s_ef5a9ab25f0b84::t_78741c606ef1e8 83
+src/daemon/session-usage/types.ts
+  s_ef5a9ab25f0b84::t_4eafa069cb1f64 7
+tests/unit/nexus-cli-shape.test.ts
+  s_725e1e78006999::t_43d06a342200a7 6,9,12,15
+  s_8fd6f2a95bc4bc::t_b7605ea1b30a14 1-5,7-8,10-11,13-14,16-27
+src/commands/human/review/spec.ts
+  s_8fd6f2a95bc4bc::t_b11c17009a2e46 2,8,41
+tests/unit/daemon-ipc-lock.test.ts
+  s_a318dfcf88588d::t_7503848544162c 2,4,28-32,62
+  s_a318dfcf88588d::t_a9828bd3ee05d6 1,3,5-27,33-61,63-69
+package.json
+  s_ef5a9ab25f0b84::t_22e2c2ee21b2bc 55-56,65
+  ai_agent 66,95-98
+  s_ef5a9ab25f0b84::t_683789c74923e5 69
+  s_b199ba922ba566::t_75b39d6fb7e3f6 3
+  s_78d8f8280266a7::t_c87b287aa0c7f9 38
+  s_a318dfcf88588d::t_2cae2d6b0efb02 42
+  s_8fd6f2a95bc4bc::t_4df357a80ab000 45-46
+src/commands/human/review/index.ts
+  s_8fd6f2a95bc4bc::t_b11c17009a2e46 1-13,15-25
+  ai_agent 14
+src/daemon/session-usage/openclaw.ts
+  s_ef5a9ab25f0b84::t_4eafa069cb1f64 21
+tests/unit/tui-replay.test.ts
+  s_a318dfcf88588d::t_0c15122f4380f3 3,20-39
+  s_8fd6f2a95bc4bc::t_4df357a80ab000 1-2,4-19,40-41
+src/commands/nexus/run.ts
+  s_7c537c9d98378f::t_994f49f0272868 40
+  s_7c537c9d98378f::t_6433c05c43adb8 34-37
+  s_78d8f8280266a7::t_00c300804cbacf 41
+  s_ef5a9ab25f0b84::t_e1afd8e2b2f2ed 1-33,38-39,42-51
+docs/llms.txt
+  s_78d8f8280266a7::t_2740e93ab6d155 1,5-6,15
+scripts/check-default-genesis-url.mjs
+  s_a318dfcf88588d::t_2cae2d6b0efb02 1-54
+src/commands/config/shared.ts
+  s_a318dfcf88588d::t_2cae2d6b0efb02 12
+src/acp/capabilities.ts
+  s_ef5a9ab25f0b84::t_0fd11d3ea968d7 137
+tests/unit/adapter-registry.test.ts
+  s_8fd6f2a95bc4bc::t_4df357a80ab000 78-93,95-100,103,105-111
+  s_a318dfcf88588d::t_0c15122f4380f3 6,42-57,59-75
+  s_a318dfcf88588d::t_0ab1b5eb076d3b 101-102
+  s_a318dfcf88588d::t_530c0db7352c39 22-35,58,94,104
+  s_ef5a9ab25f0b84::t_045ec9184f601f 1-5,7-21,36-41,76-77
+src/utils/subcommand.ts
+  s_725e1e78006999::t_95e6f5830dc6b0 154
+  s_ef5a9ab25f0b84::t_0bc490092600ed 153,155
+src/daemon/action-executor.ts
+  s_ef5a9ab25f0b84::t_78741c606ef1e8 16,26,183-187,189-192,197-199
+  s_ef5a9ab25f0b84::t_4eafa069cb1f64 188,193-196
+src/commands/human/index.ts
+  s_8fd6f2a95bc4bc::t_b11c17009a2e46 3-5,8-9,17-18,20-23,26-33,37-39
+tests/unit/dispatch-enabled.test.ts
+  s_8fd6f2a95bc4bc::t_b7605ea1b30a14 1-24
+src/daemon/audit-paths.ts
+  s_a318dfcf88588d::t_292fd94f1b7ddd 1-15
+src/utils/daemon.ts
+  s_0c84ca69bc5010::t_8482f2c3769206 199
+  s_0c84ca69bc5010::t_1ccf071fe62ff7 54
+skills/probe/references/troubleshooting.md
+  s_78d8f8280266a7::t_1cd71721044990 66,101,104,110
+src/daemon/events.ts
+  s_8fd6f2a95bc4bc::t_fe6b427110c2fc 36
+  s_ef5a9ab25f0b84::t_50ab2ff719fe38 35,82,84-91,96,99,101-104,107,109-115,117-133
+src/daemon/session-usage/pi.ts
+  s_ef5a9ab25f0b84::t_4eafa069cb1f64 18
+src/daemon/session-usage/resolve.ts
+  ai_agent 59-68,71-80
+  s_ef5a9ab25f0b84::t_4eafa069cb1f64 11,42-45
+src/daemon/sidecar.ts
+  s_ef5a9ab25f0b84::t_e95fe323f9926d 1,3-4,6-25,27-50
+  s_a318dfcf88588d::t_292fd94f1b7ddd 5
+  s_a318dfcf88588d::t_ccbfb1810ea2de 2,26
+src/commands/nexus-daemon.ts
+  s_ef5a9ab25f0b84::t_6ba83b0ffaed1e 1
+src/commands/human/dispatch.ts
+  ai_agent 5
+  s_8fd6f2a95bc4bc::t_b11c17009a2e46 1-4,7-56
+  s_8fd6f2a95bc4bc::t_6b44a57cf6175f 6
+tests/node/jsonl-contract.test.ts
+  s_8fd6f2a95bc4bc::t_b7605ea1b30a14 1-26
+src/types/config.ts
+  s_a318dfcf88588d::t_2cae2d6b0efb02 2,51
+src/commands/nexus/tui.ts
+  s_7c537c9d98378f::t_b3048c70ed6ce1 1,3-31,35,49-50,52-55,58-80
+  s_7c537c9d98378f::t_6d40d19a7bece0 2,32-34,36-48,51,56-57
+src/commands/doctor.ts
+  s_ef5a9ab25f0b84::t_045ec9184f601f 7-17,48-52,106-111,114-117,119-125,127,130-131,141-147
+  s_725e1e78006999::t_f2d3049e145e2b 126,128-129
+  s_ef5a9ab25f0b84::t_811bfed4505f21 5,112-113,118
+README.md
+  s_78d8f8280266a7::t_1cd71721044990 100
+  s_78d8f8280266a7::t_2740e93ab6d155 102-118
+  s_ef5a9ab25f0b84::t_06a1d4d06ae069 92-99
+src/commands/config/index.ts
+  s_a318dfcf88588d::t_2cae2d6b0efb02 23
+src/utils/help-discovery.ts
+  s_8fd6f2a95bc4bc::t_c5ab5dbcc546ae 30,58
+src/daemon/status-reader.ts
+  s_a318dfcf88588d::t_292fd94f1b7ddd 8,22
+  s_8fd6f2a95bc4bc::t_0e40b96601bbe7 96-111,118,122-134
+  s_8fd6f2a95bc4bc::t_f944e96b2edac4 6-7
+  s_a318dfcf88588d::t_4ea58c8c5114c8 18-20,28-34,37-48,50-52,121,145-146
+  s_8fd6f2a95bc4bc::t_9ef9c90d10b020 57-60,62-63
+  s_ef5a9ab25f0b84::t_e172b2be2652b2 1-5,9-15,17,21,23-27,35-36,49,53-56,64-90,92,94-95,112-117,119-120,135-144,147-176
+  s_725e1e78006999::t_5cc81a486bb18e 16,61,91,93
+src/commands/human/assign.ts
+  s_8fd6f2a95bc4bc::t_b11c17009a2e46 8
+tests/unit/nexus-status.test.ts
+  s_7c537c9d98378f::t_dd82ba8521aac7 59-83
+  s_a318dfcf88588d::t_ccbfb1810ea2de 7,18-21,25-29
+  s_ef5a9ab25f0b84::t_045ec9184f601f 1,3-6,8-9,11,13-17,30-58,84-98,124-129,135-136
+  s_8fd6f2a95bc4bc::t_4df357a80ab000 12,130-134
+  s_a318dfcf88588d::t_0c15122f4380f3 2,10,99-123
+  s_a318dfcf88588d::t_4005eb1cc4ab62 22-24
+src/daemon/sidecar-read.ts
+  s_ef5a9ab25f0b84::t_e172b2be2652b2 1-19
+docs/nexus.md
+  s_78d8f8280266a7::t_668fc070610514 135
+  s_78d8f8280266a7::t_00c300804cbacf 140
+  s_78d8f8280266a7::t_1cd71721044990 3,10,14-15,123,125-126,128
+  s_78d8f8280266a7::t_f0e910e3295bcf 9,11,18
+  s_ef5a9ab25f0b84::t_86a489ad6ba27c 8,19
+src/module_bindings/index.ts
+  s_8fd6f2a95bc4bc::t_5bd201aec2047c 72,553
+  ai_agent 4,571
+src/commands/human/review/idea.ts
+  s_8fd6f2a95bc4bc::t_b11c17009a2e46 2,5,8
+tests/unit/config.test.ts
+  s_a318dfcf88588d::t_aa9575d326359b 6,37-67
+  s_a318dfcf88588d::t_2cae2d6b0efb02 4-5,26-36
+src/index.ts
+  s_ef5a9ab25f0b84::t_6ba83b0ffaed1e 21,136
+  s_8fd6f2a95bc4bc::t_281eb7329edf79 81
+  s_8fd6f2a95bc4bc::t_7a98c69732690f 154
+  s_8fd6f2a95bc4bc::t_c5ab5dbcc546ae 3
+src/daemon/tui/render.tsx
+  s_7c537c9d98378f::t_1ac267e7cc6174 423,428-430
+  s_a318dfcf88588d::t_4ea58c8c5114c8 7,474-477,481-484
+  s_7c537c9d98378f::t_cc38cef7fa1ec4 164-172,325-326,331,341-346,352-356,362-370,395-407
+  s_725e1e78006999::t_56ad3ac1f5c71c 210-215,219-220,228-235
+  s_a318dfcf88588d::t_0ab1b5eb076d3b 466-468
+  s_ef5a9ab25f0b84::t_5f37dc35a26162 2-3,8,11-15,18-20,30,34-38,41,49,75,183-193,197-199,205-209,221-227,236-237,244-247,249-253,255-260,262-306,313-315,373-377,385,390,409,453-457,459-462,464-465,478-480
+  s_725e1e78006999::t_e73f4491f140d4 28,43,68,200-204,316-317
+  s_725e1e78006999::t_86c5e409f1316e 141-144,216-218
+  s_ef5a9ab25f0b84::t_e733e683abd61e 1,5-6,10,21-27,29,31-33,39-40,44-48,50-51,76-77,195,261,307-312,337-338,371,410,434,448-452,458,463,469-473,485
+  s_725e1e78006999::t_6ecac866433920 9,52-67,69-74,145-147
+  s_7c537c9d98378f::t_5da28e0a6914a7 98,101-104,107,134-138
+  s_7c537c9d98378f::t_57dc959a0a61c0 327-330,332-335
+  s_7c537c9d98378f::t_acee109e38dcea 16-17
+  s_7c537c9d98378f::t_7f2a8ea3de4152 117-119
+  s_7c537c9d98378f::t_590714d5a53fe6 78-87,93-97,99-100,105-106,108-116,120-133,139-140,148-155,162-163,173-182,318-319,340,347-351,357-361,372,378,380-384,386-389,411-422,424-427,431-433,435-438
+  s_7c537c9d98378f::t_a426225e0dd528 4,88-92,156-161,194,196,238-243,248,254,320-324,336,339,379,439-447
+  s_7c537c9d98378f::t_2c32e0af1b103b 391-394,408
+  s_8fd6f2a95bc4bc::t_f944e96b2edac4 42
+tsconfig.json
+  s_ef5a9ab25f0b84::t_e733e683abd61e 19
+  ai_agent 18
+tests/unit/subcommands.test.ts
+  s_ef5a9ab25f0b84::t_aed89f4c641ef5 159-172
+src/acp/agents/adapter-registry.ts
+  s_ef5a9ab25f0b84::t_ec43dec6c03c3c 1-6,8-13,15-84,114-201,203-220,222-308,315-352,361-388
+  s_a318dfcf88588d::t_4ea58c8c5114c8 309-314,353-360
+  s_725e1e78006999::t_b2e72b0773e630 7,85-113,202,221
+  s_a318dfcf88588d::t_0ab1b5eb076d3b 14
+src/commands/nexus/index.ts
+  s_ef5a9ab25f0b84::t_0bc490092600ed 1-4,6-11,13-16,19-21,23-33,35-38,40-47,55-57,59-60
+  s_7c537c9d98378f::t_5e86d87851dae8 5,12,17-18,22,34,39,48-50
+  s_7c537c9d98378f::t_6b408accd6e4be 51-54
+  s_ef5a9ab25f0b84::t_8cc0763f2d9b0b 58
+tests/unit/human.test.ts
+  s_8fd6f2a95bc4bc::t_0d5831a539525f 2,7-12,18,29-40
+  s_a318dfcf88588d::t_530c0db7352c39 17
+  s_8fd6f2a95bc4bc::t_6b44a57cf6175f 4
+  s_a318dfcf88588d::t_0ab1b5eb076d3b 3,13-16
+tsdown.config.ts
+  s_a318dfcf88588d::t_2cae2d6b0efb02 8-10,29
+  s_a318dfcf88588d::t_330d22a41fb595 3
+src/commands/nexus/status.ts
+  s_ef5a9ab25f0b84::t_6ba83b0ffaed1e 1-66,68-83,85-96,98-137,139-168
+  s_a318dfcf88588d::t_f872e13a7f1a18 97
+  s_a318dfcf88588d::t_292fd94f1b7ddd 67
+  s_8fd6f2a95bc4bc::t_f944e96b2edac4 84,138
+tests/unit/sidecar.test.ts
+  s_8fd6f2a95bc4bc::t_b7605ea1b30a14 1-8,13-26,28-30,51-53
+  s_a318dfcf88588d::t_ccbfb1810ea2de 9-10,31-50
+  s_a318dfcf88588d::t_00e45b559f5f04 11-12,27
+tests/unit/daemon-reconnect.test.ts
+  ai_agent 173-180
+  s_a318dfcf88588d::t_a9828bd3ee05d6 110,142
+  s_86a4122d15890d::t_e4a3e4b45257d5 153-154,156-161,163-172,182-192,195-206,210
+  s_86a4122d15890d::t_96dc26f583910f 155,162,181,193-194,207-209
+src/commands/nexus/project/spec/spec.ts
+  s_8fd6f2a95bc4bc::t_091e431a96218e 8
+  s_8fd6f2a95bc4bc::t_f58b33376c7a05 11
+tests/unit/adapter-doctor.test.ts
+  s_8fd6f2a95bc4bc::t_4df357a80ab000 1-17
+src/utils/context.ts
+  s_7c537c9d98378f::t_a672d02e63f172 193-200
+src/commands/nexus/idea.ts
+  ai_agent 12
+docs/commands.md
+  s_ef5a9ab25f0b84::t_86a489ad6ba27c 278,281,283,297
+  s_a318dfcf88588d::t_292fd94f1b7ddd 289
+  s_8fd6f2a95bc4bc::t_0d5831a539525f 198,200,203-206,209-211
+  s_78d8f8280266a7::t_8aed8492314583 282,284,287
+  ai_agent 47-53,55-70
+  s_ef5a9ab25f0b84::t_95d6ab3ff868e7 415
+  s_78d8f8280266a7::t_1cd71721044990 54,288,291,420
+skills/probe/SKILL.md
+  s_78d8f8280266a7::t_1cd71721044990 23-43
+skills/probe/references/commands.md
+  ai_agent 28-34,36-48
+  s_78d8f8280266a7::t_1cd71721044990 35,195-198,201-204,208
+src/daemon/ipc-lock.ts
+  s_7c537c9d98378f::t_6b408accd6e4be 142-146
+  s_7c537c9d98378f::t_7229b2eb572f06 6,139,189
+  s_7c537c9d98378f::t_fa4bf7ae005d16 9,28-32,136-138,148-159,165-167,186-188,190-193,195-197,203-239
+  s_7c537c9d98378f::t_dc8f80ee5028fb 24
+  s_a318dfcf88588d::t_6ff512b7bcfa79 1,3,7-8,10-23,25-27,33-44,46-48,62,64-65,71-75,84-90,92-99,101-111,131-135,140-141,160-164,169-185,194,198-202,240-241
+  s_a318dfcf88588d::t_b3ddd4fbc38355 2,112-118,120-130,168
+  s_a318dfcf88588d::t_f64efa9cc5af7e 4,45,49-61
+  s_a318dfcf88588d::t_6aa99aba74c760 5,76-83,100,147
+  s_a318dfcf88588d::t_157b4161dbea7a 63,66-70,91,119
+src/utils/dispatch-enabled.ts
+  ai_agent 1
+  s_8fd6f2a95bc4bc::t_6b44a57cf6175f 2-15
+src/acp/readiness.ts
+  s_ef5a9ab25f0b84::t_0bc490092600ed 38
+tests/unit/daemon-invariants.test.ts
+  s_8fd6f2a95bc4bc::t_fe6b427110c2fc 161,168-169
+  s_ef5a9ab25f0b84::t_040fb878486227 79
+src/daemon/session-usage/opencode.ts
+  ai_agent 58-63
+src/daemon/projection.ts
+  s_725e1e78006999::t_e537253efed38b 1-42,45-116,126-149
+  s_725e1e78006999::t_10a4aeb71e7238 43-44,117-121
+  s_725e1e78006999::t_86c5e409f1316e 122-125
+bun.lock
+  ai_agent 14-15,24-25,28,42,214-215,220-235,264-265,316-317,326-328,330,334-335,354-355,378-379,434-435,474,522-523,528-531,542,598-599,638,650-651,696-699,710,730-731,756,758,762,770,776-777,780-781,800-801,830-831,836,848-849,862-863,872,892-897,918-919,926,932-936,938-940,945-950
+tests/unit/root-help-guards.test.ts
+  ai_agent 4-7
+  s_8fd6f2a95bc4bc::t_b7605ea1b30a14 1-3,8-24
+src/module_bindings/set_dispatch_enabled_reducer.ts
+  s_8fd6f2a95bc4bc::t_5bd201aec2047c 1-15
+package-lock.json
+  ai_agent 3,9,18-19,31-32,35,55-58,61-62,64-65,1119-1128,1135-1282,1462-1473,1811-1822,1867-1878,1963-1974,2075-2083,2253-2259,2559-2567,3102-3288,3291-3294,3297-3298,3301,3304,3307-3310,3313,3322,3324-3325,3327-3330,3332-3335,3338-3347,3349-3352,3354,3357,3360-3364,3366-3378,3433-3436,3439,3442,3813-3821,4149-4157,4410-4433,4623-4628,4897-4900,4903-4906,4980-4991,5010-5021,5587-5601,5776-5790,5914-5918
+src/acp/session.ts
+  s_ef5a9ab25f0b84::t_0fd11d3ea968d7 39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f92d646c379cd3c2532071f22ce91309492afa88",
+  "prompts": {},
+  "sessions": {
+    "s_0c84ca69bc5010": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019e84d3-9b70-7085-a245-50023423cb8a",
+        "model": "glm-5.1"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_725e1e78006999": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e86b3-327d-7820-bd4e-db3b3f9bcf20",
+        "model": "gpt-5.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_78d8f8280266a7": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_176c1fd9fffecUrf2unOCvWcYF",
+        "model": "gpt-5.4"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_7c537c9d98378f": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_17981118dffevG8Lm9udqx1pvw",
+        "model": "gpt-5.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_86a4122d15890d": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019e8680-c660-7ba7-bc2a-3168b63ce4a2",
+        "model": "glm-5.1"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_8fd6f2a95bc4bc": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "fc63dcff-a2af-44fd-9c91-62517779d312",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_a318dfcf88588d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8448-654e-7813-b99e-c46f63550427",
+        "model": "gpt-5.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_b199ba922ba566": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_176a3909effeaPd4dTRCBVIaIl",
+        "model": "glm-5.1"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_ef5a9ab25f0b84": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ca2b7a7d-20cd-48fc-88b1-1cafcaf2d8b6",
+        "model": "composer-2.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
