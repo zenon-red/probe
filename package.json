@@ -56,7 +56,7 @@
     "react": "^19.2.0",
     "spacetimedb": "^2.2.0",
     "znn-typescript-sdk": "https://codeload.github.com/PlasmaKing/znn-typescript-sdk/tar.gz/865bc8866d798893ed364f6db4f14162efe0b396",
-    "zod": "^3.25.76"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
