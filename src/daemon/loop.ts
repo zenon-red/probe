@@ -284,7 +284,7 @@ export async function runDaemonLoop(options: RunDaemonLoopOptions): Promise<void
       }
     }
 
-    if (process.stderr.isTTY) {
+    if (process.stderr.isTTY && !args.json) {
       tuiHandle = mountNexusTui(eventSurface.bus, {
         initial: {
           harness: harness.harness,

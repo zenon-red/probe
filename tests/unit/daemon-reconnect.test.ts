@@ -100,7 +100,7 @@ describe("runDaemonLoop reconnect", () => {
 
     try {
       await runDaemonLoop({
-        args: { wallet: "w", "log-level": "critical", harness: "custom" },
+        args: { wallet: "w", "log-level": "critical", harness: "custom", json: true },
         withAuthFn: withAuthMock as never,
         getConfigFn: async () => mockConfig as never,
         resolveLogStreamFn: async () => null,
@@ -134,7 +134,7 @@ describe("runDaemonLoop reconnect", () => {
 
     try {
       await runDaemonLoop({
-        args: { wallet: "w", "log-level": "critical", harness: "custom" },
+        args: { wallet: "w", "log-level": "critical", harness: "custom", json: true },
         withAuthFn: withAuthMock as never,
         getConfigFn: async () => mockConfig as never,
         resolveLogStreamFn: async () => null,
@@ -186,7 +186,7 @@ describe("runDaemonLoop reconnect", () => {
 
     try {
       await runDaemonLoop({
-        args: { wallet: "w", "log-level": "critical", harness: "custom" },
+        args: { wallet: "w", "log-level": "critical", harness: "custom", json: true },
         withAuthFn: withAuthMock as never,
         getConfigFn: async () => mockConfig as never,
         resolveLogStreamFn: async () => null,

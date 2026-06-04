@@ -15,10 +15,13 @@ export interface OpenspecCompat {
   fixCommand: string;
 }
 
-export function checkOpenspecCompatForGenesis(expectedVersion: string): OpenspecCompat {
+export function checkOpenspecCompatForGenesis(
+  expectedVersion: string,
+  options: { detectVersion?: typeof detectOpenspecVersion } = {},
+): OpenspecCompat {
   const expected = validateOpenspecVersion(expectedVersion);
   const fixCommand = "probe upgrade --yes";
-  const installed = detectOpenspecVersion();
+  const installed = (options.detectVersion ?? detectOpenspecVersion)();
 
   if (!installed) {
     return {

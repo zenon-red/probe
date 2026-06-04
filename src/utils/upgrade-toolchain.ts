@@ -28,14 +28,36 @@ export interface SyncToolchainResult {
   warnings: string[];
 }
 
+export type ToolchainDeps = {
+  loadUserConfig: typeof loadUserConfig;
+  probeVersion: typeof probeVersion;
+  checkOpenspecCompatForGenesis: typeof checkOpenspecCompatForGenesis;
+  checkSkillsCompatForGenesis: typeof checkSkillsCompatForGenesis;
+  loadSkillsSpecFromConfig: typeof loadSkillsSpecFromConfig;
+  installOpenspec: typeof installOpenspec;
+  installSkills: typeof installSkills;
+};
+
+const defaultToolchainDeps: ToolchainDeps = {
+  loadUserConfig,
+  probeVersion,
+  checkOpenspecCompatForGenesis,
+  checkSkillsCompatForGenesis,
+  loadSkillsSpecFromConfig,
+  installOpenspec,
+  installSkills,
+};
+
 function skillsExpectedLabel(source: string, ref: string): string {
   return `${source}@${ref}`;
 }
 
-export async function buildToolchainReport(): Promise<ToolchainReport> {
-  const config = await loadUserConfig();
+export async function buildToolchainReport(
+  deps: ToolchainDeps = defaultToolchainDeps,
+): Promise<ToolchainReport> {
+  const config = await deps.loadUserConfig();
   const hasGenesis = Boolean(config.genesisHash || config.genesisSource);
-  const installedProbe = probeVersion();
+  const installedProbe = deps.probeVersion();
 
   const probeReport: ToolchainComponentReport = {
     installed: installedProbe,
@@ -54,7 +76,7 @@ export async function buildToolchainReport(): Promise<ToolchainReport> {
 
   let openspecReport: ToolchainComponentReport | undefined;
   if (config.openspecVersion) {
-    const compat = checkOpenspecCompatForGenesis(config.openspecVersion);
+    const compat = deps.checkOpenspecCompatForGenesis(config.openspecVersion);
     openspecReport = {
       expected: compat.expected,
       installed: compat.installed,
@@ -65,9 +87,9 @@ export async function buildToolchainReport(): Promise<ToolchainReport> {
   }
 
   let skillsReport: ToolchainComponentReport | undefined;
-  const skillsSpec = await loadSkillsSpecFromConfig();
+  const skillsSpec = await deps.loadSkillsSpecFromConfig();
   if (skillsSpec) {
-    const compat = checkSkillsCompatForGenesis(skillsSpec.source, skillsSpec.ref);
+    const compat = deps.checkSkillsCompatForGenesis(skillsSpec.source, skillsSpec.ref);
     skillsReport = {
       expected: skillsExpectedLabel(skillsSpec.source, skillsSpec.ref),
       installed: compat.foundRef ? `${compat.expectedSource}@${compat.foundRef}` : undefined,
@@ -85,33 +107,36 @@ export async function buildToolchainReport(): Promise<ToolchainReport> {
   };
 }
 
-export async function syncToolchainFromGenesis(install: boolean): Promise<SyncToolchainResult> {
+export async function syncToolchainFromGenesis(
+  install: boolean,
+  deps: ToolchainDeps = defaultToolchainDeps,
+): Promise<SyncToolchainResult> {
   const warnings: string[] = [];
-  const config = await loadUserConfig();
+  const config = await deps.loadUserConfig();
 
   if (!config.genesisHash && !config.genesisSource) {
     warnings.push("No local genesis configured — run probe genesis apply");
-    return { report: await buildToolchainReport(), warnings };
+    return { report: await buildToolchainReport(deps), warnings };
   }
 
   if (install) {
     if (config.openspecVersion) {
-      const result = await installOpenspec(config.openspecVersion);
+      const result = await deps.installOpenspec(config.openspecVersion);
       if (!result.installed) {
         warnings.push(result.detail + (result.recovery ? ` — ${result.recovery}` : ""));
       }
     }
 
-    const skillsSpec = await loadSkillsSpecFromConfig();
+    const skillsSpec = await deps.loadSkillsSpecFromConfig();
     if (skillsSpec) {
-      const result = await installSkills(skillsSpec);
+      const result = await deps.installSkills(skillsSpec);
       if (!result.installed) {
         warnings.push(result.detail + (result.recovery ? ` — ${result.recovery}` : ""));
       }
     }
   }
 
-  return { report: await buildToolchainReport(), warnings };
+  return { report: await buildToolchainReport(deps), warnings };
 }
 
 export function formatToolchainHuman(report: ToolchainReport): string[] {

@@ -1,11 +1,39 @@
 {
   "version": 1,
   "skills": {
+    "cli": {
+      "source": "clockworklabs/SpacetimeDB",
+      "ref": "master",
+      "sourceType": "github",
+      "skillPath": "skills/cli/SKILL.md",
+      "computedHash": "0c70d6c525ff0922ad1ed2211cff9156c4afbdc0e2f0fcdee9bbf5136a76a1b6"
+    },
+    "concepts": {
+      "source": "clockworklabs/SpacetimeDB",
+      "ref": "master",
+      "sourceType": "github",
+      "skillPath": "skills/concepts/SKILL.md",
+      "computedHash": "960d5676170fd5e6045dc7bb0e4cf4d37ea6702630d5a91391b7d1ae9ae44f3c"
+    },
     "ink": {
       "source": "vercel-labs/json-render",
       "sourceType": "github",
       "skillPath": "skills/ink/SKILL.md",
       "computedHash": "127794ab4d276c5dd3fba93d06d041edbb46481032b315b8b5bd24994e7bcff8"
+    },
+    "rust-server": {
+      "source": "clockworklabs/SpacetimeDB",
+      "ref": "master",
+      "sourceType": "github",
+      "skillPath": "skills/rust-server/SKILL.md",
+      "computedHash": "c6d36ebd5fd778e9b5dadad5987b5b0d26ab47b8755bcc5259fd90fd8dbaf55d"
+    },
+    "typescript-client": {
+      "source": "clockworklabs/SpacetimeDB",
+      "ref": "master",
+      "sourceType": "github",
+      "skillPath": "skills/typescript-client/SKILL.md",
+      "computedHash": "73a36dec0b1a9600b1b44f2efa7944432438573b7d254519d5154a28415071f1"
     }
   }
 }

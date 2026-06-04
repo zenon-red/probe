@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { defineCommand } from "citty";
-import { TABLE_DECODERS } from "~/generated/decoders.js";
+import { KNOWN_TABLES, TABLE_DECODERS } from "~/utils/sql-decoders.js";
 import { resolveQueryDecode } from "~/utils/sql-decode.js";
 import { getConfig, resolveSpacetimeArgs } from "~/utils/config.js";
 import { printHelp } from "~/utils/help.js";
@@ -16,8 +16,6 @@ import { getCachedToken } from "~/utils/token-cache.js";
 import { getWalletInfo } from "~/utils/wallet.js";
 import { errorMessage } from "~/utils/errors.js";
 import { NETWORK_TIMEOUT } from "~/utils/timeouts.js";
-
-const KNOWN_TABLES = Object.keys(TABLE_DECODERS);
 
 const handleQueryError = (err: unknown, timeoutMs: number): never => {
   if (err instanceof SqlRequestError) {

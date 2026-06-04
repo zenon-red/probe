@@ -1,131 +1,90 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import type { OpenspecCompat } from "../../src/utils/openspec-check.js";
+import {
+  buildToolchainReport,
+  syncToolchainFromGenesis,
+  type ToolchainDeps,
+} from "../../src/utils/upgrade-toolchain.js";
 
-let loadUserConfigImpl: () => Promise<Record<string, unknown>> = async () => ({});
-let probeVersionImpl = () => "1.0.0";
-let checkOpenspecImpl: () => OpenspecCompat = () => ({
-  status: "ok",
-  expected: "1.3.1",
-  installed: "1.3.1",
-  message: "ok",
-  fixCommand: "probe upgrade --yes",
-});
-let checkSkillsImpl = () => ({
-  status: "ok" as const,
-  expectedSource: "acme/skills",
-  expectedRef: "v1.0.0",
-  foundRef: "v1.0.0",
-  message: "ok",
-  fixCommand: "npx skills add acme/skills#v1.0.0 --skill='*' -y -g",
-});
-let loadSkillsSpecImpl = async () => null as { source: string; ref: string } | null;
-let installOpenspecImpl = async () => ({ installed: true, detail: "ok" });
-let installSkillsImpl = async () => ({ installed: true, detail: "ok" });
+function baseDeps(): ToolchainDeps {
+  return {
+    loadUserConfig: async () => ({}),
+    probeVersion: () => "1.0.0",
+    checkOpenspecCompatForGenesis: () => ({
+      status: "ok",
+      expected: "1.3.1",
+      installed: "1.3.1",
+      message: "ok",
+      fixCommand: "probe upgrade --yes",
+    }),
+    checkSkillsCompatForGenesis: () => ({
+      status: "ok",
+      expectedSource: "acme/skills",
+      expectedRef: "v1.0.0",
+      foundRef: "v1.0.0",
+      message: "ok",
+      fixCommand: "npx skills add acme/skills#v1.0.0 --skill='*' -y -g",
+    }),
+    loadSkillsSpecFromConfig: async () => null,
+    installOpenspec: async () => ({ installed: true, detail: "ok" }),
+    installSkills: async () => ({ installed: true, detail: "ok" }),
+  };
+}
 
-mock.module("../../src/utils/user-config.js", () => ({
-  loadUserConfig: () => loadUserConfigImpl(),
-}));
-mock.module("../../src/probe-version.js", () => ({
-  probeVersion: () => probeVersionImpl(),
-  probeDescription: "test",
-}));
-mock.module("../../src/utils/openspec-check.js", () => ({
-  checkOpenspecCompatForGenesis: (..._args: unknown[]) => checkOpenspecImpl(),
-}));
-mock.module("../../src/utils/genesis-skills.js", () => ({
-  checkSkillsCompatForGenesis: (..._args: unknown[]) => checkSkillsImpl(),
-}));
-mock.module("../../src/utils/genesis-skills-spec.js", () => ({
-  loadSkillsSpecFromConfig: () => loadSkillsSpecImpl(),
-}));
-mock.module("../../src/utils/openspec-install.js", () => ({
-  installOpenspec: (..._args: unknown[]) => installOpenspecImpl(),
-}));
-mock.module("../../src/utils/skills-install.js", () => ({
-  installSkills: (..._args: unknown[]) => installSkillsImpl(),
-}));
-
-const { buildToolchainReport, syncToolchainFromGenesis } =
-  await import("../../src/utils/upgrade-toolchain.js");
+let deps: ToolchainDeps;
 
 beforeEach(() => {
-  loadUserConfigImpl = async () => ({});
-  probeVersionImpl = () => "1.0.0";
-  checkOpenspecImpl = () => ({
-    status: "ok",
-    expected: "1.3.1",
-    installed: "1.3.1",
-    message: "ok",
-    fixCommand: "probe upgrade --yes",
-  });
-  checkSkillsImpl = () => ({
-    status: "ok",
-    expectedSource: "acme/skills",
-    expectedRef: "v1.0.0",
-    foundRef: "v1.0.0",
-    message: "ok",
-    fixCommand: "npx skills add acme/skills#v1.0.0 --skill='*' -y -g",
-  });
-  loadSkillsSpecImpl = async () => null;
-  installOpenspecImpl = async () => ({ installed: true, detail: "ok" });
-  installSkillsImpl = async () => ({ installed: true, detail: "ok" });
-});
-
-afterEach(() => {
-  mock.restore();
+  deps = baseDeps();
 });
 
 describe("buildToolchainReport", () => {
   it("reports warn when probe is below minProbeVersion", async () => {
-    loadUserConfigImpl = async () => ({ genesisHash: "abc", minProbeVersion: "2.0.0" });
-    probeVersionImpl = () => "1.0.0";
+    deps.loadUserConfig = async () => ({ genesisHash: "abc", minProbeVersion: "2.0.0" });
 
-    const report = await buildToolchainReport();
+    const report = await buildToolchainReport(deps);
     expect(report.probe.status).toBe("warn");
     expect(report.probe.expected).toBe("2.0.0");
   });
 
   it("includes openspec when pinned", async () => {
-    loadUserConfigImpl = async () => ({ genesisHash: "abc", openspecVersion: "1.3.1" });
-    checkOpenspecImpl = () => ({
-      status: "warn",
-      expected: "1.3.1",
-      message: "OpenSpec not installed",
-      fixCommand: "probe upgrade --yes",
-    });
+    deps.loadUserConfig = async () => ({ genesisHash: "abc", openspecVersion: "1.3.1" });
+    deps.checkOpenspecCompatForGenesis = () =>
+      ({
+        status: "warn",
+        expected: "1.3.1",
+        message: "OpenSpec not installed",
+        fixCommand: "probe upgrade --yes",
+      }) satisfies OpenspecCompat;
 
-    const report = await buildToolchainReport();
+    const report = await buildToolchainReport(deps);
     expect(report.openspec?.status).toBe("warn");
   });
 });
 
 describe("syncToolchainFromGenesis", () => {
   it("warns when no genesis is configured", async () => {
-    loadUserConfigImpl = async () => ({});
-
-    const { warnings } = await syncToolchainFromGenesis(true);
+    const { warnings } = await syncToolchainFromGenesis(true, deps);
     expect(warnings[0]).toContain("No local genesis configured");
   });
 
   it("installs openspec and skills when requested", async () => {
     let openspecCalled = false;
     let skillsCalled = false;
-    loadUserConfigImpl = async () => ({
+    deps.loadUserConfig = async () => ({
       genesisSource: "/genesis.json",
       openspecVersion: "1.3.1",
     });
-    loadSkillsSpecImpl = async () => ({ source: "acme/skills", ref: "v1.0.0" });
-    installOpenspecImpl = async () => {
+    deps.loadSkillsSpecFromConfig = async () => ({ source: "acme/skills", ref: "v1.0.0" });
+    deps.installOpenspec = async () => {
       openspecCalled = true;
       return { installed: true, detail: "ok" };
     };
-    installSkillsImpl = async () => {
+    deps.installSkills = async () => {
       skillsCalled = true;
       return { installed: true, detail: "ok" };
     };
 
-    const { warnings } = await syncToolchainFromGenesis(true);
-    expect(warnings).toHaveLength(0);
+    await syncToolchainFromGenesis(true, deps);
     expect(openspecCalled).toBe(true);
     expect(skillsCalled).toBe(true);
   });

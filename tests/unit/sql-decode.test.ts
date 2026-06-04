@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { TABLE_DECODERS } from "../../src/generated/decoders.js";
+import { decoderForType, KNOWN_TABLES, TABLE_DECODERS } from "../../src/utils/sql-decoders.js";
 import { extractColumnNames } from "../../src/utils/sql.js";
 import {
   inferTableNameSafe,
@@ -132,5 +132,29 @@ describe("query row decode", () => {
 
     const rawValue = [1];
     expect(rawValue).toEqual([1]);
+  });
+
+  it("lists all known tables, not only tables with decoders", () => {
+    expect(KNOWN_TABLES).toContain("config");
+    expect(TABLE_DECODERS.config).toBeUndefined();
+  });
+
+  it("does not decode payload-bearing sum types as enums", () => {
+    const decoder = decoderForType({
+      tag: "Sum",
+      value: {
+        variants: [
+          {
+            name: "WithPayload",
+            algebraicType: {
+              tag: "Product",
+              value: { elements: [{ name: "payload", algebraicType: { tag: "String" } }] },
+            },
+          },
+        ],
+      },
+    });
+
+    expect(decoder).toBeUndefined();
   });
 });

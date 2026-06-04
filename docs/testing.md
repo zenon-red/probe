@@ -1,6 +1,6 @@
 # Test coverage
 
-`npm run test:ci` runs all `tests/unit/*.test.ts` after `generate:decoders`.
+`npm run test:ci` runs all `tests/unit/*.test.ts`.
 
 | Test file                                   | What's tested                                                            |
 | ------------------------------------------- | ------------------------------------------------------------------------ |
@@ -24,7 +24,6 @@
 | `message-target.test.ts`                    | Project/channel target resolution                                        |
 | `probe-error.test.ts`                       | `ProbeError` and boundary rendering                                      |
 | `reducer-command.test.ts`                   | `runReducerCommand` success and `REDUCER_FAILED`                         |
-| `schema-drift.test.ts`                      | Enum decoder parity with bindings                                        |
 | `sql-decode.test.ts`                        | Safe SQL table inference and decode policy                               |
 | `sql.test.ts`                               | SQL HTTP endpoint helpers                                                |
 | `subcommands.test.ts`                       | Citty subcommand dispatch across groups                                  |
