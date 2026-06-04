@@ -193,7 +193,7 @@ const tmuxAdapter: DaemonAdapter = {
   async detectAvailable() {
     return commandExists("tmux");
   },
-  async install(config) {
+  async install(_config) {
     try {
       execSync(
         `tmux has-session -t nexus 2>/dev/null || tmux new-session -d -s nexus "probe nexus"`,

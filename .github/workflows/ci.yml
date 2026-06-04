@@ -22,9 +22,6 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Generate decoders
-        run: bun run generate:decoders
-
       - name: Lint
         run: bun run lint
 

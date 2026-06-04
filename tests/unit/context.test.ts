@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
 import type { Identity } from "spacetimedb";
+import { tables } from "../../src/module_bindings/index.js";
 import { DEFAULT_CONFIG } from "../../src/types/config.js";
 
 let capturedUri = "";
@@ -50,7 +51,7 @@ mock.module("../../src/module_bindings/index.js", () => ({
       return builder;
     },
   },
-  tables: {},
+  tables,
 }));
 
 mock.module("../../src/utils/token-cache.js", () => ({

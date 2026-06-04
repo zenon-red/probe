@@ -110,15 +110,9 @@ Nexus command groups, `config`, and `token` SHALL use citty subcommands. Authent
 - **WHEN** `probe query` runs without `--raw`
 - **THEN** output SHALL include raw row arrays and metadata indicating decode was skipped
 
-### Requirement: Generated enum decoder parity
+### Requirement: Runtime SQL enum decoder
 
-Generated enum decoders SHALL match the SpacetimeDB module binding enums. CI SHALL fail when decoder output drifts from `module_bindings` types.
-
-#### Scenario: Schema drift detected in CI
-
-- **GIVEN** a generated decoder disagrees with `module_bindings/types.ts`
-- **WHEN** the schema drift test runs
-- **THEN** the test SHALL fail
+SQL enum decoders SHALL be built at runtime from the SpacetimeDB SDK's `tables` type metadata. The decoders SHALL match the SpacetimeDB module binding enums exactly, with no codegen or build step required.
 
 ### Requirement: Post-upgrade genesis toolchain report
 

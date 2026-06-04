@@ -40,9 +40,6 @@ jobs:
         run: |
           node -e "const fs=require('fs');const p='node_modules/giget/dist/shared/giget.BgKdRmJH.mjs';let s=fs.readFileSync(p,'utf8');s=s.replace(\"import { fetch } from 'node-fetch-native/proxy';\",\"import * as proxyFetchPkg from 'node-fetch-native/proxy';\\nconst { fetch } = proxyFetchPkg;\");fs.writeFileSync(p,s);"
 
-      - name: Generate decoders
-        run: bun x tsx scripts/generate-decoders.ts
-
       - name: Read package metadata
         id: pkg
         run: |
