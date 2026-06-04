@@ -43,7 +43,7 @@
     "test:verify-nexus": "bash scripts/verify-nexus-observability.sh"
   },
   "dependencies": {
-    "@agentclientprotocol/sdk": "^0.22.1",
+    "@agentclientprotocol/sdk": "^0.24.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@toon-format/toon": "^2.3.0",
     "c12": "^2.0.0",
