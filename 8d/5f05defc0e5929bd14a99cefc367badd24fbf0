@@ -1,0 +1,71 @@
+package.json
+  s_f6c28d1f61ca7e::t_946d852034c0ac 27,37-38
+  s_78d8f8280266a7::t_e18c7dbc049d64 39
+  s_e95c1afe6b7464::t_53f0961f55e32d 3
+tests/unit/openspec-check.test.ts
+  s_78d8f8280266a7::t_632f0b8b8e7101 6
+src/utils/openspec-check.ts
+  s_78d8f8280266a7::t_7d3fa0feab3209 18-21,24
+openspec/specs/probe-cli/spec.md
+  s_f6c28d1f61ca7e::t_f80817bd6c132b 113,115
+src/commands/query.ts
+  s_c4b872f5922ec2::t_9d8d25d2914910 3
+tests/unit/upgrade-toolchain.test.ts
+  s_78d8f8280266a7::t_632f0b8b8e7101 1,3-7,9-32,34,37,42,44,50-57,59,66,73,77-78,82,87
+docs/testing.md
+  s_f6c28d1f61ca7e::t_b84d77ec190783 3
+.github/workflows/publish.yml
+  s_78d8f8280266a7::t_b614003ea20c3b 27-31,35-36
+src/utils/upgrade-toolchain.ts
+  s_78d8f8280266a7::t_7d3fa0feab3209 31-50,55-58,60,79,90,92,110-113,115,119,124,130,132,139
+src/utils/sql-decoders.ts
+  s_c4b872f5922ec2::t_f60b919fa7368f 62-67,69
+  s_c4b872f5922ec2::t_f411a450e9aebe 44-45,49-53,60-61,79-84,86,89
+  s_e95c1afe6b7464::t_699648e1797908 17-22,31-39,73
+  s_f6c28d1f61ca7e::t_d6146e617b9d44 1-16,23-30,40-43,46-48,54-59,68,70-72,74-78,85,87-88,90-98
+tests/unit/sql-decode.test.ts
+  s_c4b872f5922ec2::t_78d3d26ca4776e 136-158
+  s_e95c1afe6b7464::t_699648e1797908 2
+src/utils/daemon.ts
+  s_78d8f8280266a7::t_ca9e2e448f9250 196
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "8d5f05defc0e5929bd14a99cefc367badd24fbf0",
+  "prompts": {},
+  "sessions": {
+    "s_78d8f8280266a7": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_176c1fd9fffecUrf2unOCvWcYF",
+        "model": "gpt-5.4"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_c4b872f5922ec2": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_1763bacbaffeR8tJwBH84MbtDK",
+        "model": "gpt-5.5"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_e95c1afe6b7464": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_16c4b8aeeffeRMZh6MIARrPzDE",
+        "model": "glm-5.1"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    },
+    "s_f6c28d1f61ca7e": {
+      "agent_id": {
+        "tool": "pi",
+        "id": "019e89a8-8086-7f18-a491-dc3c55df4766",
+        "model": "glm-5.1"
+      },
+      "human_author": "ZŌE <zoe@zenon.red>"
+    }
+  }
+}
