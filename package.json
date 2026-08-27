@@ -45,7 +45,7 @@
   "dependencies": {
     "@agentclientprotocol/sdk": "^0.22.1",
     "@modelcontextprotocol/sdk": "^1.29.0",
-    "@toon-format/toon": "^2.3.0",
+    "@toon-format/toon": "^4.1.1",
     "c12": "^2.0.0",
     "canonical-json": "^0.4.0",
     "citty": "^0.2.2",
