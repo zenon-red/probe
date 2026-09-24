@@ -51,7 +51,7 @@
     "citty": "^0.2.2",
     "ink": "^7.0.5",
     "react": "^19.2.0",
-    "react-devtools-core": "^7.0.1",
+    "react-devtools-core": "^8.0.0",
     "spacetimedb": "^2.2.0",
     "znn-typescript-sdk": "https://codeload.github.com/PlasmaKing/znn-typescript-sdk/tar.gz/865bc8866d798893ed364f6db4f14162efe0b396",
     "zod": "^3.25.76"
